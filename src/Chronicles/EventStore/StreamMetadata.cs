@@ -1,0 +1,16 @@
+namespace Chronicles.EventStore;
+
+/// <summary>
+/// Represents meta data of a given stream.
+/// </summary>
+/// <param name="StreamId">id of the stream</param>
+/// <param name="State">State of stream</param>
+/// <param name="Version">Last version written to the stream</param>
+/// <param name="Timestamp">When was the stream last updated</param>
+/// <param name="ETag">Internal etag.</param>
+public record StreamMetadata(
+    StreamId StreamId,
+    StreamState State,
+    StreamVersion Version,
+    DateTimeOffset Timestamp,
+    string ETag);
