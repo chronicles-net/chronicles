@@ -1,0 +1,143 @@
+using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
+
+namespace Chronicles.Cosmos.Internal;
+
+public class CosmosReader<T> : ICosmosReader<T>
+    where T : class
+{
+    private readonly Container container;
+
+    public CosmosReader(
+        ICosmosContainerProvider containerProvider)
+        => container = containerProvider.GetContainer<T>();
+
+    public async Task<T?> FindAsync(
+        string documentId,
+        string partitionKey,
+        ItemRequestOptions? options,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await ReadAsync(
+                documentId,
+                partitionKey,
+                options,
+                cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (CosmosException)
+        {
+            return null;
+        }
+    }
+
+    public async Task<T> ReadAsync(
+        string documentId,
+        string partitionKey,
+        ItemRequestOptions? options,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await container
+            .ReadItemAsync<T>(
+                documentId,
+                new PartitionKey(partitionKey),
+                options,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        return result.Resource;
+    }
+
+    public IAsyncEnumerable<T> ReadAllAsync(
+        string? partitionKey,
+        QueryRequestOptions? options,
+        CancellationToken cancellationToken = default)
+        => container
+            .GetItemLinqQueryable<T>(
+                requestOptions: CreateOptions(options, partitionKey))
+            .ToFeedIterator()
+            .ToAsyncEnumerable(cancellationToken);
+
+    public IAsyncEnumerable<TResult> QueryAsync<TResult>(
+        QueryDefinition query,
+        QueryRequestOptions? options,
+        string? partitionKey,
+        CancellationToken cancellationToken = default)
+        => container
+            .GetItemQueryIterator<TResult>(
+                query,
+                requestOptions: CreateOptions(options, partitionKey))
+            .ToAsyncEnumerable(cancellationToken);
+
+    public IAsyncEnumerable<TResult> QueryAsync<TResult>(
+        ICosmosReader<T>.QueryExpression<TResult> query,
+        QueryRequestOptions? options,
+        string? partitionKey,
+        CancellationToken cancellationToken = default)
+    {
+        var queryable = container
+           .GetItemLinqQueryable<T>(
+                requestOptions: CreateOptions(options, partitionKey));
+
+        return query
+            .Invoke(queryable)
+            .ToFeedIterator()
+            .ToAsyncEnumerable(cancellationToken);
+    }
+
+    public async Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
+        QueryDefinition query,
+        QueryRequestOptions? options,
+        string? partitionKey,
+        int? maxItemCount,
+        string? continuationToken = null,
+        CancellationToken cancellationToken = default)
+        => await container
+            .GetItemQueryIterator<TResult>(
+                query,
+                continuationToken,
+                CreateOptions(options, partitionKey, maxItemCount))
+            .ReadPagedResult(cancellationToken)
+            .ConfigureAwait(false);
+
+    public async Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
+        ICosmosReader<T>.QueryExpression<TResult> query,
+        QueryRequestOptions? options,
+        string? partitionKey,
+        int? maxItemCount,
+        string? continuationToken = null,
+        CancellationToken cancellationToken = default)
+    {
+        var queryable = container
+            .GetItemLinqQueryable<T>(
+                requestOptions: CreateOptions(options, partitionKey));
+
+        return await query
+            .Invoke(queryable)
+            .ToFeedIterator()
+            .ReadPagedResult(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static QueryRequestOptions? CreateOptions(
+        QueryRequestOptions? options,
+        string? partitionKey,
+        int? maxItemCount = null)
+    {
+        var requestOptions = options?.ShallowCopy() as QueryRequestOptions;
+        if (partitionKey != null)
+        {
+            requestOptions ??= new();
+            requestOptions.PartitionKey = new PartitionKey(partitionKey);
+        }
+        if (maxItemCount != null)
+        {
+            requestOptions ??= new();
+            requestOptions.MaxItemCount = maxItemCount;
+        }
+
+        return requestOptions;
+    }
+}

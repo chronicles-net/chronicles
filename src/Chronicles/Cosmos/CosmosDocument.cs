@@ -10,6 +10,6 @@ public abstract class CosmosDocument : ICosmosDocument
     [JsonPropertyName("pk")]
     public string PartitionKey { get; set; } = default!;
 
-    [JsonIgnore]
+    [JsonPropertyName("_etag")]
     string? ICosmosDocument.ETag { get; set; }
 }
