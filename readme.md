@@ -1,0 +1,2 @@
+- Should we strong sign our packages?
+- 
