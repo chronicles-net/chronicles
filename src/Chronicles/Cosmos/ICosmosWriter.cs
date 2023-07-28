@@ -203,4 +203,106 @@ public interface ICosmosWriter<T>
         string partitionKey,
         ItemRequestOptions? options,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates a <typeparamref name="T"/> document that is read from the configured
+    /// Cosmos collection.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A <see cref="CosmosException"/>
+    /// with StatusCode <see cref="HttpStatusCode.NotFound"/>
+    /// will be thrown if the document does not already exist in Cosmos.
+    /// </para>
+    /// <para>
+    /// A <see cref="CosmosException"/>
+    /// with StatusCode <see cref="HttpStatusCode.PreconditionFailed"/>
+    /// will be thrown if the document is being updated simultanious by another thread
+    /// and the <paramref name="retries"/> has run out.
+    /// </para>
+    /// </remarks>
+    /// <param name="documentId">Id of the document.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="updateDocument">Function for applying updates to the document.</param>
+    /// <param name="retries">Number of retries when a conflict occurs.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used.</param>
+    /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
+    Task<T> UpdateAsync(
+        string documentId,
+        string partitionKey,
+        Func<T, Task> updateDocument,
+        int retries = 0,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates a <typeparamref name="T"/> document that is read from the configured
+    /// Cosmos collection.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A <see cref="CosmosException"/>
+    /// with StatusCode <see cref="HttpStatusCode.NotFound"/>
+    /// will be thrown if the document does not already exist in Cosmos.
+    /// </para>
+    /// <para>
+    /// A <see cref="CosmosException"/>
+    /// with StatusCode <see cref="HttpStatusCode.PreconditionFailed"/>
+    /// will be thrown if the document is being updated simultanious by another thread
+    /// and the <paramref name="retries"/> has run out.
+    /// </para>
+    /// </remarks>
+    /// <param name="documentId">Id of the document.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="updateDocument">Function for applying updates to the document.</param>
+    /// <param name="retries">Number of retries when a conflict occurs.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used.</param>
+    /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
+    Task<T> UpdateAsync(
+        string documentId,
+        string partitionKey,
+        Action<T> updateDocument,
+        int retries = 0,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates a <typeparamref name="T"/> document that is read from the configured
+    /// Cosmos collection, or creates it if it does not exist.
+    /// </summary>
+    /// <remarks>
+    /// A <see cref="CosmosException"/>
+    /// with StatusCode <see cref="HttpStatusCode.PreconditionFailed"/>
+    /// will be thrown if the document is being updated simultanious by another thread
+    /// and the <paramref name="retries"/> has run out.
+    /// </remarks>
+    /// <param name="getDefaultDocument">Function for creating the default document. The returned document need to have the DocumentId and PartitionKey set.</param>
+    /// <param name="updateDocument">Function for applying updates to the document.</param>
+    /// <param name="retries">Number of retries when a conflict occurs.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used.</param>
+    /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
+    Task<T> UpdateOrCreateAsync(
+        Func<T> getDefaultDocument,
+        Func<T, Task> updateDocument,
+        int retries = 0,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates a <typeparamref name="T"/> document that is read from the configured
+    /// Cosmos collection, or creates it if it does not exist.
+    /// </summary>
+    /// <remarks>
+    /// A <see cref="CosmosException"/>
+    /// with StatusCode <see cref="HttpStatusCode.PreconditionFailed"/>
+    /// will be thrown if the document is being updated simultanious by another thread
+    /// and the <paramref name="retries"/> has run out.
+    /// </remarks>
+    /// <param name="getDefaultDocument">Function for creating the default document. The returned document need to have the DocumentId and PartitionKey set.</param>
+    /// <param name="updateDocument">Function for applying updates to the document.</param>
+    /// <param name="retries">Number of retries when a conflict occurs.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used.</param>
+    /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
+    Task<T> UpdateOrCreateAsync(
+        Func<T> getDefaultDocument,
+        Action<T> updateDocument,
+        int retries = 0,
+        CancellationToken cancellationToken = default);
 }

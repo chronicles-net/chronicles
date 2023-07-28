@@ -5,17 +5,20 @@ using Microsoft.Azure.Cosmos;
 namespace Chronicles.Cosmos.Internal;
 
 public class CosmosWriter<T> : ICosmosWriter<T>
-    where T : ICosmosDocument
+    where T : class, ICosmosDocument
 {
     private readonly Container container;
     private readonly IJsonCosmosSerializer serializer;
+    private readonly ICosmosReader<T> reader;
 
     public CosmosWriter(
         ICosmosContainerProvider containerProvider,
-        IJsonCosmosSerializer serializer)
+        IJsonCosmosSerializer serializer,
+        ICosmosReader<T> reader)
     {
         this.container = containerProvider.GetContainer<T>();
         this.serializer = serializer;
+        this.reader = reader;
     }
 
     public ICosmosTransaction<T> CreateTransaction(
@@ -96,6 +99,130 @@ public class CosmosWriter<T> : ICosmosWriter<T>
         return true;
     }
 
+    public Task<T> UpdateAsync(
+        string documentId,
+        string partitionKey,
+        Action<T> updateDocument,
+        int retries = 0,
+        CancellationToken cancellationToken = default)
+        => UpdateAsync(
+            documentId,
+            partitionKey,
+            MakeAsync(updateDocument),
+            retries,
+            cancellationToken);
+
+    public async Task<T> UpdateAsync(
+        string documentId,
+        string partitionKey,
+        Func<T, Task> updateDocument,
+        int retries = 0,
+        CancellationToken cancellationToken = default)
+    {
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var document = await reader
+                    .ReadAsync(
+                        documentId,
+                        partitionKey,
+                        null,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
+                await updateDocument(document)
+                    .ConfigureAwait(false);
+
+                return await
+                    ReplaceAsync(
+                        document,
+                        null,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (CosmosException ex)
+             when (ex.StatusCode == HttpStatusCode.PreconditionFailed)
+            {
+                if (--retries <= 0)
+                {
+                    throw;
+                }
+            }
+        }
+    }
+
+    public Task<T> UpdateOrCreateAsync(
+        Func<T> getDefaultDocument,
+        Action<T> updateDocument,
+        int retries = 0,
+        CancellationToken cancellationToken = default)
+        => UpdateOrCreateAsync(
+            getDefaultDocument,
+            MakeAsync(updateDocument),
+            retries,
+            cancellationToken);
+
+    public async Task<T> UpdateOrCreateAsync(
+        Func<T> getDefaultDocument,
+        Func<T, Task> updateDocument,
+        int retries = 0,
+        CancellationToken cancellationToken = default)
+    {
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                var defaultDocument = getDefaultDocument();
+                if (string.IsNullOrEmpty(defaultDocument.DocumentId) ||
+                    string.IsNullOrEmpty(defaultDocument.PartitionKey))
+                {
+                    throw new ArgumentException(
+                        $"Default document needs {nameof(defaultDocument.DocumentId)} " +
+                        $"and {nameof(defaultDocument.PartitionKey)} to be set.",
+                        nameof(getDefaultDocument));
+                }
+
+                var document = await reader
+                    .FindAsync(
+                        defaultDocument.DocumentId,
+                        defaultDocument.PartitionKey,
+                        cancellationToken)
+                    .ConfigureAwait(false)
+                    ?? defaultDocument;
+
+                await updateDocument(document)
+                    .ConfigureAwait(false);
+
+                if (document.ETag is null)
+                {
+                    return await CreateAsync(
+                        document,
+                        null,
+                        cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    return await ReplaceAsync(
+                        document,
+                        null,
+                        cancellationToken).ConfigureAwait(false);
+                }
+            }
+            catch (CosmosException ex)
+             when (ex.StatusCode == HttpStatusCode.PreconditionFailed ||
+                   ex.StatusCode == HttpStatusCode.Conflict)
+            {
+                if (--retries <= 0)
+                {
+                    throw;
+                }
+            }
+        }
+    }
+
     private static ItemRequestOptions? CreateOptions(
         ItemRequestOptions? options,
         string? ifMatchEtag)
@@ -109,4 +236,10 @@ public class CosmosWriter<T> : ICosmosWriter<T>
 
         return requestOptions;
     }
+
+    private static Func<T, Task> MakeAsync(Action<T> action) => d =>
+    {
+        action.Invoke(d);
+        return Task.CompletedTask;
+    };
 }
