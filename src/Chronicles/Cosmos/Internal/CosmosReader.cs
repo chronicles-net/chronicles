@@ -60,8 +60,8 @@ public class CosmosReader<T> : ICosmosReader<T>
 
     public IAsyncEnumerable<TResult> QueryAsync<TResult>(
         QueryDefinition query,
-        QueryRequestOptions? options,
         string? partitionKey,
+        QueryRequestOptions? options,
         CancellationToken cancellationToken = default)
         => container
             .GetItemQueryIterator<TResult>(
@@ -71,8 +71,8 @@ public class CosmosReader<T> : ICosmosReader<T>
 
     public IAsyncEnumerable<TResult> QueryAsync<TResult>(
         ICosmosReader<T>.QueryExpression<TResult> query,
-        QueryRequestOptions? options,
         string? partitionKey,
+        QueryRequestOptions? options,
         CancellationToken cancellationToken = default)
     {
         var queryable = container
@@ -87,8 +87,8 @@ public class CosmosReader<T> : ICosmosReader<T>
 
     public async Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
         QueryDefinition query,
-        QueryRequestOptions? options,
         string? partitionKey,
+        QueryRequestOptions? options,
         int? maxItemCount,
         string? continuationToken = null,
         CancellationToken cancellationToken = default)
@@ -102,8 +102,8 @@ public class CosmosReader<T> : ICosmosReader<T>
 
     public async Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
         ICosmosReader<T>.QueryExpression<TResult> query,
-        QueryRequestOptions? options,
         string? partitionKey,
+        QueryRequestOptions? options,
         int? maxItemCount,
         string? continuationToken = null,
         CancellationToken cancellationToken = default)

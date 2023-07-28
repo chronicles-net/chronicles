@@ -31,7 +31,7 @@ public class CosmosTransaction<T> : ICosmosTransaction<T>
 
     public ICosmosTransaction<T> Replace(
         T document,
-        TransactionalBatchItemRequestOptions? options = null) 
+        TransactionalBatchItemRequestOptions? options = null)
     {
         transaction.ReplaceItem(document.DocumentId, document, options);
         return this;
