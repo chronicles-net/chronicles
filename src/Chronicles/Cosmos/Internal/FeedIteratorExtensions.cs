@@ -22,7 +22,7 @@ public static class FeedIteratorExtensions
         }
     }
 
-    public static async Task<PagedResult<T>> ReadPagedResult<T>(
+    public static async Task<PagedResult<T>> ReadPageResultAsync<T>(
         this FeedIterator<T> reader,
         CancellationToken cancellationToken)
     {

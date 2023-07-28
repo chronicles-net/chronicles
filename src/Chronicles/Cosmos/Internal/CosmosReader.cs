@@ -99,7 +99,7 @@ public class CosmosReader<T> : ICosmosReader<T>
                 query,
                 continuationToken,
                 CreateOptions(options, partitionKey, maxItemCount))
-            .ReadPagedResult(cancellationToken)
+            .ReadPageResultAsync(cancellationToken)
             .ConfigureAwait(false);
 
     public async Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
@@ -117,7 +117,7 @@ public class CosmosReader<T> : ICosmosReader<T>
         return await query
             .Invoke(queryable)
             .ToFeedIterator()
-            .ReadPagedResult(cancellationToken)
+            .ReadPageResultAsync(cancellationToken)
             .ConfigureAwait(false);
     }
 
