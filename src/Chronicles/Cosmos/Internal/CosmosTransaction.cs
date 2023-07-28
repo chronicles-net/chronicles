@@ -14,26 +14,26 @@ public class CosmosTransaction<T> : ICosmosTransaction<T>
     }
 
     public ICosmosTransaction<T> Write(
-        T doc,
+        T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
-        transaction.UpsertItem(doc, options);
+        transaction.UpsertItem(document, options);
         return this;
     }
 
     public ICosmosTransaction<T> Create(
-        T doc,
+        T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
-        transaction.CreateItem(doc, options);
+        transaction.CreateItem(document, options);
         return this;
     }
 
     public ICosmosTransaction<T> Replace(
-        T doc,
-        TransactionalBatchItemRequestOptions? options = null)
+        T document,
+        TransactionalBatchItemRequestOptions? options = null) 
     {
-        transaction.ReplaceItem(doc.DocumentId, doc, options);
+        transaction.ReplaceItem(document.DocumentId, document, options);
         return this;
     }
 
@@ -45,10 +45,10 @@ public class CosmosTransaction<T> : ICosmosTransaction<T>
         return this;
     }
 
-    public Task CommitAsync(CancellationToken cancellationToken)
+    public Task<TransactionalBatchResponse> CommitAsync(CancellationToken cancellationToken)
         => transaction.ExecuteAsync(cancellationToken);
 
-    public Task CommitAsync(
+    public Task<TransactionalBatchResponse> CommitAsync(
         TransactionalBatchRequestOptions options,
         CancellationToken cancellationToken)
         => transaction.ExecuteAsync(options, cancellationToken);
