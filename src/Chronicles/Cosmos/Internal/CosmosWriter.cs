@@ -99,19 +99,6 @@ public class CosmosWriter<T> : ICosmosWriter<T>
         return true;
     }
 
-    public Task<T> UpdateAsync(
-        string documentId,
-        string partitionKey,
-        Action<T> updateDocument,
-        int retries = 0,
-        CancellationToken cancellationToken = default)
-        => UpdateAsync(
-            documentId,
-            partitionKey,
-            MakeAsync(updateDocument),
-            retries,
-            cancellationToken);
-
     public async Task<T> UpdateAsync(
         string documentId,
         string partitionKey,
@@ -152,17 +139,6 @@ public class CosmosWriter<T> : ICosmosWriter<T>
             }
         }
     }
-
-    public Task<T> UpdateOrCreateAsync(
-        Func<T> getDefaultDocument,
-        Action<T> updateDocument,
-        int retries = 0,
-        CancellationToken cancellationToken = default)
-        => UpdateOrCreateAsync(
-            getDefaultDocument,
-            MakeAsync(updateDocument),
-            retries,
-            cancellationToken);
 
     public async Task<T> UpdateOrCreateAsync(
         Func<T> getDefaultDocument,
@@ -236,10 +212,4 @@ public class CosmosWriter<T> : ICosmosWriter<T>
 
         return requestOptions;
     }
-
-    private static Func<T, Task> MakeAsync(Action<T> action) => d =>
-    {
-        action.Invoke(d);
-        return Task.CompletedTask;
-    };
 }
