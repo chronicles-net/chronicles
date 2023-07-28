@@ -17,8 +17,10 @@ public interface ICosmosWriter<T>
     /// Creates a new transaction batch used to perform operations across multiple items
     /// in the container with the provided partition key in a transactional manner.
     /// </summary>
+    /// <param name="partitionKey">Partition key for the transaction.</param>
     /// <returns>A new instance of <see cref="ICosmosTransaction{T}"/>.</returns>
-    ICosmosTransaction<T> CreateTransaction();
+    ICosmosTransaction<T> CreateTransaction(
+        string partitionKey);
 
     /// <summary>
     /// Creates a new <typeparamref name="T"/> document in Cosmos.
@@ -34,7 +36,7 @@ public interface ICosmosWriter<T>
     Task<T> CreateAsync(
         T document,
         CancellationToken cancellationToken = default)
-        => CreateAsync(document, new(), cancellationToken);
+        => CreateAsync(document, null, cancellationToken);
 
     /// <summary>
     /// Creates a new <typeparamref name="T"/> document in Cosmos.
@@ -49,7 +51,7 @@ public interface ICosmosWriter<T>
     /// <returns>A <see cref="Task"/> containing the created <typeparamref name="T"/> document.</returns>
     Task<T> CreateAsync(
         T document,
-        ItemRequestOptions options,
+        ItemRequestOptions? options,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -61,7 +63,7 @@ public interface ICosmosWriter<T>
     Task<T> WriteAsync(
         T document,
         CancellationToken cancellationToken = default)
-        => WriteAsync(document, new(), cancellationToken);
+        => WriteAsync(document, null, cancellationToken);
 
     /// <summary>
     /// Writes a <typeparamref name="T"/> document to Cosmos, using upsert behavior.
@@ -76,7 +78,7 @@ public interface ICosmosWriter<T>
     /// <returns>A <see cref="Task"/> containing the written <typeparamref name="T"/> document.</returns>
     Task<T> WriteAsync(
         T document,
-        ItemRequestOptions options,
+        ItemRequestOptions? options,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -101,7 +103,7 @@ public interface ICosmosWriter<T>
     Task<T> ReplaceAsync(
         T document,
         CancellationToken cancellationToken = default)
-        => ReplaceAsync(document, new(), cancellationToken);
+        => ReplaceAsync(document, null, cancellationToken);
 
     /// <summary>
     /// Replaces a <typeparamref name="T"/> document in Cosmos.
@@ -129,7 +131,7 @@ public interface ICosmosWriter<T>
     /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
     Task<T> ReplaceAsync(
         T document,
-        ItemRequestOptions options,
+        ItemRequestOptions? options,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -148,7 +150,7 @@ public interface ICosmosWriter<T>
         string documentId,
         string partitionKey,
         CancellationToken cancellationToken = default)
-        => DeleteAsync(documentId, partitionKey, new(), cancellationToken);
+        => DeleteAsync(documentId, partitionKey, null, cancellationToken);
 
     /// <summary>
     /// Deletes the specified <typeparamref name="T"/> document from Cosmos.
@@ -166,7 +168,7 @@ public interface ICosmosWriter<T>
     public Task DeleteAsync(
         string documentId,
         string partitionKey,
-        ItemRequestOptions options,
+        ItemRequestOptions? options,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -183,7 +185,7 @@ public interface ICosmosWriter<T>
         string documentId,
         string partitionKey,
         CancellationToken cancellationToken = default)
-        => TryDeleteAsync(documentId, partitionKey, new(), cancellationToken);
+        => TryDeleteAsync(documentId, partitionKey, null, cancellationToken);
 
     /// <summary>
     /// Tries to delete the specified <typeparamref name="T"/> document from Cosmos.
@@ -199,6 +201,6 @@ public interface ICosmosWriter<T>
     public Task<bool> TryDeleteAsync(
         string documentId,
         string partitionKey,
-        ItemRequestOptions options,
+        ItemRequestOptions? options,
         CancellationToken cancellationToken = default);
 }

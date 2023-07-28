@@ -27,7 +27,8 @@ public class CosmosReader<T> : ICosmosReader<T>
                 cancellationToken)
                 .ConfigureAwait(false);
         }
-        catch (CosmosException)
+        catch (CosmosException ex)
+         when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
             return null;
         }
@@ -38,17 +39,14 @@ public class CosmosReader<T> : ICosmosReader<T>
         string partitionKey,
         ItemRequestOptions? options,
         CancellationToken cancellationToken = default)
-    {
-        var result = await container
+        => await container
             .ReadItemAsync<T>(
                 documentId,
                 new PartitionKey(partitionKey),
                 options,
                 cancellationToken: cancellationToken)
+            .GetItemAsync()
             .ConfigureAwait(false);
-
-        return result.Resource;
-    }
 
     public IAsyncEnumerable<T> ReadAllAsync(
         string? partitionKey,
@@ -126,15 +124,18 @@ public class CosmosReader<T> : ICosmosReader<T>
         string? partitionKey,
         int? maxItemCount = null)
     {
-        var requestOptions = options?.ShallowCopy() as QueryRequestOptions;
+        if (partitionKey == null && maxItemCount == null)
+        {
+            return options;
+        }
+
+        var requestOptions = options?.ShallowCopy() as QueryRequestOptions ?? new();
         if (partitionKey != null)
         {
-            requestOptions ??= new();
             requestOptions.PartitionKey = new PartitionKey(partitionKey);
         }
         if (maxItemCount != null)
         {
-            requestOptions ??= new();
             requestOptions.MaxItemCount = maxItemCount;
         }
 

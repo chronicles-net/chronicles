@@ -203,7 +203,7 @@ public interface ICosmosReader<T>
     /// </summary>
     /// <param name="query">Cosmos query to execute.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
-    /// <param name="pageSize">The number of items to return per page.</param>
+    /// <param name="maxItemCount">The number of items to return per page.</param>
     /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>An <see cref="IAsyncEnumerable&lt;T&gt;"/> over the requested <typeparamref name="T"/> documents.</returns>
@@ -221,7 +221,7 @@ public interface ICosmosReader<T>
     /// <typeparam name="TResult">The type used for the custom query result.</typeparam>
     /// <param name="query">Cosmos query to execute.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
-    /// <param name="pageSize">The number of items to return per page.</param>
+    /// <param name="maxItemCount">The number of items to return per page.</param>
     /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <typeparamref name="TResult"/> containing the custom query result.</returns>
@@ -240,7 +240,7 @@ public interface ICosmosReader<T>
     /// <param name="query">Cosmos query to execute.</param>
     /// <param name="options">(Optional) Query request options to use.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
-    /// <param name="pageSize">The number of items to return per page.</param>
+    /// <param name="maxItemCount">The number of items to return per page.</param>
     /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <typeparamref name="TResult"/> containing the custom query result.</returns>
@@ -257,7 +257,7 @@ public interface ICosmosReader<T>
     /// </summary>
     /// <param name="query">Cosmos linq query to execute.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
-    /// <param name="pageSize">The number of items to return per page.</param>
+    /// <param name="maxItemCount">The number of items to return per page.</param>
     /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>An <see cref="IAsyncEnumerable&lt;T&gt;"/> over the requested <typeparamref name="T"/> documents.</returns>
@@ -275,7 +275,7 @@ public interface ICosmosReader<T>
     /// <typeparam name="TResult">The type used for the custom query result.</typeparam>
     /// <param name="query">Cosmos linq query to execute.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
-    /// <param name="pageSize">The number of items to return per page.</param>
+    /// <param name="maxItemCount">The number of items to return per page.</param>
     /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <typeparamref name="TResult"/> containing the custom query result.</returns>
@@ -294,7 +294,7 @@ public interface ICosmosReader<T>
     /// <param name="query">Cosmos query to execute.</param>
     /// <param name="options">(Optional) Query request options to use.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
-    /// <param name="pageSize">(Optional) The number of items to return per page.</param>
+    /// <param name="maxItemCount">(Optional) The number of items to return per page.</param>
     /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <typeparamref name="TResult"/> containing the custom query result.</returns>
