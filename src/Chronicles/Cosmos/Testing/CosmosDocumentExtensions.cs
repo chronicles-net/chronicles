@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace Chronicles.Cosmos.Testing
 {
-    public static class CosmosResourceExtensions
+    public static class CosmosDocumentExtensions
     {
         public static T DeepClone<T>(
             this T resource,

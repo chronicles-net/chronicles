@@ -1,4 +1,3 @@
-using System.Net;
 using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Cosmos.Testing;
@@ -18,7 +17,7 @@ public class FakeCosmosTransaction<T> : ICosmosTransaction<T>
         this.partitionKey = partitionKey;
     }
 
-    public ICosmosTransaction<T> Create(
+    public virtual ICosmosTransaction<T> Create(
         T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
@@ -26,7 +25,7 @@ public class FakeCosmosTransaction<T> : ICosmosTransaction<T>
         return this;
     }
 
-    public ICosmosTransaction<T> Delete(
+    public virtual ICosmosTransaction<T> Delete(
         string id,
         TransactionalBatchItemRequestOptions? options = null)
     {
@@ -38,7 +37,7 @@ public class FakeCosmosTransaction<T> : ICosmosTransaction<T>
         return this;
     }
 
-    public ICosmosTransaction<T> Replace(
+    public virtual ICosmosTransaction<T> Replace(
         T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
@@ -46,7 +45,7 @@ public class FakeCosmosTransaction<T> : ICosmosTransaction<T>
         return this;
     }
 
-    public ICosmosTransaction<T> Write(
+    public virtual ICosmosTransaction<T> Write(
         T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
@@ -54,52 +53,18 @@ public class FakeCosmosTransaction<T> : ICosmosTransaction<T>
         return this;
     }
 
-    public Task<TransactionalBatchResponse> CommitAsync(TransactionalBatchRequestOptions options, CancellationToken cancellationToken)
+    public virtual Task<TransactionalBatchResponse> CommitAsync(TransactionalBatchRequestOptions options, CancellationToken cancellationToken)
         => CommitAsync(cancellationToken);
 
-    public async Task<TransactionalBatchResponse> CommitAsync(CancellationToken cancellationToken)
+    public virtual async Task<TransactionalBatchResponse> CommitAsync(CancellationToken cancellationToken)
     {
         var results = new List<T?>();
         foreach (var operation in operations)
         {
-            results.Add(await operation.Invoke(writer));
+            var result = await operation.Invoke(writer);
+            results.Add(result);
         }
 
-        return new FakeResponse(results);
-    }
-
-    private sealed class FakeResponse : TransactionalBatchResponse
-    {
-        private readonly IList<T?> results;
-
-        public FakeResponse(
-            IList<T?> results)
-        {
-            this.results = results;
-        }
-
-        public override bool IsSuccessStatusCode => true;
-
-        public override HttpStatusCode StatusCode => HttpStatusCode.OK;
-
-        public override TransactionalBatchOperationResult<TResult> GetOperationResultAtIndex<TResult>(int index)
-            => new FakeItemResponse<TResult>(results[index] is TResult r ? r : default);
-    }
-
-    private sealed class FakeItemResponse<TResult> : TransactionalBatchOperationResult<TResult>
-    {
-        public FakeItemResponse(TResult? result)
-        {
-            if (result != null)
-            {
-                Resource = result;
-            }
-        }
-
-        public override bool IsSuccessStatusCode => true;
-
-        public override HttpStatusCode StatusCode => HttpStatusCode.OK;
-
-        public override string? ETag => Resource is ICosmosDocument d ? d.ETag : null!;
+        return new FakeTransactionalBatchResponse<T>(results);
     }
 }
