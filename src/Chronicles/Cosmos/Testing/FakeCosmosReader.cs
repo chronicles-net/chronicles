@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Serialization.HybridRow;
 using static System.FormattableString;
 
 namespace Chronicles.Cosmos.Testing
@@ -41,6 +42,10 @@ namespace Chronicles.Cosmos.Testing
         /// </summary>
         public IList<object> QueryResults { get; set; }
             = new List<object>();
+
+        public QueryDefinition CreateQuery<TResult>(
+            Func<IQueryable<T>, IQueryable<TResult>> query)
+            => new FakeQueryDefinition<T>(query);
 
         public virtual Task<T?> FindAsync(
             string documentId,
@@ -103,20 +108,8 @@ namespace Chronicles.Cosmos.Testing
             string? partitionKey,
             QueryRequestOptions? options,
             CancellationToken cancellationToken = default)
-            => GetAsyncEnumerator(QueryResults
-                .OfType<TResult>()
-                .DeepClone(serializerOptions));
-
-        public virtual IAsyncEnumerable<TResult> QueryAsync<TResult>(
-            ICosmosReader<T>.QueryExpression<TResult> query,
-            string? partitionKey,
-            QueryRequestOptions? options,
-            CancellationToken cancellationToken = default)
             => GetAsyncEnumerator(
-                query.Invoke(
-                    Documents
-                        .Where(d => partitionKey == null || d.PartitionKey == partitionKey)
-                        .AsQueryable()));
+                QueryItems<TResult>(query, partitionKey));
 
         public virtual Task<PagedResult<T>> PagedQueryAsync(
             QueryDefinition query,
@@ -142,36 +135,11 @@ namespace Chronicles.Cosmos.Testing
             CancellationToken cancellationToken = default)
         {
             var startIndex = GetStartIndex(continuationToken);
-            var items = QueryResults
-                .OfType<TResult>()
+
+            var items = QueryItems<TResult>(query, partitionKey)
                 .Skip(startIndex)
                 .Take(maxItemCount ?? 3)
                 .Select(o => o.DeepClone(serializerOptions))
-                .ToList();
-
-            return Task.FromResult(new PagedResult<TResult>
-            {
-                Items = items,
-                ContinuationToken = GetContinuationToken(startIndex, items.Count),
-            });
-        }
-
-        public virtual Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
-            ICosmosReader<T>.QueryExpression<TResult> query,
-            string? partitionKey,
-            QueryRequestOptions? options,
-            int? maxItemCount,
-            string? continuationToken = default,
-            CancellationToken cancellationToken = default)
-        {
-            var startIndex = GetStartIndex(continuationToken);
-            var items = query
-                .Invoke(
-                    Documents
-                        .Where(d => d.PartitionKey == partitionKey)
-                        .AsQueryable())
-                .Skip(startIndex)
-                .Take(maxItemCount ?? 3)
                 .ToList();
 
             return Task.FromResult(new PagedResult<TResult>
@@ -207,6 +175,25 @@ namespace Chronicles.Cosmos.Testing
                     .FromResult(item)
                     .ConfigureAwait(false);
             }
+        }
+
+        protected IEnumerable<TResult> QueryItems<TResult>(
+            QueryDefinition query,
+            string? partitionKey)
+        {
+            if (query is FakeQueryDefinition<T> { LinqQuery: { } linqQuery })
+            {
+                return linqQuery
+                    .Invoke(Documents
+                        .Where(d => partitionKey == null || d.PartitionKey == partitionKey)
+                        .AsQueryable())
+                    .OfType<TResult>()
+                    .DeepClone(serializerOptions);
+            }
+
+            return QueryResults
+                .OfType<TResult>()
+                .DeepClone(serializerOptions);
         }
     }
 }

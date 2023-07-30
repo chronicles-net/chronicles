@@ -1,6 +1,5 @@
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
-
 namespace Chronicles.Cosmos.Internal;
 
 public class CosmosReader<T> : ICosmosReader<T>
@@ -11,6 +10,10 @@ public class CosmosReader<T> : ICosmosReader<T>
     public CosmosReader(
         ICosmosContainerProvider containerProvider)
         => container = containerProvider.GetContainer<T>();
+
+    public QueryDefinition CreateQuery<TResult>(
+        Func<IQueryable<T>, IQueryable<TResult>> query)
+        => query(container.GetItemLinqQueryable<T>()).ToQueryDefinition();
 
     public async Task<T?> FindAsync(
         string documentId,
@@ -69,22 +72,6 @@ public class CosmosReader<T> : ICosmosReader<T>
                 requestOptions: CreateOptions(options, partitionKey))
             .ToAsyncEnumerable(cancellationToken);
 
-    public IAsyncEnumerable<TResult> QueryAsync<TResult>(
-        ICosmosReader<T>.QueryExpression<TResult> query,
-        string? partitionKey,
-        QueryRequestOptions? options,
-        CancellationToken cancellationToken = default)
-    {
-        var queryable = container
-           .GetItemLinqQueryable<T>(
-                requestOptions: CreateOptions(options, partitionKey));
-
-        return query
-            .Invoke(queryable)
-            .ToFeedIterator()
-            .ToAsyncEnumerable(cancellationToken);
-    }
-
     public async Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
         QueryDefinition query,
         string? partitionKey,
@@ -99,25 +86,6 @@ public class CosmosReader<T> : ICosmosReader<T>
                 CreateOptions(options, partitionKey, maxItemCount))
             .ReadPageResultAsync(cancellationToken)
             .ConfigureAwait(false);
-
-    public async Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
-        ICosmosReader<T>.QueryExpression<TResult> query,
-        string? partitionKey,
-        QueryRequestOptions? options,
-        int? maxItemCount,
-        string? continuationToken = null,
-        CancellationToken cancellationToken = default)
-    {
-        var queryable = container
-            .GetItemLinqQueryable<T>(
-                requestOptions: CreateOptions(options, partitionKey));
-
-        return await query
-            .Invoke(queryable)
-            .ToFeedIterator()
-            .ReadPageResultAsync(cancellationToken)
-            .ConfigureAwait(false);
-    }
 
     private static QueryRequestOptions? CreateOptions(
         QueryRequestOptions? options,

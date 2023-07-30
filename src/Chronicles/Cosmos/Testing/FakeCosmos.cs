@@ -54,6 +54,10 @@ namespace Chronicles.Cosmos.Testing
 
         public FakeCosmosWriter<T> Writer { get; }
 
+        QueryDefinition ICosmosReader<T>.CreateQuery<TResult>(
+            Func<IQueryable<T>, IQueryable<TResult>> query)
+            => ((ICosmosReader<T>)Reader).CreateQuery(query);
+
         Task<T?> ICosmosReader<T>.FindAsync(
             string documentId,
             string partitionKey,
@@ -99,18 +103,6 @@ namespace Chronicles.Cosmos.Testing
                     partitionKey,
                     cancellationToken);
 
-        public IAsyncEnumerable<TResult> QueryAsync<TResult>(
-            ICosmosReader<T>.QueryExpression<TResult> query,
-            string? partitionKey,
-            QueryRequestOptions? options,
-            CancellationToken cancellationToken = default)
-            => ((ICosmosReader<T>)Reader)
-                .QueryAsync(
-                    query,
-                    partitionKey,
-                    options,
-                    cancellationToken);
-
         Task<PagedResult<TResult>> ICosmosReader<T>.PagedQueryAsync<TResult>(
             QueryDefinition query,
             string? partitionKey,
@@ -120,22 +112,6 @@ namespace Chronicles.Cosmos.Testing
             CancellationToken cancellationToken)
             => ((ICosmosReader<T>)Reader)
                 .PagedQueryAsync<TResult>(
-                    query,
-                    partitionKey,
-                    options,
-                    maxItemCount,
-                    continuationToken,
-                    cancellationToken);
-
-        public Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
-            ICosmosReader<T>.QueryExpression<TResult> query,
-            string? partitionKey,
-            QueryRequestOptions? options,
-            int? maxItemCount,
-            string? continuationToken = default,
-            CancellationToken cancellationToken = default)
-            => ((ICosmosReader<T>)Reader)
-                .PagedQueryAsync(
                     query,
                     partitionKey,
                     options,
