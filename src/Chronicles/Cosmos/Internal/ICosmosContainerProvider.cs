@@ -8,11 +8,27 @@ namespace Chronicles.Cosmos.Internal;
 public interface ICosmosContainerProvider
 {
     /// <summary>
-    /// Get the configured container for the specified <see cref="ICosmosDocument"/> type.
+    /// Get the configured container for the specified document type.
     /// </summary>
     /// <typeparam name="T">The <see cref="ICosmosDocument"/>.</typeparam>
     /// Boolean indicating if the container should
     /// be configured for bulk operations. Default is false.
     /// <returns>A cosmos <see cref="Container"/>.</returns>
     Container GetContainer<T>();
+
+    /// <summary>
+    /// Get the configured container for the specified document type.
+    /// </summary>
+    /// <param name="resourceType">
+    /// The <see cref="Type"/> of the document.
+    /// </param>
+    /// <returns>A cosmos <see cref="Container"/>.</returns>
+    Container GetContainer(Type resourceType);
+
+    /// <summary>
+    /// Get the container with a specified name.
+    /// </summary>
+    /// <param name="name">The name of the container.</param>
+    /// <returns>A cosmos <see cref="Container"/>.</returns>
+    Container GetContainer(string name);
 }

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 
 namespace Chronicles.Cosmos.Serialization;
 
@@ -11,8 +12,9 @@ public class JsonCosmosSerializer : IJsonCosmosSerializer
 {
     private readonly JsonSerializerOptions options;
 
-    public JsonCosmosSerializer(JsonSerializerOptions options)
-        => this.options = options;
+    public JsonCosmosSerializer(
+        IOptions<ChroniclesCosmosOptions> options)
+        => this.options = options.Value.SerializerOptions;
 
     [return: MaybeNull]
     public T FromStream<T>(Stream stream)
