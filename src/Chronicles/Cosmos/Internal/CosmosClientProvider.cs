@@ -65,31 +65,35 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
 
         if (cosmosClientOptions is { Value: { } o })
         {
-            //result.ApplicationName = o.ApplicationName;
-            //result.ApplicationPreferredRegions = o.ApplicationPreferredRegions;
-            //result.ApplicationRegion = o.ApplicationRegion;
-            //result.ConnectionMode = o.ConnectionMode;
-            //result.ConsistencyLevel = o.ConsistencyLevel;
+            if (!string.IsNullOrEmpty(o.ApplicationName))
+            {
+                result.ApplicationName = o.ApplicationName;
+            }
 
-            //foreach (var handler in o.CustomHandlers)
-            //{
-            //    result.CustomHandlers.Add(handler);
-            //}
+            result.ApplicationPreferredRegions = o.ApplicationPreferredRegions;
+            result.ApplicationRegion = o.ApplicationRegion;
+            result.ConnectionMode = o.ConnectionMode;
+            result.ConsistencyLevel = o.ConsistencyLevel;
 
-            //result.HttpClientFactory = o.HttpClientFactory;
-            //result.IdleTcpConnectionTimeout = o.IdleTcpConnectionTimeout;
-            //result.LimitToEndpoint = o.LimitToEndpoint;
-            //result.MaxRequestsPerTcpConnection = o.MaxRequestsPerTcpConnection;
-            //result.MaxRetryWaitTimeOnRateLimitedRequests = o.MaxRetryWaitTimeOnRateLimitedRequests;
-            //result.MaxTcpConnectionsPerEndpoint = o.MaxTcpConnectionsPerEndpoint;
-            //result.OpenTcpConnectionTimeout = o.OpenTcpConnectionTimeout;
-            //result.PortReuseMode = o.PortReuseMode;
-            //result.RequestTimeout = o.RequestTimeout;
-            //result.SerializerOptions = o.SerializerOptions;
-            //result.WebProxy = o.WebProxy;
-            //result.EnableTcpConnectionEndpointRediscovery = o.EnableTcpConnectionEndpointRediscovery;
-            //result.GatewayModeMaxConnectionLimit = o.GatewayModeMaxConnectionLimit;
-            //result.MaxRetryAttemptsOnRateLimitedRequests = o.MaxRetryAttemptsOnRateLimitedRequests;
+            foreach (var handler in o.CustomHandlers)
+            {
+                result.CustomHandlers.Add(handler);
+            }
+
+            result.HttpClientFactory = o.HttpClientFactory;
+            result.IdleTcpConnectionTimeout = o.IdleTcpConnectionTimeout;
+            result.LimitToEndpoint = o.LimitToEndpoint;
+            result.MaxRequestsPerTcpConnection = o.MaxRequestsPerTcpConnection;
+            result.MaxRetryWaitTimeOnRateLimitedRequests = o.MaxRetryWaitTimeOnRateLimitedRequests;
+            result.MaxTcpConnectionsPerEndpoint = o.MaxTcpConnectionsPerEndpoint;
+            result.OpenTcpConnectionTimeout = o.OpenTcpConnectionTimeout;
+            result.PortReuseMode = o.PortReuseMode;
+            result.RequestTimeout = o.RequestTimeout;
+            result.SerializerOptions = o.SerializerOptions;
+            result.WebProxy = o.WebProxy;
+            result.EnableTcpConnectionEndpointRediscovery = o.EnableTcpConnectionEndpointRediscovery;
+            result.GatewayModeMaxConnectionLimit = o.GatewayModeMaxConnectionLimit;
+            result.MaxRetryAttemptsOnRateLimitedRequests = o.MaxRetryAttemptsOnRateLimitedRequests;
         }
 
         return result;
