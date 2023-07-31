@@ -1,15 +1,23 @@
+using System.Text.Json.Nodes;
+using Chronicles.Cosmos.Serialization;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
+
 namespace Chronicles.Cosmos.Internal;
 
 public class CosmosReader<T> : ICosmosReader<T>
     where T : class
 {
     private readonly Container container;
+    private readonly IJsonCosmosSerializer serializer;
 
     public CosmosReader(
+        IJsonCosmosSerializer serializer,
         ICosmosContainerProvider containerProvider)
-        => container = containerProvider.GetContainer<T>();
+    {
+        container = containerProvider.GetContainer<T>();
+        this.serializer = serializer;
+    }
 
     public QueryDefinition CreateQuery<TResult>(
         Func<IQueryable<T>, IQueryable<TResult>> query)
@@ -56,10 +64,10 @@ public class CosmosReader<T> : ICosmosReader<T>
         QueryRequestOptions? options,
         CancellationToken cancellationToken = default)
         => container
-            .GetItemLinqQueryable<T>(
+            .GetItemLinqQueryable<object>(
                 requestOptions: CreateOptions(options, partitionKey))
             .ToFeedIterator()
-            .ToAsyncEnumerable(cancellationToken);
+            .ToAsyncEnumerable<T>(serializer, cancellationToken);
 
     public IAsyncEnumerable<TResult> QueryAsync<TResult>(
         QueryDefinition query,
@@ -67,10 +75,10 @@ public class CosmosReader<T> : ICosmosReader<T>
         QueryRequestOptions? options,
         CancellationToken cancellationToken = default)
         => container
-            .GetItemQueryIterator<TResult>(
+            .GetItemQueryIterator<object>(
                 query,
                 requestOptions: CreateOptions(options, partitionKey))
-            .ToAsyncEnumerable(cancellationToken);
+            .ToAsyncEnumerable<TResult>(serializer, cancellationToken);
 
     public async Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
         QueryDefinition query,
@@ -80,11 +88,11 @@ public class CosmosReader<T> : ICosmosReader<T>
         string? continuationToken = null,
         CancellationToken cancellationToken = default)
         => await container
-            .GetItemQueryIterator<TResult>(
+            .GetItemQueryIterator<object>(
                 query,
                 continuationToken,
                 CreateOptions(options, partitionKey, maxItemCount))
-            .ReadPageResultAsync(cancellationToken)
+            .ReadPageResultAsync<TResult>(serializer, cancellationToken)
             .ConfigureAwait(false);
 
     private static QueryRequestOptions? CreateOptions(

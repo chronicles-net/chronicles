@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Options;
 
 namespace Chronicles.Cosmos.Serialization;
@@ -72,6 +73,12 @@ public class JsonCosmosSerializer : IJsonCosmosSerializer
 
     [return: MaybeNull]
     public T FromString<T>(string json)
+        => JsonSerializer.Deserialize<T>(
+            json,
+            options);
+
+    [return: MaybeNull]
+    public T FromJson<T>(JsonElement json)
         => JsonSerializer.Deserialize<T>(
             json,
             options);

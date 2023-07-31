@@ -4,12 +4,11 @@ namespace Chronicles.Cosmos;
 
 public abstract class CosmosDocument : ICosmosDocument
 {
-    [JsonPropertyName("id")]
+    [JsonPropertyName(CosmosFieldNames.DocumentId)]
     public string DocumentId { get; set; } = default!;
 
-    [JsonPropertyName("pk")]
+    [JsonPropertyName(CosmosFieldNames.PartitionKey)]
     public string PartitionKey { get; set; } = default!;
 
-    [JsonPropertyName("_etag")]
     string? ICosmosDocument.ETag { get; set; }
 }
