@@ -1,5 +1,4 @@
 using Microsoft.Azure.Cosmos;
-using Microsoft.Azure.Cosmos.Linq;
 
 namespace Chronicles.Cosmos.Internal;
 
@@ -7,16 +6,21 @@ public class CosmosReader<T> : ICosmosReader<T>
     where T : class
 {
     private readonly Container container;
+    private readonly ICosmosLinqQuery linqQuery;
 
     public CosmosReader(
-        ICosmosContainerProvider containerProvider)
+        ICosmosContainerProvider containerProvider,
+        ICosmosLinqQuery linqQuery)
     {
         container = containerProvider.GetContainer<T>();
+        this.linqQuery = linqQuery;
     }
 
     public QueryDefinition CreateQuery<TResult>(
         Func<IQueryable<T>, IQueryable<TResult>> query)
-        => query(container.GetItemLinqQueryable<T>()).ToQueryDefinition();
+        => linqQuery.GetQueryDefinition(
+            query.Invoke(
+                container.GetItemLinqQueryable<T>()));
 
     public async Task<T?> FindAsync(
         string documentId,
@@ -58,11 +62,14 @@ public class CosmosReader<T> : ICosmosReader<T>
         string? partitionKey,
         QueryRequestOptions? options,
         CancellationToken cancellationToken = default)
-        => container
+    {
+        var query = container
             .GetItemLinqQueryable<T>(
-                requestOptions: CreateOptions(options, partitionKey))
-            .ToFeedIterator()
+                requestOptions: CreateOptions(options, partitionKey));
+        return linqQuery
+            .GetFeedIterator(query)
             .ToAsyncEnumerable(cancellationToken);
+    }
 
     public IAsyncEnumerable<TResult> QueryAsync<TResult>(
         QueryDefinition query,

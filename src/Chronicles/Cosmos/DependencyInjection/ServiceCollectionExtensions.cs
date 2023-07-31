@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICosmosContainerProvider, CosmosContainerProvider>()
             .AddSingleton<IJsonCosmosSerializer, JsonCosmosSerializer>()
             .AddSingleton<ICosmosClientProvider, CosmosClientProvider>()
+            .AddSingleton<ICosmosLinqQuery, CosmosLinqQuery>()
             .AddSingleton<IOptions<ChroniclesCosmosOptions>>(s
                 => new OptionsWrapper<ChroniclesCosmosOptions>(optionsProvider(s)));
 
