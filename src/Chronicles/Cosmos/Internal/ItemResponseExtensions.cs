@@ -5,24 +5,13 @@ namespace Chronicles.Cosmos.Internal;
 
 public static class ItemResponseExtensions
 {
-    public static T GetItem<T>(
-        this ItemResponse<T> response)
-        where T : class
-    {
-        var result = response.Resource;
-        if (result is ICosmosDocument { ETag: null } doc)
-        {
-            doc.ETag = response.ETag;
-        }
-
-        return result;
-    }
-
     public static async Task<T> GetItemAsync<T>(
         this Task<ItemResponse<T>> responseTask)
         where T : class
-        => GetItem(
-            await responseTask.ConfigureAwait(false));
+    {
+        var response = await responseTask.ConfigureAwait(false);
+        return response.Resource;
+    }
 
     public static T GetItemOrDefault<T>(
         this ItemResponse<object> response,
@@ -30,20 +19,13 @@ public static class ItemResponseExtensions
         T defaultValue)
         where T : ICosmosDocument
     {
-        var result = defaultValue;
-
         if (response.Resource?.ToString() is { } json
             && serializer.FromString<T>(json) is { } obj)
         {
-            result = obj;
+            return obj;
         }
 
-        if (result.ETag == null && response.ETag != null)
-        {
-            result.ETag = response.ETag;
-        }
-
-        return result;
+        return defaultValue;
     }
 
     public static async Task<T> GetItemOrDefaultAsync<T>(

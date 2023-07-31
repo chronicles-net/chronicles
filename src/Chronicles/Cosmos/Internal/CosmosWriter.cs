@@ -34,7 +34,7 @@ public class CosmosWriter<T> : ICosmosWriter<T>
         => container
             .CreateItemAsync<object>(
                 document,
-                new PartitionKey(document.PartitionKey),
+                new PartitionKey(document.GetPartitionKey()),
                 options,
                 cancellationToken)
             .GetItemOrDefaultAsync(serializer, document);
@@ -46,7 +46,7 @@ public class CosmosWriter<T> : ICosmosWriter<T>
         => container
             .UpsertItemAsync<object>(
                 document,
-                new PartitionKey(document.PartitionKey),
+                new PartitionKey(document.GetPartitionKey()),
                 options,
                 cancellationToken)
             .GetItemOrDefaultAsync(serializer, document);
@@ -58,9 +58,9 @@ public class CosmosWriter<T> : ICosmosWriter<T>
         => container
             .ReplaceItemAsync<object>(
                 document,
-                document.DocumentId,
-                new PartitionKey(document.PartitionKey),
-                CreateOptions(options, document.ETag),
+                document.GetDocumentId(),
+                new PartitionKey(document.GetPartitionKey()),
+                options,
                 cancellationToken)
             .GetItemOrDefaultAsync(serializer, document);
 
@@ -152,27 +152,30 @@ public class CosmosWriter<T> : ICosmosWriter<T>
             try
             {
                 var defaultDocument = getDefaultDocument();
-                if (string.IsNullOrEmpty(defaultDocument.DocumentId) ||
-                    string.IsNullOrEmpty(defaultDocument.PartitionKey))
+                if (string.IsNullOrEmpty(defaultDocument.GetDocumentId()) ||
+                    string.IsNullOrEmpty(defaultDocument.GetPartitionKey()))
                 {
                     throw new ArgumentException(
-                        $"Default document needs {nameof(defaultDocument.DocumentId)} " +
-                        $"and {nameof(defaultDocument.PartitionKey)} to be set.",
+                        $"Default document needs {nameof(defaultDocument.GetDocumentId)} " +
+                        $"and {nameof(defaultDocument.GetPartitionKey)} to return valid values.",
                         nameof(getDefaultDocument));
                 }
 
                 var document = await reader
                     .FindAsync(
-                        defaultDocument.DocumentId,
-                        defaultDocument.PartitionKey,
+                        defaultDocument.GetDocumentId(),
+                        defaultDocument.GetPartitionKey(),
                         cancellationToken)
-                    .ConfigureAwait(false)
-                    ?? defaultDocument;
+                    .ConfigureAwait(false);
+
+                bool shouldCreate = document == null;
+
+                document ??= defaultDocument;
 
                 await updateDocument(document)
                     .ConfigureAwait(false);
 
-                if (document.ETag is null)
+                if (shouldCreate)
                 {
                     return await CreateAsync(
                         document,
@@ -197,19 +200,5 @@ public class CosmosWriter<T> : ICosmosWriter<T>
                 }
             }
         }
-    }
-
-    private static ItemRequestOptions? CreateOptions(
-        ItemRequestOptions? options,
-        string? ifMatchEtag)
-    {
-        var requestOptions = options;
-        if (ifMatchEtag != null)
-        {
-            requestOptions = requestOptions?.ShallowCopy() as ItemRequestOptions ?? new();
-            requestOptions.IfMatchEtag = ifMatchEtag;
-        }
-
-        return requestOptions;
     }
 }

@@ -1,14 +1,12 @@
-using System.Text.Json.Serialization;
-
 namespace Chronicles.Cosmos;
 
 public abstract class CosmosDocument : ICosmosDocument
 {
-    [JsonPropertyName(CosmosFieldNames.DocumentId)]
-    public string DocumentId { get; set; } = default!;
+    string ICosmosDocument.GetDocumentId() => GetDocumentId();
 
-    [JsonPropertyName(CosmosFieldNames.PartitionKey)]
-    public string PartitionKey { get; set; } = default!;
+    string ICosmosDocument.GetPartitionKey() => GetPartitionKey();
 
-    string? ICosmosDocument.ETag { get; set; }
+    protected abstract string GetDocumentId();
+
+    protected abstract string GetPartitionKey();
 }

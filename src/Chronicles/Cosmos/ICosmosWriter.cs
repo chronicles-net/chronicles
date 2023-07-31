@@ -93,8 +93,7 @@ public interface ICosmosWriter<T>
     /// <para>
     /// A <see cref="CosmosException"/>
     /// with StatusCode <see cref="HttpStatusCode.PreconditionFailed"/>
-    /// will be thrown if the document has been updated since it was read
-    /// (using the <see cref="ICosmosDocument.ETag"/> to match the version).
+    /// will be thrown if the document has been updated since it was read.
     /// </para>
     /// </remarks>
     /// <param name="document">The document to be created.</param>
@@ -118,7 +117,6 @@ public interface ICosmosWriter<T>
     /// A <see cref="CosmosException"/>
     /// with StatusCode <see cref="HttpStatusCode.PreconditionFailed"/>
     /// will be thrown if the document has been updated since it was read
-    /// (using the <see cref="ICosmosDocument.ETag"/> to match the version).
     /// </para>
     /// <para>
     /// When <see cref="ItemRequestOptions.EnableContentResponseOnWrite"/> is set to <c>false</c>,

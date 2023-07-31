@@ -33,7 +33,7 @@ public class CosmosTransaction<T> : ICosmosTransaction<T>
         T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
-        transaction.ReplaceItem(document.DocumentId, document, options);
+        transaction.ReplaceItem(document.GetDocumentId(), document, options);
         return this;
     }
 

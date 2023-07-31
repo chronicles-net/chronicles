@@ -25,6 +25,4 @@ public class FakeTransactionalBatchOperationResult<T> : TransactionalBatchOperat
     public override bool IsSuccessStatusCode => isSuccess;
 
     public override HttpStatusCode StatusCode => statusCode;
-
-    public override string? ETag => Resource is ICosmosDocument d ? d.ETag : null!;
 }

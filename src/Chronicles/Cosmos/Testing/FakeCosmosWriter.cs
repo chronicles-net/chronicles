@@ -44,7 +44,6 @@ namespace Chronicles.Cosmos.Testing
             GuardNotExists(document);
 
             T newDocument = document.DeepClone(serializerOptions);
-            newDocument.ETag = Guid.NewGuid().ToString();
             Documents.Add(newDocument);
             return Task.FromResult(newDocument);
         }
@@ -55,11 +54,10 @@ namespace Chronicles.Cosmos.Testing
             CancellationToken cancellationToken = default)
         {
             RemoveAll(d
-                => d.DocumentId == document.DocumentId
-                && d.PartitionKey == document.PartitionKey);
+                => d.GetDocumentId() == document.GetDocumentId()
+                && d.GetPartitionKey() == document.GetPartitionKey());
 
             var newDocument = document.DeepClone(serializerOptions);
-            newDocument.ETag = Guid.NewGuid().ToString();
             Documents.Add(newDocument);
 
             return Task.FromResult(newDocument);
@@ -70,14 +68,13 @@ namespace Chronicles.Cosmos.Testing
             ItemRequestOptions? options,
             CancellationToken cancellationToken = default)
         {
-            GuardExistsWithEtag(document);
+            GuardExists(document);
 
             RemoveAll(d
-                => d.DocumentId == document.DocumentId
-                && d.PartitionKey == document.PartitionKey);
+                => d.GetDocumentId() == document.GetDocumentId()
+                && d.GetPartitionKey() == document.GetPartitionKey());
 
             var newDocument = document.DeepClone(serializerOptions);
-            newDocument.ETag = Guid.NewGuid().ToString();
             Documents.Add(newDocument);
 
             return Task.FromResult(newDocument);
@@ -92,8 +89,8 @@ namespace Chronicles.Cosmos.Testing
             GuardExists(documentId, partitionKey);
 
             RemoveAll(d
-                => d.DocumentId == documentId
-                && d.PartitionKey == partitionKey);
+                => d.GetDocumentId() == documentId
+                && d.GetPartitionKey() == partitionKey);
 
             return Task.CompletedTask;
         }
@@ -133,7 +130,6 @@ namespace Chronicles.Cosmos.Testing
 
             var newDocument = document.DeepClone(serializerOptions);
             updateDocument(newDocument);
-            newDocument.ETag = Guid.NewGuid().ToString();
 
             Documents.Remove(document);
             Documents.Add(newDocument);
@@ -149,13 +145,12 @@ namespace Chronicles.Cosmos.Testing
         {
             var defaultDocument = getDefaultDocument();
             var existingDocument = Documents.FirstOrDefault(d
-                => d.DocumentId == defaultDocument.DocumentId
-                && d.PartitionKey == defaultDocument.PartitionKey);
+                => d.GetDocumentId() == defaultDocument.GetDocumentId()
+                && d.GetPartitionKey() == defaultDocument.GetPartitionKey());
 
             var newDocument = (existingDocument ?? defaultDocument).DeepClone(serializerOptions);
             updateDocument(newDocument);
 
-            newDocument.ETag = Guid.NewGuid().ToString();
             if (existingDocument is not null)
             {
                 Documents.Remove(existingDocument);
@@ -170,8 +165,8 @@ namespace Chronicles.Cosmos.Testing
             ICosmosDocument document)
         {
             var existingDocument = Documents.FirstOrDefault(d
-                => d.DocumentId == document.DocumentId
-                && d.PartitionKey == document.PartitionKey);
+                => d.GetDocumentId() == document.GetDocumentId()
+                && d.GetPartitionKey() == document.GetPartitionKey());
 
             if (existingDocument is not null)
             {
@@ -184,31 +179,16 @@ namespace Chronicles.Cosmos.Testing
             }
         }
 
-        protected void GuardExistsWithEtag(ICosmosDocument document)
-        {
-            var existingDocument = GuardExists(document);
-            if (existingDocument.ETag != document.ETag)
-            {
-                throw new CosmosException(
-                    $"Document ETag does not match, " +
-                    $"indicating incorrecty document version.",
-                    HttpStatusCode.PreconditionFailed,
-                    0,
-                    string.Empty,
-                    0);
-            }
-        }
-
         protected T GuardExists(ICosmosDocument document)
-            => GuardExists(document.DocumentId, document.PartitionKey);
+            => GuardExists(document.GetDocumentId(), document.GetPartitionKey());
 
         protected T GuardExists(
             string documentId,
             string partitionKey)
         {
             var item = Documents.FirstOrDefault(d
-                => d.DocumentId == documentId
-                && d.PartitionKey == partitionKey);
+                => d.GetDocumentId() == documentId
+                && d.GetPartitionKey() == partitionKey);
 
             if (item is null)
             {

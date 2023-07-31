@@ -55,8 +55,8 @@ namespace Chronicles.Cosmos.Testing
             => Task.FromResult(
                 Documents
                     .FirstOrDefault(d
-                        => d.DocumentId == documentId
-                        && d.PartitionKey == partitionKey)
+                        => d.GetDocumentId() == documentId
+                        && d.GetPartitionKey() == partitionKey)
                     ?.DeepClone(serializerOptions));
 
         public virtual Task<T> ReadAsync(
@@ -66,8 +66,8 @@ namespace Chronicles.Cosmos.Testing
             CancellationToken cancellationToken = default)
         {
             var item = Documents.FirstOrDefault(d
-               => d.DocumentId == documentId
-               && d.PartitionKey == partitionKey);
+               => d.GetDocumentId() == documentId
+               && d.GetPartitionKey() == partitionKey);
 
             if (item is null)
             {
@@ -89,7 +89,7 @@ namespace Chronicles.Cosmos.Testing
             QueryRequestOptions? options,
             CancellationToken cancellationToken = default)
             => GetAsyncEnumerator(Documents
-                .Where(d => partitionKey == null || d.PartitionKey == partitionKey)
+                .Where(d => partitionKey == null || d.GetPartitionKey() == partitionKey)
                 .DeepClone(serializerOptions));
 
         public virtual IAsyncEnumerable<T> QueryAsync(
@@ -185,7 +185,7 @@ namespace Chronicles.Cosmos.Testing
             {
                 return linqQuery
                     .Invoke(Documents
-                        .Where(d => partitionKey == null || d.PartitionKey == partitionKey)
+                        .Where(d => partitionKey == null || d.GetPartitionKey() == partitionKey)
                         .AsQueryable())
                     .OfType<TResult>()
                     .DeepClone(serializerOptions);
