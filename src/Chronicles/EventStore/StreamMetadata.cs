@@ -1,3 +1,5 @@
+using Chronicles.EventStore.Internal.Streams;
+
 namespace Chronicles.EventStore;
 
 /// <summary>
@@ -7,10 +9,9 @@ namespace Chronicles.EventStore;
 /// <param name="State">State of stream</param>
 /// <param name="Version">Last version written to the stream</param>
 /// <param name="Timestamp">When was the stream last updated</param>
-/// <param name="ETag">Internal etag.</param>
-public record StreamMetadata(
+public abstract record StreamMetadata(
     StreamId StreamId,
     StreamState State,
     StreamVersion Version,
-    DateTimeOffset Timestamp,
-    string ETag);
+    DateTimeOffset Timestamp)
+    : StreamDocument();

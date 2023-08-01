@@ -1,4 +1,4 @@
-﻿namespace Chronicles.EventStore.Events;
+﻿namespace Chronicles.EventStore.Internal.Events;
 
 /// <summary>
 /// Represents an unknown event read from stream.

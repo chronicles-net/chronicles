@@ -1,6 +1,6 @@
-﻿namespace Chronicles.EventStore.Events;
+namespace Chronicles.EventStore.Internal;
 
-internal static class EventMetadataNames
+internal static class JsonPropertyNames
 {
     public const string Id = "id";
     public const string PartitionKey = "pk";
@@ -8,4 +8,5 @@ internal static class EventMetadataNames
     public const string EventName = "name";
     public const string Data = "data";
     public const string StreamMetadataId = "meta-data";
+    public const string Etag = "_etag";
 }

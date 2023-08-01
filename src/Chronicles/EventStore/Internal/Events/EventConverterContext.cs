@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Chronicles.EventStore.Events;
+namespace Chronicles.EventStore.Internal.Events;
 
 public record EventConverterContext(
     JsonElement Data,

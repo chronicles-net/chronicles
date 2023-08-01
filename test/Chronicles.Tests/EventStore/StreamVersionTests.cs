@@ -5,20 +5,20 @@ namespace Chronicles.Tests.EventStore;
 
 public class StreamVersionTests
 {
-    [Fact]
-    public void StartOfStream_Should_Have_Zero_Version_Value()
-        => StreamVersion
-            .StartOfStream
-            .Value
-            .Should()
-            .Be(0);
+    ////[Fact]
+    ////public void StartOfStream_Should_Have_Zero_Version_Value()
+    ////    => StreamVersion
+    ////        .StartOfStream
+    ////        .Value
+    ////        .Should()
+    ////        .Be(0);
 
-    [Fact]
-    public void EndOfStream_Should_Have_MaxValue_Version_Value()
-        => StreamVersion
-            .EndOfStreamValue
-            .Should()
-            .Be(long.MaxValue);
+    ////[Fact]
+    ////public void EndOfStream_Should_Have_MaxValue_Version_Value()
+    ////    => StreamVersion
+    ////        .EndOfStreamValue
+    ////        .Should()
+    ////        .Be(long.MaxValue);
 
     [Theory, AutoNSubstituteData]
     public void Should_Be_Constructed_With_Version(

@@ -1,4 +1,4 @@
-namespace Chronicles.EventStore.Events;
+namespace Chronicles.EventStore.Internal.Events;
 
 public class StreamEventCatalogBuilder
 {
@@ -12,6 +12,6 @@ public class StreamEventCatalogBuilder
         return this;
     }
 
-    public StreamEventConverter Build()
+    public StreamEventCatalog Build()
         => new(converters.Values.ToArray());
 }

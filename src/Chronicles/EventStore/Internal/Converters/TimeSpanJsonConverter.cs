@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Chronicles.EventStore.Converters;
+namespace Chronicles.EventStore.Internal.Converters;
 
 internal class TimeSpanJsonConverter : JsonConverter<TimeSpan>
 {

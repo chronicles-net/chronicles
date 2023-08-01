@@ -1,8 +1,8 @@
 using System.Text.Json;
 
-namespace Chronicles.EventStore.Events;
+namespace Chronicles.EventStore.Internal.Events;
 
-public sealed class SingleEventDataConverter :
+public class SingleEventDataConverter :
     IEventDataConverter
 {
     private readonly EventName name;
@@ -16,12 +16,16 @@ public sealed class SingleEventDataConverter :
         this.eventType = eventType;
     }
 
-    public object? Convert(
+    public virtual object? Convert(
         EventConverterContext context)
         => context.Metadata.Name == name
-         ? JsonSerializer.Deserialize(
-             context.Data,
+         ? context.Data.Deserialize(
              eventType,
              context.Options)
          : null;
+
+    public virtual EventName GetName(Type type)
+        => eventType == type
+         ? name
+         : EventName.Unknown;
 }

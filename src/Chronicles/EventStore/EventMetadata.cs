@@ -24,5 +24,5 @@ public record EventMetadata(
             null,
             StreamId.Empty,
             DateTimeOffset.UtcNow,
-            StreamVersion.EndOfStreamValue);
+            StreamVersion.Any);
 }

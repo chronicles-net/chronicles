@@ -59,7 +59,7 @@ public class StreamIdTests
 
     [Theory, AutoNSubstituteData]
     public void Should_Support_Getting_StreamId_Using_String(
-        string id,
+        [Frozen] string id,
         StreamId sut)
         => StreamId
             .ToStreamId(id)

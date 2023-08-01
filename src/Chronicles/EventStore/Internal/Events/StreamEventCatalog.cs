@@ -1,14 +1,29 @@
-namespace Chronicles.EventStore.Events;
+namespace Chronicles.EventStore.Internal.Events;
 
-public class StreamEventConverter : IStreamEventConverter
+public class StreamEventCatalog : IStreamEventCatalog
 {
     private readonly IEventDataConverter[] converters;
 
-    public StreamEventConverter(
+    public StreamEventCatalog(
         IEventDataConverter[] converters)
         => this.converters = converters;
 
-    public StreamEvent Convert(
+    public virtual EventName GetName(Type type)
+    {
+        foreach (var converter in converters)
+        {
+            var name = converter.GetName(type);
+            if (name != EventName.Unknown)
+            {
+                return name;
+            }
+        }
+
+        throw new EventNotRegisteredException(
+            $"Event of type '{type}' is not registered in stream event catalog.");
+    }
+
+    public virtual StreamEvent Convert(
         EventConverterContext context)
     {
         try

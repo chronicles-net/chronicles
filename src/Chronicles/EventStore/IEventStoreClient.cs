@@ -7,17 +7,25 @@ public interface IEventStoreClient
     /// </summary>
     /// <param name="streamId">Event stream to write events too.</param>
     /// <param name="events">Collection of event objects to write.</param>
-    /// <param name="version">
-    ///   (Optional) Set the required version of the stream.
-    ///   Set this value to the latest known version of the stream to enable optimistic currency.
-    ///   When the stream is required to be empty use <see cref="StreamVersion.StartOfStream"/>.
-    ///   Use <see cref="StreamVersion.NotEmpty"/> when the stream must contain one or more events.
-    ///   To append to the end of the stream optionally specify <see cref="StreamVersion.Any"/>.
-    /// </param>
+    /// <param name="version">(Optional) Set the required version of the stream.</param>
+    /// <remarks>
+    ///   <list type="bullet">
+    ///     Set <paramref name="version"/> to the latest known version of the stream to enable optimistic currency.
+    ///   </list>
+    ///   <list type="bullet">
+    ///     When the stream is required to be empty use <see cref="StreamVersion.RequireEmpty"/>.
+    ///   </list>
+    ///   <list type="bullet">
+    ///     Use <see cref="StreamVersion.RequireNotEmptyValue"/> when the stream must contain one or more events.
+    ///   </list>
+    ///   <list type="bullet">
+    ///     To append to the end of the stream optionally specify <see cref="StreamVersion.Any"/>.
+    ///   </list>
+    /// </remarks>
     /// <param name="options">(Optional) The options for writing events.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
-    /// <returns>Response of the write operation.</returns>
-    Task<StreamResponse> WriteToStreamAsync(
+    /// <returns><see cref="StreamMetadata"/> after write operation.</returns>
+    Task<StreamMetadata> WriteStreamAsync(
         StreamId streamId,
         IReadOnlyCollection<object> events,
         StreamVersion? version = default,
@@ -32,7 +40,7 @@ public interface IEventStoreClient
     /// <param name="filter">(Optional) Specify a filter to only include certain events, and/or ensure stream is at a given version.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>List of <seealso cref="StreamEvent"/> from stream.</returns>
-    IAsyncEnumerable<StreamEvent> ReadFromStreamAsync(
+    IAsyncEnumerable<StreamEvent> ReadStreamAsync(
         StreamId streamId,
         StreamVersion? fromVersion = default,
         StreamReadFilter? filter = default,
@@ -118,17 +126,6 @@ public interface IEventStoreClient
     Task<Checkpoint<T>?> GetStreamCheckpointAsync<T>(
         string name,
         StreamId streamId,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Gets a named checkpoint from a stream.
-    /// </summary>
-    /// <param name="name">Name of checkpoint.</param>
-    /// <param name="streamId">Id of stream.</param>
-    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
-    /// <returns>A <see cref="Checkpoint"/> or null if not found.</returns>
-    Task<Checkpoint?> GetStreamCheckpointAsync(
-        string name,
-        StreamId streamId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default)
+        where T : class;
 }

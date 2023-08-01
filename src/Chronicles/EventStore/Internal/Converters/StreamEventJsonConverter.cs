@@ -1,18 +1,18 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Chronicles.EventStore.Events;
+using Chronicles.EventStore.Internal.Events;
 
-namespace Chronicles.EventStore.Converters;
+namespace Chronicles.EventStore.Internal.Converters;
 
 /// <summary>
 /// Responsible for converting an event envelope to and from json without loosing underlying event type.
 /// </summary>
-public sealed class StreamEventJsonConverter : JsonConverter<StreamEvent>
+internal sealed class StreamEventJsonConverter : JsonConverter<StreamEvent>
 {
-    private readonly IStreamEventConverter dataConverter;
+    private readonly IStreamEventCatalog dataConverter;
 
     public StreamEventJsonConverter(
-        IStreamEventConverter dataConverter)
+        IStreamEventCatalog dataConverter)
         => this.dataConverter = dataConverter;
 
     public override StreamEvent Read(
@@ -28,18 +28,18 @@ public sealed class StreamEventJsonConverter : JsonConverter<StreamEvent>
         using var jsonDocument = JsonDocument.ParseValue(ref reader);
 
         // If we are reading the meta-data document, then skip it.
-        if (jsonDocument.RootElement.TryGetProperty(EventMetadataNames.Id, out var id)
-            && id.GetString() == EventMetadataNames.StreamMetadataId)
+        if (jsonDocument.RootElement.TryGetProperty(JsonPropertyNames.Id, out var id)
+            && id.GetString() == JsonPropertyNames.StreamMetadataId)
         {
             return default!;
         }
 
-        if (jsonDocument.RootElement.TryGetProperty(EventMetadataNames.Properties, out var properties))
+        if (jsonDocument.RootElement.TryGetProperty(JsonPropertyNames.Properties, out var properties))
         {
             try
             {
                 var metadata = properties.Deserialize<EventMetadata>(options);
-                if (metadata is not null && jsonDocument.RootElement.TryGetProperty(EventMetadataNames.Data, out var data))
+                if (metadata is not null && jsonDocument.RootElement.TryGetProperty(JsonPropertyNames.Data, out var data))
                 {
                     return dataConverter.Convert(
                         new(data, metadata, options));
@@ -68,9 +68,3 @@ public sealed class StreamEventJsonConverter : JsonConverter<StreamEvent>
         JsonSerializerOptions options)
         => throw new NotImplementedException();
 }
-
-internal record EventDocument(
-    [property: JsonPropertyName(EventMetadataNames.Id)] string Id,
-    [property: JsonPropertyName(EventMetadataNames.PartitionKey)] string PartitionKey,
-    [property: JsonPropertyName(EventMetadataNames.Properties)] EventMetadata Metadata,
-    [property: JsonPropertyName(EventMetadataNames.Data)] object Data);

@@ -43,11 +43,11 @@ internal static class Arguments
 
     internal static StreamVersion EnsureValueRange(StreamVersion streamVersion, string argumentName)
     {
-        if (streamVersion < StreamVersion.NotEmpty)
+        if (streamVersion < StreamVersion.Any)
         {
             throw new ArgumentOutOfRangeException(
                 argumentName,
-                $"Stream version {streamVersion.Value} is outside of valid range [{StreamVersion.NotEmptyValue}-{StreamVersion.EndOfStreamValue}].");
+                $"Stream version {streamVersion.Value} is outside of valid range [< 0].");
         }
 
         return streamVersion;
@@ -55,11 +55,11 @@ internal static class Arguments
 
     internal static long EnsureVersionRange(long streamVersion, string argumentName)
     {
-        if (streamVersion < StreamVersion.NotEmpty)
+        if (streamVersion < StreamVersion.AnyValue)
         {
             throw new ArgumentOutOfRangeException(
                 argumentName,
-                $"Stream version {streamVersion} is outside of valid range [{StreamVersion.NotEmptyValue}-{StreamVersion.EndOfStreamValue}].");
+                $"Stream version {streamVersion} is outside of valid range [..].");
         }
 
         return streamVersion;
