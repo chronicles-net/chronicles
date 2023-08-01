@@ -22,15 +22,16 @@ public class CosmosReader<T> : ICosmosReader<T>
             query.Invoke(
                 container.GetItemLinqQueryable<T>()));
 
-    public async Task<T?> FindAsync(
+    public async Task<TResult?> FindAsync<TResult>(
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
         CancellationToken cancellationToken = default)
+        where TResult : class, T
     {
         try
         {
-            return await ReadAsync(
+            return await ReadAsync<TResult>(
                 documentId,
                 partitionKey,
                 options,
@@ -44,13 +45,14 @@ public class CosmosReader<T> : ICosmosReader<T>
         }
     }
 
-    public async Task<T> ReadAsync(
+    public async Task<TResult> ReadAsync<TResult>(
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
         CancellationToken cancellationToken = default)
+        where TResult : class, T
         => await container
-            .ReadItemAsync<T>(
+            .ReadItemAsync<TResult>(
                 documentId,
                 new PartitionKey(partitionKey),
                 options,

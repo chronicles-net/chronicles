@@ -47,27 +47,32 @@ namespace Chronicles.Cosmos.Testing
             Func<IQueryable<T>, IQueryable<TResult>> query)
             => new FakeQueryDefinition<T>(query);
 
-        public virtual Task<T?> FindAsync(
+        public virtual Task<TResult?> FindAsync<TResult>(
             string documentId,
             string partitionKey,
             ItemRequestOptions? options,
             CancellationToken cancellationToken = default)
+            where TResult : class, T
             => Task.FromResult(
                 Documents
+                    .OfType<TResult>()
                     .FirstOrDefault(d
                         => d.GetDocumentId() == documentId
                         && d.GetPartitionKey() == partitionKey)
                     ?.DeepClone(serializerOptions));
 
-        public virtual Task<T> ReadAsync(
+        public virtual Task<TResult> ReadAsync<TResult>(
             string documentId,
             string partitionKey,
             ItemRequestOptions? options,
             CancellationToken cancellationToken = default)
+            where TResult : class, T
         {
-            var item = Documents.FirstOrDefault(d
-               => d.GetDocumentId() == documentId
-               && d.GetPartitionKey() == partitionKey);
+            var item = Documents
+                .OfType<TResult>()
+                .FirstOrDefault(d
+                   => d.GetDocumentId() == documentId
+                   && d.GetPartitionKey() == partitionKey);
 
             if (item is null)
             {

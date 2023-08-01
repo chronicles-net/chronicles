@@ -43,7 +43,28 @@ public interface ICosmosReader<T>
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default)
+        => FindAsync<T>(documentId, partitionKey, options, cancellationToken);
+
+    /// <summary>
+    /// Attempts to read the specified <typeparamref name="T"/> document,
+    /// and returns <c>null</c> if none was found.
+    /// </summary>
+    /// <typeparam name="TResult">
+    /// The type used when finding a document.
+    /// This can be used when <typeparamref name="T"/> is in it self a generic type.
+    /// </typeparam>
+    /// <param name="documentId">Id of the document.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns>A <see cref="Task"/> containing the requested <typeparamref name="T"/> document, or null.</returns>
+    Task<TResult?> FindAsync<TResult>(
+        string documentId,
+        string partitionKey,
+        ItemRequestOptions? options,
+        CancellationToken cancellationToken = default)
+        where TResult : class, T;
 
     /// <summary>
     /// Reads the specified <typeparamref name="T"/> document from the configured
@@ -82,7 +103,33 @@ public interface ICosmosReader<T>
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default)
+        => ReadAsync<T>(documentId, partitionKey, options, cancellationToken);
+
+    /// <summary>
+    /// Reads the specified <typeparamref name="T"/> document from the configured
+    /// Cosmos collection.
+    /// </summary>
+    /// <remarks>
+    /// A <see cref="CosmosException"/>
+    /// with StatusCode <see cref="HttpStatusCode.NotFound"/>
+    /// will be thrown if document could not be found.
+    /// </remarks>
+    /// <typeparam name="TResult">
+    /// The type used when finding a document.
+    /// This can be used when <typeparamref name="T"/> is in it self a generic type.
+    /// </typeparam>
+    /// <param name="documentId">Id of the document.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns>A <see cref="Task"/> the requested <typeparamref name="T"/> document.</returns>
+    public Task<TResult> ReadAsync<TResult>(
+        string documentId,
+        string partitionKey,
+        ItemRequestOptions? options,
+        CancellationToken cancellationToken = default)
+        where TResult : class, T;
 
     /// <summary>
     /// Reads all the specified <typeparamref name="T"/> document from the configured

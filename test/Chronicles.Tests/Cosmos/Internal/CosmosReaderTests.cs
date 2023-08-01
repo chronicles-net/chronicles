@@ -83,7 +83,7 @@ public class CosmosReaderTests
         ItemRequestOptions options,
         CancellationToken cancellationToken)
     {
-        await sut.ReadAsync(
+        await sut.ReadAsync<TestDocument>(
             documentId,
             partitionKey,
             options,
@@ -101,7 +101,7 @@ public class CosmosReaderTests
         ItemRequestOptions options,
         CancellationToken cancellationToken)
     {
-        await sut.ReadAsync(
+        await sut.ReadAsync<TestDocument>(
             documentId,
             partitionKey,
             options,
@@ -123,7 +123,7 @@ public class CosmosReaderTests
         ItemRequestOptions options,
         CancellationToken cancellationToken)
     {
-        var result = await sut.ReadAsync(
+        var result = await sut.ReadAsync<TestDocument>(
             documentId,
             partitionKey,
             options,
@@ -146,7 +146,7 @@ public class CosmosReaderTests
             .Returns(Task.FromException<ItemResponse<TestDocument>>(exception));
 
         FluentActions
-            .Awaiting(() => sut.ReadAsync(documentId, partitionKey, options, cancellationToken))
+            .Awaiting(() => sut.ReadAsync<TestDocument>(documentId, partitionKey, options, cancellationToken))
             .Should()
             .ThrowAsync<CosmosException>();
     }
@@ -158,7 +158,7 @@ public class CosmosReaderTests
         ItemRequestOptions options,
         CancellationToken cancellationToken)
     {
-        await sut.FindAsync(
+        await sut.FindAsync<TestDocument>(
             documentId,
             partitionKey,
             options,
@@ -187,7 +187,7 @@ public class CosmosReaderTests
             .ReadItemAsync<TestDocument>(default, default, default, default)
             .ReturnsForAnyArgs(Task.FromException<ItemResponse<TestDocument>>(exception));
 
-        var response = await sut.FindAsync(
+        var response = await sut.FindAsync<TestDocument>(
             documentId,
             partitionKey,
             options,
@@ -205,7 +205,7 @@ public class CosmosReaderTests
         ItemRequestOptions options,
         CancellationToken cancellationToken)
     {
-        var result = await sut.FindAsync(
+        var result = await sut.FindAsync<TestDocument>(
             documentId,
             partitionKey,
             options,

@@ -58,25 +58,27 @@ namespace Chronicles.Cosmos.Testing
             Func<IQueryable<T>, IQueryable<TResult>> query)
             => ((ICosmosReader<T>)Reader).CreateQuery(query);
 
-        Task<T?> ICosmosReader<T>.FindAsync(
+        Task<TResult?> ICosmosReader<T>.FindAsync<TResult>(
             string documentId,
             string partitionKey,
             ItemRequestOptions? options,
             CancellationToken cancellationToken)
+            where TResult : class
             => ((ICosmosReader<T>)Reader)
-                .FindAsync(
+                .FindAsync<TResult>(
                     documentId,
                     partitionKey,
                     options,
                     cancellationToken);
 
-        Task<T> ICosmosReader<T>.ReadAsync(
+        Task<TResult> ICosmosReader<T>.ReadAsync<TResult>(
             string documentId,
             string partitionKey,
             ItemRequestOptions? options,
             CancellationToken cancellationToken)
+            where TResult : class
             => ((ICosmosReader<T>)Reader)
-                .ReadAsync(
+                .ReadAsync<TResult>(
                     documentId,
                     partitionKey,
                     options,
