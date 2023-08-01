@@ -21,7 +21,7 @@ internal class StreamEventWriter
         this.batchProducer = batchProducer;
     }
 
-    public async Task<StreamMetadata> WriteAsync(
+    public virtual async Task<StreamMetadata> WriteAsync(
         StreamId streamId,
         IReadOnlyCollection<object> events,
         StreamVersion version,
@@ -34,12 +34,11 @@ internal class StreamEventWriter
 
         if (!metadata.Version.IsValid(version))
         {
-            throw new StreamVersionConflictException(
+            throw new StreamConflictException(
                 metadata.StreamId,
                 metadata.Version,
                 version,
-                StreamConflictReason.StreamIsNotEmpty,
-                $"Stream position is {metadata.Version} but expected to be {version.Value}.");
+                $"Stream is not at the required version.");
         }
 
         var batch = batchProducer
@@ -65,9 +64,10 @@ internal class StreamEventWriter
             .CommitAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        EnsureSuccess(result, batch.Metadata);
-
-        return GetMetadataFromResponse(result);
+        return EnsureSuccess(
+            result,
+            batch.Metadata.Version,
+            GetMetadataFromResponse(result));
     }
 
     private static StreamMetadata GetMetadataFromResponse(
@@ -76,13 +76,14 @@ internal class StreamEventWriter
             .GetOperationResultAtIndex<StreamMetadataDocument>(0)
             .Resource;
 
-    private static void EnsureSuccess(
+    private static StreamMetadata EnsureSuccess(
         TransactionalBatchResponse response,
+        StreamVersion expectedVersion,
         StreamMetadata metadata)
     {
         if (response.IsSuccessStatusCode)
         {
-            return;
+            return metadata;
         }
 
         if (response.StatusCode == HttpStatusCode.TooManyRequests)
@@ -95,8 +96,10 @@ internal class StreamEventWriter
                 response.RequestCharge);
         }
 
-        throw new StreamWriteConflictException(
+        throw new StreamConflictException(
             metadata.StreamId,
-            metadata.Version);
+            metadata.Version,
+            expectedVersion,
+            "Optimistic concurrency conflict on writing to stream.");
     }
 }

@@ -22,6 +22,7 @@ public interface IEventStoreClient
     ///     To append to the end of the stream optionally specify <see cref="StreamVersion.Any"/>.
     ///   </list>
     /// </remarks>
+    /// <exception cref="StreamConflictException">Will be thrown when the current stream version is not at the expected <paramref name="version"/>.</exception>
     /// <param name="options">(Optional) The options for writing events.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns><see cref="StreamMetadata"/> after write operation.</returns>
@@ -49,10 +50,13 @@ public interface IEventStoreClient
     /// <summary>
     /// Gets current state for a specific stream.
     /// </summary>
+    /// <remarks>
+    /// If the stream is not found the <see cref="StreamMetadata.State"/> is <see cref="StreamState.New"/>.
+    /// </remarks>
     /// <param name="streamId">Event stream to read from.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
-    /// <returns>Stream information.</returns>
-    Task<StreamMetadata> GetStreamInfoAsync(
+    /// <returns>Stream <seealso cref="StreamMetadata"/> information.</returns>
+    Task<StreamMetadata> GetStreamMetadataAsync(
         StreamId streamId,
         CancellationToken cancellationToken = default);
 

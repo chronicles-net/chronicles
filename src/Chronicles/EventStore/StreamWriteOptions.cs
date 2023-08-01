@@ -1,5 +1,8 @@
 namespace Chronicles.EventStore;
 
+/// <summary>
+/// Additional options to be applied when writing events to a stream.
+/// </summary>
 public class StreamWriteOptions
 {
     /// <summary>

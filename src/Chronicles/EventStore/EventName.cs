@@ -2,7 +2,7 @@ namespace Chronicles.EventStore;
 
 public readonly struct EventName : IEquatable<EventName>
 {
-    public static readonly EventName Unknown = new EventName(string.Empty);
+    public static readonly EventName Unknown = new("_unknown");
 
     public EventName(
         string eventName)

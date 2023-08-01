@@ -19,8 +19,9 @@ public class StreamEventCatalog : IStreamEventCatalog
             }
         }
 
-        throw new EventNotRegisteredException(
-            $"Event of type '{type}' is not registered in stream event catalog.");
+        throw new ArgumentException(
+            $"Event of type '{type}' is not registered in stream event catalog.",
+            nameof(type));
     }
 
     public virtual StreamEvent Convert(

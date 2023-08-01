@@ -51,7 +51,7 @@ internal class EventStoreClient : IEventStoreClient
                 options,
                 cancellationToken);
 
-    public async Task<StreamMetadata> GetStreamInfoAsync(
+    public async Task<StreamMetadata> GetStreamMetadataAsync(
         StreamId streamId,
         CancellationToken cancellationToken = default)
         => await metadataReader

@@ -15,7 +15,7 @@ internal class EventDocumentBatchProducer
         this.catalog = catalog;
     }
 
-    public StreamEventBatch FromEvents(
+    public virtual StreamEventBatch FromEvents(
         IReadOnlyCollection<object> events,
         StreamMetadataDocument metadata,
         StreamWriteOptions? options)

@@ -17,7 +17,7 @@ internal class StreamEventReader
         this.metadataReader = metadataReader;
     }
 
-    public async IAsyncEnumerable<StreamEvent> ReadAsync(
+    public virtual async IAsyncEnumerable<StreamEvent> ReadAsync(
         StreamId streamId,
         StreamVersion fromVersion,
         StreamReadFilter? filter,
@@ -30,12 +30,11 @@ internal class StreamEventReader
         if (filter?.RequiredVersion is { } requiredVersion
         && !metadata.Version.IsValid(requiredVersion))
         {
-            throw new StreamVersionConflictException(
+            throw new StreamConflictException(
                 metadata.StreamId,
                 metadata.Version,
                 requiredVersion,
-                StreamConflictReason.StreamIsNotEmpty,
-                "Stream is expected to be empty.");
+                "Conflict when reading from stream.");
         }
 
         // If we don't have any events in the stream, then skip reading from stream.
@@ -54,7 +53,7 @@ internal class StreamEventReader
         }
     }
 
-    internal QueryDefinition GetQueryDefinition(
+    protected virtual QueryDefinition GetQueryDefinition(
         StreamVersion fromVersion,
         StreamReadFilter? filter)
         => streamReader.CreateQuery(

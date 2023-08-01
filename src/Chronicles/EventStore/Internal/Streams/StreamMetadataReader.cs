@@ -15,7 +15,7 @@ internal class StreamMetadataReader
         this.dateTimeProvider = dateTimeProvider;
     }
 
-    public async Task<StreamMetadataDocument> GetAsync(
+    public virtual async Task<StreamMetadataDocument> GetAsync(
         StreamId streamId,
         CancellationToken cancellationToken)
         => await reader
