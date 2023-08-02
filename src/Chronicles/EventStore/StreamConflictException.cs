@@ -7,7 +7,7 @@ namespace Chronicles.EventStore;
 /// </summary>
 [SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "By Design")]
 [SuppressMessage("Major Code Smell", "S3925:\"ISerializable\" should be implemented correctly", Justification = "By Design")]
-public class StreamConflictException : EventStoreException
+public class StreamConflictException : Exception
 {
     public StreamConflictException(
         StreamId streamId,
