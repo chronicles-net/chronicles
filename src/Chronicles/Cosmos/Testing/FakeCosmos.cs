@@ -84,16 +84,6 @@ namespace Chronicles.Cosmos.Testing
                     options,
                     cancellationToken);
 
-        IAsyncEnumerable<T> ICosmosReader<T>.ReadAllAsync(
-            string? partitionKey,
-            QueryRequestOptions? options,
-            CancellationToken cancellationToken)
-            => ((ICosmosReader<T>)Reader)
-                .ReadAllAsync(
-                    partitionKey,
-                    options,
-                    cancellationToken);
-
         IAsyncEnumerable<TResult> ICosmosReader<T>.QueryAsync<TResult>(
             QueryDefinition query,
             string? partitionKey,
@@ -103,6 +93,7 @@ namespace Chronicles.Cosmos.Testing
                 .QueryAsync<TResult>(
                     query,
                     partitionKey,
+                    options,
                     cancellationToken);
 
         Task<PagedResult<TResult>> ICosmosReader<T>.PagedQueryAsync<TResult>(

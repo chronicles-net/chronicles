@@ -60,19 +60,6 @@ public class CosmosReader<T> : ICosmosReader<T>
             .GetItemAsync()
             .ConfigureAwait(false);
 
-    public IAsyncEnumerable<T> ReadAllAsync(
-        string? partitionKey,
-        QueryRequestOptions? options,
-        CancellationToken cancellationToken = default)
-    {
-        var query = container
-            .GetItemLinqQueryable<T>(
-                requestOptions: CreateOptions(options, partitionKey));
-        return linqQuery
-            .GetFeedIterator(query)
-            .ToAsyncEnumerable(cancellationToken);
-    }
-
     public IAsyncEnumerable<TResult> QueryAsync<TResult>(
         QueryDefinition query,
         string? partitionKey,
