@@ -1,7 +1,6 @@
-namespace Chronicles.Tests.Cosmos
+namespace Chronicles.Tests.Cosmos;
+
+public class TestAggregate
 {
-    public class TestAggregate
-    {
-        public int Count { get; set; }
-    }
+    public int Count { get; set; }
 }

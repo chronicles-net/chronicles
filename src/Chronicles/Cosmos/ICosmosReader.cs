@@ -13,6 +13,12 @@ namespace Chronicles.Cosmos;
 public interface ICosmosReader<T>
     where T : class
 {
+    /// <summary>
+    /// Creates a <see cref="QueryDefinition"/> from a Linq expression.
+    /// </summary>
+    /// <typeparam name="TResult">The return type of the </typeparam>
+    /// <param name="query"></param>
+    /// <returns></returns>
     public QueryDefinition CreateQuery<TResult>(
         Func<IQueryable<T>, IQueryable<TResult>> query);
 

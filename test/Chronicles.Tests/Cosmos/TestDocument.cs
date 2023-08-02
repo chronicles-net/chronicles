@@ -1,19 +1,23 @@
 using Chronicles.Cosmos;
 
-namespace Chronicles.Tests.Cosmos
+namespace Chronicles.Tests.Cosmos;
+
+public class TestDocument : CosmosDocument
 {
-    public sealed class TestDocument : ICosmosDocument
-    {
-        public string Id { get; set; } = string.Empty;
+    public string Id { get; set; } = string.Empty;
 
-        public string Pk { get; set; } = string.Empty;
+    public string Pk { get; set; } = string.Empty;
 
-        public string? ETag { get; set; }
+    public string? ETag { get; set; }
 
-        public string Data { get; set; } = default!;
+    public string Data { get; set; } = default!;
 
-        string ICosmosDocument.GetDocumentId() => Id;
+    protected override string GetDocumentId() => Id;
 
-        string ICosmosDocument.GetPartitionKey() => Pk;
-    }
+    protected override string GetPartitionKey() => Pk;
+}
+
+public sealed class TestDocumentSubClass : TestDocument
+{
+    public string? ExtraProperty { get; set; }
 }
