@@ -54,7 +54,7 @@ public interface ICosmosReader<T>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="options">(Optional) Query request options to use.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
-    /// <returns>An <see cref="IAsyncEnumerable&lt;T&gt;"/> over the requested <typeparamref name="TResult"/> documents.</returns>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="TResult"/> documents.</returns>
     public IAsyncEnumerable<TResult> QueryAsync<TResult>(
         QueryDefinition query,
         string? partitionKey,

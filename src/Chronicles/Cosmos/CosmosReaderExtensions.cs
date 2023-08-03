@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Net;
 using Microsoft.Azure.Cosmos;
 
@@ -45,7 +46,7 @@ public static class CosmosReaderExtensions
         ItemRequestOptions? options,
         CancellationToken cancellationToken = default)
         where T : class
-        => reader.FindAsync<T>(
+        => reader.FindAsync(
             documentId,
             partitionKey,
             options,
@@ -86,7 +87,7 @@ public static class CosmosReaderExtensions
                 .ConfigureAwait(false);
         }
         catch (CosmosException ex)
-         when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+         when (ex.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
         }
@@ -156,7 +157,7 @@ public static class CosmosReaderExtensions
     /// <param name="reader">The <see cref="ICosmosReader{T}"/>.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
-    /// <returns>An <see cref="IAsyncEnumerable&lt;T&gt;"/> over all the <typeparamref name="T"/> documents.</returns>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> over all the <typeparamref name="T"/> documents.</returns>
     public static IAsyncEnumerable<T> ReadAllAsync<T>(
         this ICosmosReader<T> reader,
         string? partitionKey,
@@ -176,7 +177,7 @@ public static class CosmosReaderExtensions
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="options">(Optional) Query request options to use.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
-    /// <returns>An <see cref="IAsyncEnumerable&lt;T&gt;"/> over all the <typeparamref name="T"/> documents.</returns>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> over all the <typeparamref name="T"/> documents.</returns>
     public static IAsyncEnumerable<T> ReadAllAsync<T>(
         this ICosmosReader<T> reader,
         string? partitionKey,
@@ -197,7 +198,7 @@ public static class CosmosReaderExtensions
     /// <param name="query">Cosmos query to execute.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
-    /// <returns>An <see cref="IAsyncEnumerable&lt;T&gt;"/> over the requested <typeparamref name="T"/> documents.</returns>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
     public static IAsyncEnumerable<T> QueryAsync<T>(
         this ICosmosReader<T> reader,
         QueryDefinition query,
@@ -211,6 +212,96 @@ public static class CosmosReaderExtensions
             cancellationToken);
 
     /// <summary>
+    /// Query documents from the configured Cosmos container.
+    /// </summary>
+    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
+    /// <typeparam name="TResult">The type used for the custom query result.</typeparam>
+    /// <param name="reader">The <see cref="ICosmosReader{T}"/>.</param>
+    /// <param name="query">The Linq query to execute.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
+    public static IAsyncEnumerable<TResult> QueryAsync<T, TResult>(
+        this ICosmosReader<T> reader,
+        QueryExpression<T, TResult> query,
+        string? partitionKey,
+        CancellationToken cancellationToken = default)
+        where T : class
+        => reader.QueryAsync(
+            query,
+            partitionKey,
+            options: null,
+            cancellationToken);
+
+    /// <summary>
+    /// Query documents from the configured Cosmos container.
+    /// </summary>
+    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
+    /// <typeparam name="TResult">The type used for the custom query result.</typeparam>
+    /// <param name="reader">The <see cref="ICosmosReader{T}"/>.</param>
+    /// <param name="query">The Linq query to execute.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
+    public static IAsyncEnumerable<TResult> QueryAsync<T, TResult>(
+        this ICosmosReader<T> reader,
+        QueryExpression<T, TResult> query,
+        string? partitionKey,
+        QueryRequestOptions? options,
+        CancellationToken cancellationToken = default)
+        where T : class
+        => reader.QueryAsync<TResult>(
+            reader.CreateQuery(query),
+            partitionKey,
+            options,
+            cancellationToken);
+
+    /// <summary>
+    /// Query documents from the configured Cosmos container.
+    /// </summary>
+    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
+    /// <param name="reader">The <see cref="ICosmosReader{T}"/>.</param>
+    /// <param name="predicate">The predicate for selecting <typeparamref name="T"/> results.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
+    public static IAsyncEnumerable<T> QueryAsync<T>(
+        this ICosmosReader<T> reader,
+        Expression<Func<T, bool>> predicate,
+        string? partitionKey,
+        CancellationToken cancellationToken = default)
+        where T : class
+        => reader.QueryAsync(
+            predicate,
+            partitionKey,
+            options: null,
+            cancellationToken);
+
+    /// <summary>
+    /// Query documents from the configured Cosmos container.
+    /// </summary>
+    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
+    /// <param name="reader">The <see cref="ICosmosReader{T}"/>.</param>
+    /// <param name="predicate">The predicate for selecting <typeparamref name="T"/> results.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
+    public static IAsyncEnumerable<T> QueryAsync<T>(
+        this ICosmosReader<T> reader,
+        Expression<Func<T, bool>> predicate,
+        string? partitionKey,
+        QueryRequestOptions? options,
+        CancellationToken cancellationToken = default)
+        where T : class
+        => reader.QueryAsync<T>(
+            reader.CreateQuery(q => q.Where(predicate)),
+            partitionKey,
+            options,
+            cancellationToken);
+
+    /// <summary>
     /// Query documents from the configured Cosmos container using pagination.
     /// </summary>
     /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
@@ -220,7 +311,7 @@ public static class CosmosReaderExtensions
     /// <param name="maxItemCount">The number of items to return per page.</param>
     /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
-    /// <returns>An <see cref="IAsyncEnumerable&lt;T&gt;"/> over the requested <typeparamref name="T"/> documents.</returns>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
     public static Task<PagedResult<T>> PagedQueryAsync<T>(
         this ICosmosReader<T> reader,
         QueryDefinition query,
@@ -233,6 +324,120 @@ public static class CosmosReaderExtensions
             query,
             partitionKey,
             options: null,
+            maxItemCount,
+            continuationToken,
+            cancellationToken);
+
+    /// <summary>
+    /// Query documents from the configured Cosmos container using pagination.
+    /// </summary>
+    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
+    /// <typeparam name="TResult">The type used for the custom query result.</typeparam>
+    /// <param name="reader">The <see cref="ICosmosReader{T}"/>.</param>
+    /// <param name="query">Cosmos query to execute.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="maxItemCount">The number of items to return per page.</param>
+    /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
+    public static Task<PagedResult<TResult>> PagedQueryAsync<T, TResult>(
+        this ICosmosReader<T> reader,
+        QueryExpression<T, TResult> query,
+        string? partitionKey,
+        int? maxItemCount,
+        string? continuationToken = default,
+        CancellationToken cancellationToken = default)
+        where T : class
+        => reader.PagedQueryAsync(
+            query,
+            partitionKey,
+            options: null,
+            maxItemCount,
+            continuationToken,
+            cancellationToken);
+
+    /// <summary>
+    /// Query documents from the configured Cosmos container using pagination.
+    /// </summary>
+    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
+    /// <typeparam name="TResult">The type used for the custom query result.</typeparam>
+    /// <param name="reader">The <see cref="ICosmosReader{T}"/>.</param>
+    /// <param name="query">Cosmos query to execute.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="maxItemCount">The number of items to return per page.</param>
+    /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
+    public static Task<PagedResult<TResult>> PagedQueryAsync<T, TResult>(
+        this ICosmosReader<T> reader,
+        QueryExpression<T, TResult> query,
+        string? partitionKey,
+        QueryRequestOptions? options,
+        int? maxItemCount,
+        string? continuationToken = default,
+        CancellationToken cancellationToken = default)
+        where T : class
+        => reader.PagedQueryAsync<TResult>(
+            reader.CreateQuery(query),
+            partitionKey,
+            options,
+            maxItemCount,
+            continuationToken,
+            cancellationToken);
+
+    /// <summary>
+    /// Query documents from the configured Cosmos container using pagination.
+    /// </summary>
+    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
+    /// <param name="reader">The <see cref="ICosmosReader{T}"/>.</param>
+    /// <param name="predicate">The predicate for selecting <typeparamref name="T"/> results.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="maxItemCount">The number of items to return per page.</param>
+    /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
+    public static Task<PagedResult<T>> PagedQueryAsync<T>(
+        this ICosmosReader<T> reader,
+        Expression<Func<T, bool>> predicate,
+        string? partitionKey,
+        int? maxItemCount,
+        string? continuationToken = default,
+        CancellationToken cancellationToken = default)
+        where T : class
+        => reader.PagedQueryAsync(
+            predicate,
+            partitionKey,
+            options: null,
+            maxItemCount,
+            continuationToken,
+            cancellationToken);
+
+    /// <summary>
+    /// Query documents from the configured Cosmos container using pagination.
+    /// </summary>
+    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
+    /// <param name="reader">The <see cref="ICosmosReader{T}"/>.</param>
+    /// <param name="predicate">The predicate for selecting <typeparamref name="T"/> results.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="maxItemCount">The number of items to return per page.</param>
+    /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
+    public static Task<PagedResult<T>> PagedQueryAsync<T>(
+        this ICosmosReader<T> reader,
+        Expression<Func<T, bool>> predicate,
+        string? partitionKey,
+        QueryRequestOptions? options,
+        int? maxItemCount,
+        string? continuationToken = default,
+        CancellationToken cancellationToken = default)
+        where T : class
+        => reader.PagedQueryAsync<T>(
+            reader.CreateQuery(q => q.Where(predicate)),
+            partitionKey,
+            options,
             maxItemCount,
             continuationToken,
             cancellationToken);
