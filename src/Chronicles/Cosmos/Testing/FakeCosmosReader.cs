@@ -44,8 +44,8 @@ namespace Chronicles.Cosmos.Testing
             = new List<object>();
 
         public QueryDefinition CreateQuery<TResult>(
-            Func<IQueryable<T>, IQueryable<TResult>> query)
-            => new FakeQueryDefinition<T>(query);
+            QueryExpression<T, TResult> query)
+            => new FakeQueryDefinition<T>(s => query.Invoke(s));
 
         public virtual Task<TResult?> FindAsync<TResult>(
             string documentId,

@@ -152,206 +152,6 @@ public class CosmosReaderTests
     }
 
     [Theory, AutoNSubstituteData]
-    public async Task FindAsync_Uses_The_Right_Container(
-        string documentId,
-        string partitionKey,
-        ItemRequestOptions options,
-        CancellationToken cancellationToken)
-    {
-        await sut.FindAsync<TestDocument>(
-            documentId,
-            partitionKey,
-            options,
-            cancellationToken);
-
-        containerProvider
-            .Received(1)
-            .GetContainer<TestDocument>();
-    }
-
-    [Theory, AutoNSubstituteData]
-    public async Task FindAsync_Return_Default_When_TestDocument_IsNot_Found(
-        CosmosException exception,
-        string documentId,
-        string partitionKey,
-        ItemRequestOptions options,
-        CancellationToken cancellationToken)
-    {
-        exception = new(
-            exception.Message,
-            System.Net.HttpStatusCode.NotFound,
-            exception.SubStatusCode,
-            exception.ActivityId,
-            exception.RequestCharge);
-        container
-            .ReadItemAsync<TestDocument>(default, default, default, default)
-            .ReturnsForAnyArgs(Task.FromException<ItemResponse<TestDocument>>(exception));
-
-        var response = await sut.FindAsync<TestDocument>(
-            documentId,
-            partitionKey,
-            options,
-            cancellationToken);
-
-        response
-            .Should()
-            .BeNull();
-    }
-
-    [Theory, AutoNSubstituteData]
-    public async Task FindAsync_Returns_TestDocument_When_Successful(
-        string partitionKey,
-        string documentId,
-        ItemRequestOptions options,
-        CancellationToken cancellationToken)
-    {
-        var result = await sut.FindAsync<TestDocument>(
-            documentId,
-            partitionKey,
-            options,
-            cancellationToken);
-        result
-            .Should()
-            .Be(document);
-    }
-
-    [Theory, AutoNSubstituteData]
-    public void ReadAllAsync_Uses_The_Right_Container(
-        string partitionKey,
-        QueryRequestOptions options,
-        CancellationToken cancellationToken)
-    {
-        _ = sut.ReadAllAsync(
-            partitionKey,
-            options,
-            cancellationToken);
-
-        containerProvider
-            .Received(1)
-            .GetContainer<TestDocument>();
-    }
-
-    [Theory, AutoNSubstituteData]
-    public async Task ReadAllAsync_Executes_Linq_Query(
-        string partitionKey,
-        QueryRequestOptions options,
-        CancellationToken cancellationToken)
-    {
-        await sut
-            .ReadAllAsync(
-                partitionKey,
-                options,
-                cancellationToken)
-            .ToListAsync(cancellationToken);
-
-        container
-            .Received(1)
-            .GetItemLinqQueryable<TestDocument>(
-                requestOptions: Arg.Is<QueryRequestOptions>(o
-                    => o.PartitionKey == new PartitionKey(partitionKey)));
-
-        container
-            .ReceivedCallWithArgument<QueryRequestOptions>()
-            .Should()
-            .BeEquivalentTo(options, o => o.Excluding(i => i.PartitionKey));
-
-        linqQuery
-            .Received(1)
-            .GetFeedIterator(queryable);
-    }
-
-    [Theory, AutoNSubstituteData]
-    public async Task ReadAllAsync_Returns_Empty_No_More_Result(
-        string partitionKey,
-        QueryRequestOptions options,
-        CancellationToken cancellationToken)
-    {
-        feedIterator.HasMoreResults.Returns(false);
-
-        var response = await sut
-            .ReadAllAsync(
-                partitionKey,
-                options,
-                cancellationToken)
-            .ToListAsync(cancellationToken);
-
-        _ = feedIterator
-            .Received(1)
-            .HasMoreResults;
-
-        _ = feedIterator
-            .Received(0)
-            .ReadNextAsync(default);
-
-        response
-            .Should()
-            .BeEmpty();
-    }
-
-    [Theory, AutoNSubstituteData]
-    public async Task ReadAllAsync_Returns_Empty_When_Query_Matches_Non(
-        string partitionKey,
-        QueryRequestOptions options,
-        CancellationToken cancellationToken)
-    {
-        feedIterator.HasMoreResults.Returns(true, false);
-
-        var response = await sut
-            .ReadAllAsync(partitionKey, options, cancellationToken)
-            .ToListAsync(cancellationToken);
-
-        _ = feedIterator
-            .Received(2)
-            .HasMoreResults;
-
-        _ = feedIterator
-            .Received(1)
-            .ReadNextAsync(default);
-
-        response
-            .Should()
-            .BeEmpty();
-    }
-
-    [Theory, AutoNSubstituteData]
-    public async Task ReadAllAsync_Returns_All_Items(
-        string partitionKey,
-        QueryRequestOptions options,
-        CancellationToken cancellationToken)
-    {
-        feedIterator
-            .HasMoreResults
-            .Returns(true, false);
-
-        feedResponse
-            .GetEnumerator()
-            .Returns(new List<TestDocument> { document }.GetEnumerator());
-
-        var response = await sut
-            .ReadAllAsync(
-                partitionKey,
-                options,
-                cancellationToken)
-            .ToListAsync(cancellationToken);
-
-        _ = feedIterator
-            .Received(2)
-            .HasMoreResults;
-
-        _ = feedIterator
-            .Received(1)
-            .ReadNextAsync(default);
-
-        response
-            .Should()
-            .NotBeEmpty();
-
-        response[0]
-            .Should()
-            .Be(document);
-    }
-
-    [Theory, AutoNSubstituteData]
     public void QueryAsync_Uses_The_Right_Container(
         QueryDefinition query,
         string partitionKey,
@@ -608,8 +408,6 @@ public class CosmosReaderTests
     {
         _ = sut.ReadAsync<TestDocument>(documentId, partitionKey, null, cancellationToken);
         _ = sut.ReadAsync<TestDocumentSubClass>(documentId, partitionKey, null, cancellationToken);
-        _ = sut.FindAsync<TestDocument>(documentId, partitionKey, null, cancellationToken);
-        _ = sut.FindAsync<TestDocumentSubClass>(documentId, partitionKey, null, cancellationToken);
         _ = sut.QueryAsync<TestDocument>(query, partitionKey, null, cancellationToken).ToListAsync(cancellationToken);
         _ = sut.QueryAsync<TestAggregate>(query, partitionKey, null, cancellationToken).ToListAsync(cancellationToken);
         _ = sut.PagedQueryAsync<TestDocument>(query, partitionKey, null, maxItemCount, continuationToken, cancellationToken);
@@ -622,12 +420,12 @@ public class CosmosReaderTests
         container
             .ReceivedCalls()
             .Should()
-            .HaveCount(8);
+            .HaveCount(6);
     }
 
     [Theory, AutoNSubstituteData]
     public void CreateQuery_Creates_QueryDefinition_From_Linq_Query(
-        Func<IQueryable<TestDocument>, IQueryable<TestDocument>> query,
+        QueryExpression<TestDocument, TestDocument> query,
         IQueryable<TestDocument> queryResult)
     {
         query

@@ -16,7 +16,7 @@ internal class CheckpointReader
         CancellationToken cancellationToken)
         where T : class
         => await reader
-            .FindAsync<CheckpointDocument<T>>(
+            .FindAsync<Checkpoint, CheckpointDocument<T>>(
                 name,
                 streamId.Value,
                 options: null,

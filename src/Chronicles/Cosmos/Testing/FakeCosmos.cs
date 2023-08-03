@@ -55,21 +55,8 @@ namespace Chronicles.Cosmos.Testing
         public FakeCosmosWriter<T> Writer { get; }
 
         QueryDefinition ICosmosReader<T>.CreateQuery<TResult>(
-            Func<IQueryable<T>, IQueryable<TResult>> query)
+            QueryExpression<T, TResult> query)
             => ((ICosmosReader<T>)Reader).CreateQuery(query);
-
-        Task<TResult?> ICosmosReader<T>.FindAsync<TResult>(
-            string documentId,
-            string partitionKey,
-            ItemRequestOptions? options,
-            CancellationToken cancellationToken)
-            where TResult : class
-            => ((ICosmosReader<T>)Reader)
-                .FindAsync<TResult>(
-                    documentId,
-                    partitionKey,
-                    options,
-                    cancellationToken);
 
         Task<TResult> ICosmosReader<T>.ReadAsync<TResult>(
             string documentId,

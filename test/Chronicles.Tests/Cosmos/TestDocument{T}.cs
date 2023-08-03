@@ -10,7 +10,7 @@ public sealed class TestDocument<T> : ICosmosDocument
 
     public string? ETag { get; set; }
 
-    public T Data { get; set; }
+    public T? Data { get; set; }
 
     string ICosmosDocument.GetDocumentId() => Id;
 

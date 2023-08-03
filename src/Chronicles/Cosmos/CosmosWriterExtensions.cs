@@ -76,7 +76,6 @@ public static class CosmosWriterExtensions
             options: null,
             cancellationToken);
 
-
     /// <summary>
     /// Deletes the specified <typeparamref name="T"/> document from Cosmos.
     /// </summary>

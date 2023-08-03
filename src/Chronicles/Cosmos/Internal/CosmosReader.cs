@@ -17,33 +17,10 @@ public class CosmosReader<T> : ICosmosReader<T>
     }
 
     public QueryDefinition CreateQuery<TResult>(
-        Func<IQueryable<T>, IQueryable<TResult>> query)
+        QueryExpression<T, TResult> query)
         => linqQuery.GetQueryDefinition(
             query.Invoke(
                 container.GetItemLinqQueryable<T>()));
-
-    public async Task<TResult?> FindAsync<TResult>(
-        string documentId,
-        string partitionKey,
-        ItemRequestOptions? options,
-        CancellationToken cancellationToken = default)
-        where TResult : class, T
-    {
-        try
-        {
-            return await ReadAsync<TResult>(
-                documentId,
-                partitionKey,
-                options,
-                cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (CosmosException ex)
-         when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            return null;
-        }
-    }
 
     public async Task<TResult> ReadAsync<TResult>(
         string documentId,

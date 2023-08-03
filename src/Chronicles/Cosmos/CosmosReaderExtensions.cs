@@ -52,6 +52,47 @@ public static class CosmosReaderExtensions
             cancellationToken);
 
     /// <summary>
+    /// Attempts to read the specified <typeparamref name="T"/> document,
+    /// and returns <c>null</c> if none was found.
+    /// </summary>
+    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
+    /// <typeparam name="TResult">
+    /// The type used when finding a document.
+    /// This can be used when <typeparamref name="T"/> is in it self a generic type.
+    /// </typeparam>
+    /// <param name="reader">The <see cref="ICosmosReader{T}"/>.</param>
+    /// <param name="documentId">Id of the document.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns>A <see cref="Task"/> containing the requested <typeparamref name="T"/> document, or null.</returns>
+    public static async Task<TResult?> FindAsync<T, TResult>(
+        this ICosmosReader<T> reader,
+        string documentId,
+        string partitionKey,
+        ItemRequestOptions? options,
+        CancellationToken cancellationToken = default)
+        where T : class
+        where TResult : class, T
+    {
+        try
+        {
+            return await reader
+                .ReadAsync<TResult>(
+                    documentId,
+                    partitionKey,
+                    options,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (CosmosException ex)
+         when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Reads the specified <typeparamref name="T"/> document from the configured
     /// Cosmos collection.
     /// </summary>

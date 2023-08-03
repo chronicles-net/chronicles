@@ -17,30 +17,9 @@ public interface ICosmosReader<T>
     /// Creates a <see cref="QueryDefinition"/> from a Linq expression.
     /// </summary>
     /// <typeparam name="TResult">The return type of the </typeparam>
-    /// <param name="query"></param>
-    /// <returns></returns>
-    public QueryDefinition CreateQuery<TResult>(
-        Func<IQueryable<T>, IQueryable<TResult>> query);
-
-    /// <summary>
-    /// Attempts to read the specified <typeparamref name="T"/> document,
-    /// and returns <c>null</c> if none was found.
-    /// </summary>
-    /// <typeparam name="TResult">
-    /// The type used when finding a document.
-    /// This can be used when <typeparamref name="T"/> is in it self a generic type.
-    /// </typeparam>
-    /// <param name="documentId">Id of the document.</param>
-    /// <param name="partitionKey">Partition key of the document.</param>
-    /// <param name="options">(Optional) Query request options to use.</param>
-    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
-    /// <returns>A <see cref="Task"/> containing the requested <typeparamref name="T"/> document, or null.</returns>
-    Task<TResult?> FindAsync<TResult>(
-        string documentId,
-        string partitionKey,
-        ItemRequestOptions? options,
-        CancellationToken cancellationToken = default)
-        where TResult : class, T;
+    /// <param name="query">The Linq query to use for the <see cref="QueryDefinition"/>.</param>
+    /// <returns>The <see cref="QueryDefinition"/> representing the Linq query.</returns>
+    public QueryDefinition CreateQuery<TResult>(QueryExpression<T, TResult> query);
 
     /// <summary>
     /// Reads the specified <typeparamref name="T"/> document from the configured
