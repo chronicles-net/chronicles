@@ -141,18 +141,6 @@ namespace Chronicles.Cosmos.Testing
                     options,
                     cancellationToken);
 
-        Task<bool> ICosmosWriter<T>.TryDeleteAsync(
-            string documentId,
-            string partitionKey,
-            ItemRequestOptions? options,
-            CancellationToken cancellationToken)
-            => ((ICosmosWriter<T>)Writer)
-                .TryDeleteAsync(
-                    documentId,
-                    partitionKey,
-                    options,
-                    cancellationToken);
-
         Task<T> ICosmosWriter<T>.UpdateAsync(
             string documentId,
             string partitionKey,

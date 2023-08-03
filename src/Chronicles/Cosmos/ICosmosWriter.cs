@@ -102,23 +102,6 @@ public interface ICosmosWriter<T>
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Tries to delete the specified <typeparamref name="T"/> document from Cosmos.
-    /// </summary>
-    /// <remarks>
-    /// When trying to delete a non existing document, False is returned.
-    /// </remarks>
-    /// <param name="documentId">Id of the document.</param>
-    /// <param name="partitionKey">Partition key of the document.</param>
-    /// <param name="options">Options for the item request.</param>
-    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
-    /// <returns><c>True</c> if document was deleted otherwise <c>False</c>.</returns>
-    public Task<bool> TryDeleteAsync(
-        string documentId,
-        string partitionKey,
-        ItemRequestOptions? options,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Updates a <typeparamref name="T"/> document that is read from the configured
     /// Cosmos collection.
     /// </summary>

@@ -72,30 +72,6 @@ public class CosmosWriter<T> : ICosmosWriter<T>
                 new PartitionKey(partitionKey),
                 cancellationToken: cancellationToken);
 
-    public async Task<bool> TryDeleteAsync(
-        string documentId,
-        string partitionKey,
-        ItemRequestOptions? options,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            await container
-                .DeleteItemAsync<object>(
-                    documentId,
-                    new PartitionKey(partitionKey),
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (CosmosException ex)
-         when (ex.StatusCode == HttpStatusCode.NotFound)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     public async Task<T> UpdateAsync(
         string documentId,
         string partitionKey,

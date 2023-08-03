@@ -127,6 +127,46 @@ public static class CosmosWriterExtensions
             cancellationToken);
 
     /// <summary>
+    /// Tries to delete the specified <typeparamref name="T"/> document from Cosmos.
+    /// </summary>
+    /// <remarks>
+    /// When trying to delete a non existing document, False is returned.
+    /// </remarks>
+    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
+    /// <param name="writer">The <see cref="ICosmosWriter{T}"/>.</param>
+    /// <param name="documentId">Id of the document.</param>
+    /// <param name="partitionKey">Partition key of the document.</param>
+    /// <param name="options">Options for the item request.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns><c>True</c> if document was deleted otherwise <c>False</c>.</returns>
+    public static async Task<bool> TryDeleteAsync<T>(
+        this ICosmosWriter<T> writer,
+        string documentId,
+        string partitionKey,
+        ItemRequestOptions? options,
+        CancellationToken cancellationToken = default)
+        where T : ICosmosDocument
+    {
+        try
+        {
+            await writer
+                .DeleteAsync(
+                    documentId,
+                    partitionKey,
+                    options,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (CosmosException ex)
+         when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Updates a <typeparamref name="T"/> document that is read from the configured
     /// Cosmos collection.
     /// </summary>
