@@ -40,6 +40,6 @@ public class CosmosSerializerProvider : ICosmosSerializerProvider
     }
 
     public ICosmosSerializer GetSerializer(
-        string? storename = default)
-        => clientProvider.GetSerializer(storename);
+        string? storeName = default)
+        => clientProvider.GetSerializer(storeName);
 }

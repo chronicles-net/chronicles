@@ -1,6 +1,6 @@
 namespace Chronicles.Documents;
 
-[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
 public sealed class ContainerNameAttribute : Attribute
 {
     public ContainerNameAttribute(
