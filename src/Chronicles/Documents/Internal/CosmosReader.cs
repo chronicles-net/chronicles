@@ -6,12 +6,16 @@ public class CosmosReader<T> : IDocumentReader<T>
 {
     private readonly Container container;
     private readonly ICosmosLinqQuery linqQuery;
+    private readonly ICosmosSerializer serializer;
 
     public CosmosReader(
         ICosmosContainerProvider containerProvider,
+        ICosmosSerializerProvider serializerProvider,
         ICosmosLinqQuery linqQuery)
     {
         container = containerProvider.GetContainer<T>();
+        serializer = serializerProvider.GetSerializer<T>();
+
         this.linqQuery = linqQuery;
     }
 
@@ -19,7 +23,10 @@ public class CosmosReader<T> : IDocumentReader<T>
         QueryExpression<T, TResult> query)
         => linqQuery.GetQueryDefinition(
             query.Invoke(
-                container.GetItemLinqQueryable<T>()));
+                container.GetItemLinqQueryable<T>(linqSerializerOptions: new CosmosLinqSerializerOptions
+                {
+                    PropertyNamingPolicy = serializer.PropertyNamingPolicy,
+                })));
 
     public async Task<TResult> ReadAsync<TResult>(
         string documentId,

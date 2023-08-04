@@ -7,13 +7,13 @@ namespace Chronicles.Documents.Internal;
 
 public class CosmosContainerProvider : ICosmosContainerProvider
 {
-    private static readonly ConcurrentDictionary<Type, Container> Containers = new();
+    private readonly ConcurrentDictionary<Type, Container> containers = new();
     private readonly ICosmosClientProvider clientProvider;
-    private readonly IOptions<DocumentOptions> options;
+    private readonly IOptionsMonitor<DocumentOptions> options;
 
     public CosmosContainerProvider(
         ICosmosClientProvider clientProvider,
-        IOptions<DocumentOptions> options)
+        IOptionsMonitor<DocumentOptions> options)
     {
         this.clientProvider = clientProvider;
         this.options = options;
@@ -23,33 +23,33 @@ public class CosmosContainerProvider : ICosmosContainerProvider
         => GetContainer(typeof(T));
 
     public Container GetContainer(
-        Type resourceType)
+        Type documentType)
     {
-        if (Containers.TryGetValue(resourceType, out var container))
+        if (containers.TryGetValue(documentType, out var container))
         {
             return container;
         }
 
-        if (resourceType.GetCustomAttribute<ContainerNameAttribute>(inherit: true) is not { } a)
+        if (documentType.GetCustomAttribute<ContainerNameAttribute>(inherit: true) is not { } a)
         {
             throw new ArgumentException(
-                $"Type {resourceType.Name} is not supported. " +
+                $"Type {documentType.Name} is not supported. " +
                 $"Missing {nameof(ContainerNameAttribute)}.",
-                nameof(resourceType));
+                nameof(documentType));
         }
 
-        container = GetContainer(a.ContainerName, a.DatabaseName);
-        Containers[resourceType] = container;
-
-        return container;
+        return containers
+            .GetOrAdd(
+                documentType,
+                t => GetContainer(a.ContainerName, a.ClientName));
     }
 
     public Container GetContainer(
         string containerName,
-        string? databaseName = default)
+        string? clientName = default)
         => clientProvider
-            .GetClient()
+            .GetClient(clientName)
             .GetContainer(
-                databaseName ?? options.Value.DefaultDatabaseName,
+                options.Get(clientName).DatabaseName,
                 containerName);
 }

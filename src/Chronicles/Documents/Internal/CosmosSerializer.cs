@@ -1,20 +1,27 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Microsoft.Extensions.Options;
+using Microsoft.Azure.Cosmos;
 
-namespace Chronicles.Documents.Serialization;
+namespace Chronicles.Documents.Internal;
 
 /// <summary>
 /// Implementation used for serializing a stream to and from Json using the <seealso cref="JsonSerializer"/>
 /// from within Cosmos SDK.
 /// </summary>
-public class JsonCosmosSerializer : IJsonCosmosSerializer
+public class CosmosSerializer : ICosmosSerializer
 {
     private readonly JsonSerializerOptions options;
 
-    public JsonCosmosSerializer(
-        IOptions<DocumentOptions> options)
-        => this.options = options.Value.SerializerOptions;
+    public CosmosSerializer(
+        JsonSerializerOptions options)
+    {
+        this.options = options;
+        PropertyNamingPolicy = options.PropertyNamingPolicy == JsonNamingPolicy.CamelCase
+            ? CosmosPropertyNamingPolicy.CamelCase
+            : CosmosPropertyNamingPolicy.Default;
+    }
+
+    public CosmosPropertyNamingPolicy PropertyNamingPolicy { get; }
 
     [return: MaybeNull]
     public T FromStream<T>(Stream stream)

@@ -1,4 +1,4 @@
-using Chronicles.Documents.Serialization;
+using System.Collections.Concurrent;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
 
@@ -6,21 +6,16 @@ namespace Chronicles.Documents.Internal;
 
 public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
 {
-    private readonly IOptions<DocumentOptions> cosmosOptions;
-    private readonly IOptions<CosmosClientOptions> cosmosClientOptions;
-    private readonly IJsonCosmosSerializer serializer;
-    private CosmosClient? client;
+    private readonly ConcurrentDictionary<string, CosmosClient> clients = new();
+    private readonly ConcurrentDictionary<string, CosmosSerializer> serializers = new();
+    private readonly IOptionsMonitor<DocumentOptions> documentOptions;
 
     public CosmosClientProvider(
-        IOptions<DocumentOptions> cosmosOptions,
-        IOptions<CosmosClientOptions> cosmosClientOptions,
-        IJsonCosmosSerializer serializer)
+        IOptionsMonitor<DocumentOptions> documentOptions)
     {
-        this.cosmosOptions = cosmosOptions;
-        this.cosmosClientOptions = cosmosClientOptions;
-        this.serializer = serializer;
+        this.documentOptions = documentOptions;
 
-        var options = cosmosOptions.Value;
+        var options = documentOptions.CurrentValue;
         if (!IsValid(options))
         {
             throw new InvalidOperationException(
@@ -28,74 +23,55 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
         }
     }
 
-    public CosmosClient GetClient()
-        => client ??= CreateClient();
+    public CosmosClient GetClient(
+        string? clientName = null)
+        => clients
+            .GetOrAdd(
+                clientName ?? Options.DefaultName,
+                CreateClient);
+
+    public ICosmosSerializer GetSerializer(
+        string? clientName = null)
+        => GetSerializer(clientName, null);
 
     public void Dispose()
     {
-        client?.Dispose();
+        foreach (var client in clients.Values)
+        {
+            client.Dispose();
+        }
     }
 
     private static bool IsValid(DocumentOptions? options)
         => options is not null
         && !string.IsNullOrEmpty(options.AccountEndpoint)
         && (!string.IsNullOrEmpty(options.AccountKey) || options.Credential is not null)
-        && !string.IsNullOrEmpty(options.DefaultDatabaseName);
+        && !string.IsNullOrEmpty(options.DatabaseName);
 
-    private CosmosClient CreateClient()
+    private CosmosClient CreateClient(
+        string? clientName = null)
     {
-        var options = CreateCosmosClientOptions();
-        options.Serializer = cosmosClientOptions.Value.Serializer
-            ?? new CosmosSerializerAdapter(serializer);
+        var options = documentOptions.Get(clientName);
+        options.CosmosClientOptions.Serializer = new CosmosSerializerAdapter(
+            GetSerializer(clientName, options));
 
-        return cosmosOptions.Value.Credential is not null
+        return options.Credential is not null
             ? new CosmosClient(
-                cosmosOptions.Value.AccountEndpoint,
-                cosmosOptions.Value.Credential,
-                options)
+                options.AccountEndpoint,
+                options.Credential,
+                options.CosmosClientOptions)
             : new CosmosClient(
-                $"AccountEndpoint={cosmosOptions.Value.AccountEndpoint};" +
-                $"AccountKey={cosmosOptions.Value.AccountKey}",
-                options);
+                $"AccountEndpoint={options.AccountEndpoint};" +
+                $"AccountKey={options.AccountKey}",
+                options.CosmosClientOptions);
     }
 
-    private CosmosClientOptions CreateCosmosClientOptions()
-    {
-        var result = new CosmosClientOptions();
-
-        if (cosmosClientOptions is { Value: { } o })
-        {
-            if (!string.IsNullOrEmpty(o.ApplicationName))
-            {
-                result.ApplicationName = o.ApplicationName;
-            }
-
-            result.ApplicationPreferredRegions = o.ApplicationPreferredRegions;
-            result.ApplicationRegion = o.ApplicationRegion;
-            result.ConnectionMode = o.ConnectionMode;
-            result.ConsistencyLevel = o.ConsistencyLevel;
-
-            foreach (var handler in o.CustomHandlers)
-            {
-                result.CustomHandlers.Add(handler);
-            }
-
-            result.HttpClientFactory = o.HttpClientFactory;
-            result.IdleTcpConnectionTimeout = o.IdleTcpConnectionTimeout;
-            result.LimitToEndpoint = o.LimitToEndpoint;
-            result.MaxRequestsPerTcpConnection = o.MaxRequestsPerTcpConnection;
-            result.MaxRetryWaitTimeOnRateLimitedRequests = o.MaxRetryWaitTimeOnRateLimitedRequests;
-            result.MaxTcpConnectionsPerEndpoint = o.MaxTcpConnectionsPerEndpoint;
-            result.OpenTcpConnectionTimeout = o.OpenTcpConnectionTimeout;
-            result.PortReuseMode = o.PortReuseMode;
-            result.RequestTimeout = o.RequestTimeout;
-            result.SerializerOptions = o.SerializerOptions;
-            result.WebProxy = o.WebProxy;
-            result.EnableTcpConnectionEndpointRediscovery = o.EnableTcpConnectionEndpointRediscovery;
-            result.GatewayModeMaxConnectionLimit = o.GatewayModeMaxConnectionLimit;
-            result.MaxRetryAttemptsOnRateLimitedRequests = o.MaxRetryAttemptsOnRateLimitedRequests;
-        }
-
-        return result;
-    }
+    private ICosmosSerializer GetSerializer(
+        string? clientName,
+        DocumentOptions? options)
+        => serializers
+            .GetOrAdd(
+                clientName ?? Options.DefaultName,
+                n => new CosmosSerializer(
+                    (options ?? documentOptions.Get(n)).SerializerOptions));
 }

@@ -11,5 +11,5 @@ public sealed class ContainerNameAttribute : Attribute
 
     public string ContainerName { get; }
 
-    public string? DatabaseName { get; set; }
+    public string? ClientName { get; set; }
 }

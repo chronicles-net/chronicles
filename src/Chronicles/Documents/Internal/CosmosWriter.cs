@@ -1,5 +1,4 @@
 using System.Net;
-using Chronicles.Documents.Serialization;
 using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
@@ -8,11 +7,11 @@ public class CosmosWriter<T> : IDocumentWriter<T>
     where T : class, IDocument
 {
     private readonly Container container;
-    private readonly IJsonCosmosSerializer serializer;
+    private readonly ICosmosSerializer serializer;
 
     public CosmosWriter(
         ICosmosContainerProvider containerProvider,
-        IJsonCosmosSerializer serializer)
+        ICosmosSerializer serializer)
     {
         container = containerProvider.GetContainer<T>();
         this.serializer = serializer;

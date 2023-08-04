@@ -1,9 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Azure.Cosmos;
 
-namespace Chronicles.Documents.Serialization;
+namespace Chronicles.Documents.Internal;
 
-public interface IJsonCosmosSerializer
+public interface ICosmosSerializer
 {
+    CosmosPropertyNamingPolicy PropertyNamingPolicy { get; }
+
     [return: MaybeNull]
     T FromStream<T>(Stream stream);
 

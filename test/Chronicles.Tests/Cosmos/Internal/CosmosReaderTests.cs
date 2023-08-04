@@ -9,6 +9,8 @@ namespace Chronicles.Tests.Cosmos.Internal;
 
 public class CosmosReaderTests
 {
+    private readonly ICosmosSerializer serializer;
+    private readonly ICosmosSerializerProvider serializerProvider;
     private readonly IQueryable<TestDocument> queryable;
     private readonly QueryDefinition query;
     private readonly ItemResponse<TestDocument> itemResponse;
@@ -69,7 +71,11 @@ public class CosmosReaderTests
             .GetFeedIterator(Arg.Any<IQueryable<TestDocument>>())
             .ReturnsForAnyArgs(feedIterator);
 
-        sut = new CosmosReader<TestDocument>(containerProvider, linqQuery);
+        serializer = Substitute.For<ICosmosSerializer>();
+        serializerProvider = Substitute.For<ICosmosSerializerProvider>();
+        serializerProvider.GetSerializer<TestDocument>().ReturnsForAnyArgs(serializer);
+
+        sut = new CosmosReader<TestDocument>(containerProvider, serializerProvider, linqQuery);
     }
 
     [Fact]

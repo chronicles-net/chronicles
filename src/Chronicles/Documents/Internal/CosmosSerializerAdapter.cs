@@ -1,17 +1,15 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Chronicles.Documents.Serialization;
-using Microsoft.Azure.Cosmos;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Chronicles.Documents.Internal;
 
-public class CosmosSerializerAdapter : CosmosSerializer
+public class CosmosSerializerAdapter : Microsoft.Azure.Cosmos.CosmosSerializer
 {
-    public CosmosSerializerAdapter(IJsonCosmosSerializer serializer)
+    public CosmosSerializerAdapter(ICosmosSerializer serializer)
     {
         Serializer = serializer;
     }
 
-    public IJsonCosmosSerializer Serializer { get; }
+    public ICosmosSerializer Serializer { get; }
 
     [return: MaybeNull]
     public override T FromStream<T>(Stream stream)

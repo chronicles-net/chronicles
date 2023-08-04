@@ -1,4 +1,3 @@
-using Chronicles.Documents.Serialization;
 using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
@@ -15,7 +14,7 @@ public static class ItemResponseExtensions
 
     public static T GetItemOrDefault<T>(
         this ItemResponse<object> response,
-        IJsonCosmosSerializer serializer,
+        ICosmosSerializer serializer,
         T defaultValue)
         where T : IDocument
     {
@@ -30,7 +29,7 @@ public static class ItemResponseExtensions
 
     public static async Task<T> GetItemOrDefaultAsync<T>(
         this Task<ItemResponse<object>> responseTask,
-        IJsonCosmosSerializer serializer,
+        ICosmosSerializer serializer,
         T defaultValue)
         where T : IDocument
         => (await responseTask.ConfigureAwait(false)).GetItemOrDefault(

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Azure.Core;
+using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents;
 
@@ -52,7 +53,9 @@ public class DocumentOptions
     public JsonSerializerOptions SerializerOptions { get; set; }
         = new JsonSerializerOptions();
 
-    public string DefaultDatabaseName { get; set; } = "Chronicles";
+    public string DatabaseName { get; set; } = "Chronicles";
+
+    public CosmosClientOptions CosmosClientOptions { get; } = new();
 
     /// <summary>
     /// Configure event store to use <seealso cref="TokenCredential"/>.

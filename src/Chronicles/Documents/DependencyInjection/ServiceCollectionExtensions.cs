@@ -1,6 +1,5 @@
 using Chronicles.Documents;
 using Chronicles.Documents.Internal;
-using Chronicles.Documents.Serialization;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -15,9 +14,9 @@ public static class ServiceCollectionExtensions
         return services
             .AddSingleton(typeof(IDocumentReader<>), typeof(CosmosReader<>))
             .AddSingleton(typeof(IDocumentWriter<>), typeof(CosmosWriter<>))
-            .AddSingleton<ICosmosContainerProvider, CosmosContainerProvider>()
-            .AddSingleton<IJsonCosmosSerializer, JsonCosmosSerializer>()
             .AddSingleton<ICosmosClientProvider, CosmosClientProvider>()
+            .AddSingleton<ICosmosSerializerProvider, CosmosSerializerProvider>()
+            .AddSingleton<ICosmosContainerProvider, CosmosContainerProvider>()
             .AddSingleton<ICosmosLinqQuery, CosmosLinqQuery>();
     }
 
@@ -40,6 +39,14 @@ public class ChroniclesBuilder
         Action<DocumentOptions> optionsProvider)
     {
         services.Configure(optionsProvider);
+        return this;
+    }
+
+    public ChroniclesBuilder WithOptions(
+        string name,
+        Action<DocumentOptions> optionsProvider)
+    {
+        services.Configure(name, optionsProvider);
         return this;
     }
 }
