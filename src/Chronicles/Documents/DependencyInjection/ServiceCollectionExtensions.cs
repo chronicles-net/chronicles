@@ -5,24 +5,26 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddChronicles(
+    public static ChroniclesBuilder AddChronicles(
         this IServiceCollection services,
-        Action<ChroniclesBuilder> builder)
+        Action<DocumentOptions> optionsProvider)
     {
-        builder.Invoke(new ChroniclesBuilder(services));
+        services.Configure(optionsProvider);
 
-        return services
+        services
             .AddSingleton(typeof(IDocumentReader<>), typeof(CosmosReader<>))
             .AddSingleton(typeof(IDocumentWriter<>), typeof(CosmosWriter<>))
             .AddSingleton<ICosmosClientProvider, CosmosClientProvider>()
             .AddSingleton<ICosmosSerializerProvider, CosmosSerializerProvider>()
             .AddSingleton<ICosmosContainerProvider, CosmosContainerProvider>()
             .AddSingleton<ICosmosLinqQuery, CosmosLinqQuery>();
+
+        return new ChroniclesBuilder(services);
     }
 
-    public static IServiceCollection AddChronicles(
+    public static ChroniclesBuilder AddChronicles(
         this IServiceCollection services)
-        => AddChronicles(services, builder => { });
+        => AddChronicles(services, options => { });
 }
 
 public class ChroniclesBuilder
@@ -35,18 +37,15 @@ public class ChroniclesBuilder
         this.services = services;
     }
 
-    public ChroniclesBuilder WithOptions(
-        Action<DocumentOptions> optionsProvider)
-    {
-        services.Configure(optionsProvider);
-        return this;
-    }
-
-    public ChroniclesBuilder WithOptions(
+    public ChroniclesBuilder AddDocumentStore(
         string name,
         Action<DocumentOptions> optionsProvider)
     {
         services.Configure(name, optionsProvider);
         return this;
     }
+
+    public ChroniclesBuilder AddDocumentStore(
+        string name)
+        => AddDocumentStore(name, options => { });
 }
