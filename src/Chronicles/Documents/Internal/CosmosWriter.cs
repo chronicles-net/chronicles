@@ -4,7 +4,7 @@ using Microsoft.Azure.Cosmos;
 namespace Chronicles.Documents.Internal;
 
 public class CosmosWriter<T> : IDocumentWriter<T>
-    where T : class, IDocument
+    where T : IDocument
 {
     private readonly Container container;
     private readonly ICosmosSerializer serializer;

@@ -43,7 +43,7 @@ public interface IDocumentReader<T>
         string partitionKey,
         ItemRequestOptions? options,
         CancellationToken cancellationToken = default)
-        where TResult : class, T;
+        where TResult : T;
 
     /// <summary>
     /// Query documents from the configured Cosmos container and returns a custom result.

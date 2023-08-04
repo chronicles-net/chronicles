@@ -17,7 +17,7 @@ namespace Chronicles.Documents.Testing
     /// </typeparam>
     public class FakeCosmosReader<T> :
         IDocumentReader<T>
-        where T : class, IDocument
+        where T : IDocument
     {
         private readonly JsonSerializerOptions? serializerOptions;
 
@@ -66,7 +66,7 @@ namespace Chronicles.Documents.Testing
             string partitionKey,
             ItemRequestOptions? options,
             CancellationToken cancellationToken = default)
-            where TResult : class, T
+            where TResult : T
         {
             var item = Documents
                 .OfType<TResult>()

@@ -14,7 +14,7 @@ namespace Chronicles.Documents.Testing
     /// </typeparam>
     public class FakeCosmosWriter<T> :
         IDocumentWriter<T>
-        where T : class, IDocument
+        where T : IDocument
     {
         private readonly JsonSerializerOptions? serializerOptions;
 

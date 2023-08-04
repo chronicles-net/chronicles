@@ -3,7 +3,7 @@ using Microsoft.Azure.Cosmos;
 namespace Chronicles.Documents.Testing;
 
 public class FakeCosmosTransaction<T> : IDocumentTransaction<T>
-    where T : class, IDocument
+    where T : IDocument
 {
     private readonly FakeCosmosWriter<T> writer;
     private readonly string partitionKey;
@@ -32,7 +32,7 @@ public class FakeCosmosTransaction<T> : IDocumentTransaction<T>
         operations.Add(async w =>
         {
             await w.DeleteAsync(id, partitionKey, null);
-            return null;
+            return default;
         });
         return this;
     }

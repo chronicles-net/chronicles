@@ -6,7 +6,6 @@ public static class ItemResponseExtensions
 {
     public static async Task<T> GetItemAsync<T>(
         this Task<ItemResponse<T>> responseTask)
-        where T : class
     {
         var response = await responseTask.ConfigureAwait(false);
         return response.Resource;

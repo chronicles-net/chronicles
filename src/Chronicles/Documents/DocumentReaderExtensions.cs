@@ -21,7 +21,6 @@ public static class DocumentReaderExtensions
         string documentId,
         string partitionKey,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.FindAsync(
             documentId,
             partitionKey,
@@ -45,7 +44,6 @@ public static class DocumentReaderExtensions
         string partitionKey,
         ItemRequestOptions? options,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.FindAsync(
             documentId,
             partitionKey,
@@ -73,8 +71,7 @@ public static class DocumentReaderExtensions
         string partitionKey,
         ItemRequestOptions? options,
         CancellationToken cancellationToken = default)
-        where T : class
-        where TResult : class, T
+        where TResult : T
     {
         try
         {
@@ -89,7 +86,7 @@ public static class DocumentReaderExtensions
         catch (CosmosException ex)
          when (ex.StatusCode == HttpStatusCode.NotFound)
         {
-            return null;
+            return default;
         }
     }
 
@@ -113,7 +110,6 @@ public static class DocumentReaderExtensions
         string documentId,
         string partitionKey,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.ReadAsync(
             documentId,
             partitionKey,
@@ -142,7 +138,6 @@ public static class DocumentReaderExtensions
         string partitionKey,
         ItemRequestOptions? options,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.ReadAsync<T>(
             documentId,
             partitionKey,
@@ -162,7 +157,6 @@ public static class DocumentReaderExtensions
         this IDocumentReader<T> reader,
         string? partitionKey,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.ReadAllAsync(
             partitionKey,
             options: null,
@@ -183,7 +177,6 @@ public static class DocumentReaderExtensions
         string? partitionKey,
         QueryRequestOptions? options,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.QueryAsync<T>(
             reader.CreateQuery(q => q),
             partitionKey,
@@ -204,7 +197,6 @@ public static class DocumentReaderExtensions
         QueryDefinition query,
         string? partitionKey,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.QueryAsync<T>(
             query,
             partitionKey,
@@ -226,7 +218,6 @@ public static class DocumentReaderExtensions
         QueryExpression<T, TResult> query,
         string? partitionKey,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.QueryAsync(
             query,
             partitionKey,
@@ -250,7 +241,6 @@ public static class DocumentReaderExtensions
         string? partitionKey,
         QueryRequestOptions? options,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.QueryAsync<TResult>(
             reader.CreateQuery(query),
             partitionKey,
@@ -271,7 +261,6 @@ public static class DocumentReaderExtensions
         Expression<Func<T, bool>> predicate,
         string? partitionKey,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.QueryAsync(
             predicate,
             partitionKey,
@@ -294,7 +283,6 @@ public static class DocumentReaderExtensions
         string? partitionKey,
         QueryRequestOptions? options,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.QueryAsync<T>(
             reader.CreateQuery(q => q.Where(predicate)),
             partitionKey,
@@ -319,7 +307,6 @@ public static class DocumentReaderExtensions
         int? maxItemCount,
         string? continuationToken = default,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.PagedQueryAsync<T>(
             query,
             partitionKey,
@@ -347,7 +334,6 @@ public static class DocumentReaderExtensions
         int? maxItemCount,
         string? continuationToken = default,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.PagedQueryAsync(
             query,
             partitionKey,
@@ -377,7 +363,6 @@ public static class DocumentReaderExtensions
         int? maxItemCount,
         string? continuationToken = default,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.PagedQueryAsync<TResult>(
             reader.CreateQuery(query),
             partitionKey,
@@ -404,7 +389,6 @@ public static class DocumentReaderExtensions
         int? maxItemCount,
         string? continuationToken = default,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.PagedQueryAsync(
             predicate,
             partitionKey,
@@ -433,7 +417,6 @@ public static class DocumentReaderExtensions
         int? maxItemCount,
         string? continuationToken = default,
         CancellationToken cancellationToken = default)
-        where T : class
         => reader.PagedQueryAsync<T>(
             reader.CreateQuery(q => q.Where(predicate)),
             partitionKey,

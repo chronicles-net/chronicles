@@ -33,7 +33,7 @@ public class CosmosReader<T> : IDocumentReader<T>
         string partitionKey,
         ItemRequestOptions? options,
         CancellationToken cancellationToken = default)
-        where TResult : class, T
+        where TResult : T
         => await container
             .ReadItemAsync<TResult>(
                 documentId,

@@ -6,7 +6,7 @@ namespace Chronicles.Documents.Testing
     public sealed class FakeCosmos<T> :
         IDocumentReader<T>,
         IDocumentWriter<T>
-        where T : class, IDocument
+        where T : IDocument
     {
         public FakeCosmos()
             : this(
@@ -63,7 +63,6 @@ namespace Chronicles.Documents.Testing
             string partitionKey,
             ItemRequestOptions? options,
             CancellationToken cancellationToken)
-            where TResult : class
             => ((IDocumentReader<T>)Reader)
                 .ReadAsync<TResult>(
                     documentId,

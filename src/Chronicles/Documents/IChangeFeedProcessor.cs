@@ -7,7 +7,6 @@ namespace Chronicles.Documents;
 /// The type of document to be processed.
 /// </typeparam>
 public interface IChangeFeedProcessor<in T>
-    where T : class
 {
     /// <summary>
     /// Processes a batch of changes.
