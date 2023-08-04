@@ -1,0 +1,28 @@
+using System.Net;
+using Microsoft.Azure.Cosmos;
+
+namespace Chronicles.Documents.Testing;
+
+public class FakeTransactionalBatchOperationResult<T> : TransactionalBatchOperationResult<T>
+{
+    private readonly bool isSuccess;
+    private readonly HttpStatusCode statusCode;
+
+    public FakeTransactionalBatchOperationResult(
+        T? resource,
+        bool isSuccess = true,
+        HttpStatusCode statusCode = HttpStatusCode.OK)
+    {
+        if (resource != null)
+        {
+            Resource = resource;
+        }
+
+        this.isSuccess = isSuccess;
+        this.statusCode = statusCode;
+    }
+
+    public override bool IsSuccessStatusCode => isSuccess;
+
+    public override HttpStatusCode StatusCode => statusCode;
+}

@@ -1,4 +1,4 @@
-using Chronicles.Cosmos;
+using Chronicles.Documents;
 
 namespace Chronicles.EventStore.Internal.Checkpoints;
 

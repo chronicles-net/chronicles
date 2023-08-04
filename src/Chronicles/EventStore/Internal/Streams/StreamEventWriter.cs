@@ -1,5 +1,5 @@
 using System.Net;
-using Chronicles.Cosmos;
+using Chronicles.Documents;
 using Chronicles.EventStore.Internal.Events;
 using Microsoft.Azure.Cosmos;
 

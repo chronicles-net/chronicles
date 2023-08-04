@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
-using Chronicles.Cosmos;
+using Chronicles.Documents;
 using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.EventStore.Internal.Streams;

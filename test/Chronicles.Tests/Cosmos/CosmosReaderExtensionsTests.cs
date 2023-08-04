@@ -1,4 +1,4 @@
-using Chronicles.Cosmos;
+using Chronicles.Documents;
 using Microsoft.Azure.Cosmos;
 using NSubstitute;
 

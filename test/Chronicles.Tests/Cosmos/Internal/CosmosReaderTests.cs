@@ -1,6 +1,6 @@
 using AutoFixture;
-using Chronicles.Cosmos;
-using Chronicles.Cosmos.Internal;
+using Chronicles.Documents;
+using Chronicles.Documents.Internal;
 using Dasync.Collections;
 using Microsoft.Azure.Cosmos;
 using NSubstitute;
