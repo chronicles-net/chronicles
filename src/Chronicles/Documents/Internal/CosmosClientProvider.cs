@@ -12,23 +12,14 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
 
     public CosmosClientProvider(
         IOptionsMonitor<DocumentOptions> documentOptions)
-    {
-        this.documentOptions = documentOptions;
-
-        var options = documentOptions.CurrentValue;
-        if (!IsValid(options))
-        {
-            throw new InvalidOperationException(
-                $"Invalid configuration in {nameof(DocumentOptions)}.");
-        }
-    }
+        => this.documentOptions = documentOptions;
 
     public CosmosClient GetClient(
         string? clientName = null)
         => clients
             .GetOrAdd(
                 clientName ?? Options.DefaultName,
-                CreateClient);
+                _ => CreateClient(clientName));
 
     public ICosmosSerializer GetSerializer(
         string? clientName = null)
@@ -42,16 +33,10 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
         }
     }
 
-    private static bool IsValid(DocumentOptions? options)
-        => options is not null
-        && !string.IsNullOrEmpty(options.AccountEndpoint)
-        && (!string.IsNullOrEmpty(options.AccountKey) || options.Credential is not null)
-        && !string.IsNullOrEmpty(options.DatabaseName);
-
     private CosmosClient CreateClient(
         string? clientName = null)
     {
-        var options = documentOptions.Get(clientName);
+        var options = GetOptions(clientName);
         options.CosmosClientOptions.Serializer = new CosmosSerializerAdapter(
             GetSerializer(clientName, options));
 
@@ -72,6 +57,25 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
         => serializers
             .GetOrAdd(
                 clientName ?? Options.DefaultName,
-                n => new CosmosSerializer(
-                    (options ?? documentOptions.Get(n)).SerializerOptions));
+                _ => new CosmosSerializer(
+                    (options ?? GetOptions(clientName)).SerializerOptions));
+
+    private DocumentOptions GetOptions(string? name)
+    {
+        var options = documentOptions.Get(name);
+        if (!IsValid(options))
+        {
+            var storeName = string.IsNullOrEmpty(name) ? "dafault" : $"\"{name}\"";
+            throw new InvalidOperationException(
+                $"The {nameof(DocumentOptions)} for {storeName} document store is not correctly configured.");
+        }
+
+        return options;
+    }
+
+    private static bool IsValid(DocumentOptions? options)
+        => options is not null
+        && !string.IsNullOrEmpty(options.AccountEndpoint)
+        && (!string.IsNullOrEmpty(options.AccountKey) || options.Credential is not null)
+        && !string.IsNullOrEmpty(options.DatabaseName);
 }
