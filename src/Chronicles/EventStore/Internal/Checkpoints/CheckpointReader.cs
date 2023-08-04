@@ -4,10 +4,10 @@ namespace Chronicles.EventStore.Internal.Checkpoints;
 
 internal class CheckpointReader
 {
-    private readonly ICosmosReader<Checkpoint> reader;
+    private readonly IDocumentReader<Checkpoint> reader;
 
     public CheckpointReader(
-        ICosmosReader<Checkpoint> reader)
+        IDocumentReader<Checkpoint> reader)
         => this.reader = reader;
 
     public async Task<Checkpoint<T>?> ReadAsync<T>(

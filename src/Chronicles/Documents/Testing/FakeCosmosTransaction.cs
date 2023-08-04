@@ -2,8 +2,8 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Testing;
 
-public class FakeCosmosTransaction<T> : ICosmosTransaction<T>
-    where T : class, ICosmosDocument
+public class FakeCosmosTransaction<T> : IDocumentTransaction<T>
+    where T : class, IDocument
 {
     private readonly FakeCosmosWriter<T> writer;
     private readonly string partitionKey;
@@ -17,7 +17,7 @@ public class FakeCosmosTransaction<T> : ICosmosTransaction<T>
         this.partitionKey = partitionKey;
     }
 
-    public virtual ICosmosTransaction<T> Create(
+    public virtual IDocumentTransaction<T> Create(
         T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
@@ -25,7 +25,7 @@ public class FakeCosmosTransaction<T> : ICosmosTransaction<T>
         return this;
     }
 
-    public virtual ICosmosTransaction<T> Delete(
+    public virtual IDocumentTransaction<T> Delete(
         string id,
         TransactionalBatchItemRequestOptions? options = null)
     {
@@ -37,7 +37,7 @@ public class FakeCosmosTransaction<T> : ICosmosTransaction<T>
         return this;
     }
 
-    public virtual ICosmosTransaction<T> Replace(
+    public virtual IDocumentTransaction<T> Replace(
         T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
@@ -45,7 +45,7 @@ public class FakeCosmosTransaction<T> : ICosmosTransaction<T>
         return this;
     }
 
-    public virtual ICosmosTransaction<T> Write(
+    public virtual IDocumentTransaction<T> Write(
         T document,
         TransactionalBatchItemRequestOptions? options = null)
     {

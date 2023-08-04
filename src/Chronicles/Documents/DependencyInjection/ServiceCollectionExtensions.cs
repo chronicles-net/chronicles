@@ -13,8 +13,8 @@ public static class ServiceCollectionExtensions
         builder.Invoke(new ChroniclesBuilder(services));
 
         return services
-            .AddSingleton(typeof(ICosmosReader<>), typeof(CosmosReader<>))
-            .AddSingleton(typeof(ICosmosWriter<>), typeof(CosmosWriter<>))
+            .AddSingleton(typeof(IDocumentReader<>), typeof(CosmosReader<>))
+            .AddSingleton(typeof(IDocumentWriter<>), typeof(CosmosWriter<>))
             .AddSingleton<ICosmosContainerProvider, CosmosContainerProvider>()
             .AddSingleton<IJsonCosmosSerializer, JsonCosmosSerializer>()
             .AddSingleton<ICosmosClientProvider, CosmosClientProvider>()
@@ -37,7 +37,7 @@ public class ChroniclesBuilder
     }
 
     public ChroniclesBuilder WithOptions(
-        Action<ChroniclesCosmosOptions> optionsProvider)
+        Action<DocumentOptions> optionsProvider)
     {
         services.Configure(optionsProvider);
         return this;

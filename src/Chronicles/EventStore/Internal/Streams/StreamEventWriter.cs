@@ -7,12 +7,12 @@ namespace Chronicles.EventStore.Internal.Streams;
 
 internal class StreamEventWriter
 {
-    private readonly ICosmosWriter<StreamDocument> writer;
+    private readonly IDocumentWriter<StreamDocument> writer;
     private readonly StreamMetadataReader metadataReader;
     private readonly EventDocumentBatchProducer batchProducer;
 
     public StreamEventWriter(
-        ICosmosWriter<StreamDocument> writer,
+        IDocumentWriter<StreamDocument> writer,
         StreamMetadataReader metadataReader,
         EventDocumentBatchProducer batchProducer)
     {

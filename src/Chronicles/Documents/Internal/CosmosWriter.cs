@@ -4,8 +4,8 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
 
-public class CosmosWriter<T> : ICosmosWriter<T>
-    where T : class, ICosmosDocument
+public class CosmosWriter<T> : IDocumentWriter<T>
+    where T : class, IDocument
 {
     private readonly Container container;
     private readonly IJsonCosmosSerializer serializer;
@@ -18,7 +18,7 @@ public class CosmosWriter<T> : ICosmosWriter<T>
         this.serializer = serializer;
     }
 
-    public ICosmosTransaction<T> CreateTransaction(
+    public IDocumentTransaction<T> CreateTransaction(
         string partitionKey)
         => new CosmosTransaction<T>(
             container.CreateTransactionalBatch(

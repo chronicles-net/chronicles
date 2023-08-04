@@ -6,7 +6,7 @@ namespace Chronicles.Documents;
 /// <summary>
 /// Options for configuring the connection to Cosmos.
 /// </summary>
-public class ChroniclesCosmosOptions
+public class DocumentOptions
 {
     public const string EmulatorEndpoint = "https://localhost:8081/";
     public const string EmulatorAuthKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
@@ -55,13 +55,13 @@ public class ChroniclesCosmosOptions
     public string DefaultDatabaseName { get; set; } = "Chronicles";
 
     /// <summary>
-    /// Configure event store to use <seealso cref="TokenCredential"/> instead <see cref="AuthKey"/>.
+    /// Configure event store to use <seealso cref="TokenCredential"/>.
     /// </summary>
     /// <param name="endpoint">Cosmos account endpoint.</param>
     /// <param name="credentials">Token credentials to use when connecting to cosmos.</param>
     /// <exception cref="ArgumentNullException">Throws when <paramref name="credentials"/> or <paramref name="endpoint"/> are null.</exception>
-    /// <returns>The updated <see cref="ChroniclesCosmosOptions"/>.</returns>
-    public ChroniclesCosmosOptions UseCredentials(
+    /// <returns>The updated <see cref="DocumentOptions"/>.</returns>
+    public DocumentOptions UseCredentials(
         string endpoint,
         TokenCredential credentials)
     {
@@ -78,8 +78,8 @@ public class ChroniclesCosmosOptions
     /// <param name="endpoint">Cosmos account endpoint.</param>
     /// <param name="authKey">Authorization key to connect with.</param>
     /// <exception cref="ArgumentNullException">Throws when <paramref name="authKey"/> or <paramref name="endpoint"/> are null.</exception>
-    /// <returns>The updated <see cref="ChroniclesCosmosOptions"/>.</returns>
-    public ChroniclesCosmosOptions UseCredentials(
+    /// <returns>The updated <see cref="DocumentOptions"/>.</returns>
+    public DocumentOptions UseCredentials(
         string endpoint,
         string authKey)
     {
@@ -95,8 +95,8 @@ public class ChroniclesCosmosOptions
     /// </summary>
     /// <param name="endpoint">Optional custom cosmos emulator endpoint.</param>
     /// <param name="allowAnyServerCertificate">Optionally configure cosmos client to accept any server certificate.</param>
-    /// <returns>The updated <see cref="ChroniclesCosmosOptions"/>.</returns>
-    public ChroniclesCosmosOptions UseCosmosEmulator(
+    /// <returns>The updated <see cref="DocumentOptions"/>.</returns>
+    public DocumentOptions UseCosmosEmulator(
         string endpoint = EmulatorEndpoint,
         bool allowAnyServerCertificate = false)
     {

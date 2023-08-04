@@ -2,8 +2,8 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
 
-public class CosmosTransaction<T> : ICosmosTransaction<T>
-    where T : ICosmosDocument
+public class CosmosTransaction<T> : IDocumentTransaction<T>
+    where T : IDocument
 {
     private readonly TransactionalBatch transaction;
 
@@ -13,7 +13,7 @@ public class CosmosTransaction<T> : ICosmosTransaction<T>
         this.transaction = transaction;
     }
 
-    public ICosmosTransaction<T> Write(
+    public IDocumentTransaction<T> Write(
         T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
@@ -21,7 +21,7 @@ public class CosmosTransaction<T> : ICosmosTransaction<T>
         return this;
     }
 
-    public ICosmosTransaction<T> Create(
+    public IDocumentTransaction<T> Create(
         T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
@@ -29,7 +29,7 @@ public class CosmosTransaction<T> : ICosmosTransaction<T>
         return this;
     }
 
-    public ICosmosTransaction<T> Replace(
+    public IDocumentTransaction<T> Replace(
         T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
@@ -37,7 +37,7 @@ public class CosmosTransaction<T> : ICosmosTransaction<T>
         return this;
     }
 
-    public ICosmosTransaction<T> Delete(
+    public IDocumentTransaction<T> Delete(
         string id,
         TransactionalBatchItemRequestOptions? options = null)
     {

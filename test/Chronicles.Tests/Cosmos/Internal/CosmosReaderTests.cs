@@ -74,7 +74,7 @@ public class CosmosReaderTests
 
     [Fact]
     public void Implements_Interface()
-        => sut.Should().BeAssignableTo<ICosmosReader<TestDocument>>();
+        => sut.Should().BeAssignableTo<IDocumentReader<TestDocument>>();
 
     [Theory, AutoNSubstituteData]
     public async Task ReadAsync_Uses_The_Right_Container(

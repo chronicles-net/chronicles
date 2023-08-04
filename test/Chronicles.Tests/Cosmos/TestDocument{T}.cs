@@ -2,7 +2,7 @@ using Chronicles.Documents;
 
 namespace Chronicles.Tests.Cosmos;
 
-public sealed class TestDocument<T> : ICosmosDocument
+public sealed class TestDocument<T> : IDocument
 {
     public string Id { get; set; } = string.Empty;
 
@@ -12,7 +12,7 @@ public sealed class TestDocument<T> : ICosmosDocument
 
     public T? Data { get; set; }
 
-    string ICosmosDocument.GetDocumentId() => Id;
+    string IDocument.GetDocumentId() => Id;
 
-    string ICosmosDocument.GetPartitionKey() => Pk;
+    string IDocument.GetPartitionKey() => Pk;
 }

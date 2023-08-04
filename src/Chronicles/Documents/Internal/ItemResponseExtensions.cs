@@ -17,7 +17,7 @@ public static class ItemResponseExtensions
         this ItemResponse<object> response,
         IJsonCosmosSerializer serializer,
         T defaultValue)
-        where T : ICosmosDocument
+        where T : IDocument
     {
         if (response.Resource?.ToString() is { } json
             && serializer.FromString<T>(json) is { } obj)
@@ -32,7 +32,7 @@ public static class ItemResponseExtensions
         this Task<ItemResponse<object>> responseTask,
         IJsonCosmosSerializer serializer,
         T defaultValue)
-        where T : ICosmosDocument
+        where T : IDocument
         => (await responseTask.ConfigureAwait(false)).GetItemOrDefault(
             serializer,
             defaultValue);

@@ -8,16 +8,16 @@ using static System.FormattableString;
 namespace Chronicles.Documents.Testing
 {
     /// <summary>
-    /// Represents a fake <see cref="ICosmosReader{T}"/> that can be
+    /// Represents a fake <see cref="IDocumentReader{T}"/> that can be
     /// used when unit testing client code.
     /// </summary>
     /// <typeparam name="T">
-    /// The type of <see cref="ICosmosDocument"/>
+    /// The type of <see cref="IDocument"/>
     /// to be read by this reader.
     /// </typeparam>
     public class FakeCosmosReader<T> :
-        ICosmosReader<T>
-        where T : class, ICosmosDocument
+        IDocumentReader<T>
+        where T : class, IDocument
     {
         private readonly JsonSerializerOptions? serializerOptions;
 

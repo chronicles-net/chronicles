@@ -4,11 +4,11 @@ namespace Chronicles.EventStore.Internal.Streams;
 
 internal class StreamMetadataReader
 {
-    private readonly ICosmosReader<StreamMetadataDocument> reader;
+    private readonly IDocumentReader<StreamMetadataDocument> reader;
     private readonly IDateTimeProvider dateTimeProvider;
 
     public StreamMetadataReader(
-        ICosmosReader<StreamMetadataDocument> reader,
+        IDocumentReader<StreamMetadataDocument> reader,
         IDateTimeProvider dateTimeProvider)
     {
         this.reader = reader;

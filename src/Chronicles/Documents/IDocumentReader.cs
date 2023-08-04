@@ -7,10 +7,10 @@ namespace Chronicles.Documents;
 /// Represents a reader that can read Cosmos documents.
 /// </summary>
 /// <typeparam name="T">
-/// The type of <see cref="ICosmosDocument"/>
+/// The type of <see cref="IDocument"/>
 /// to be read by this reader.
 /// </typeparam>
-public interface ICosmosReader<T>
+public interface IDocumentReader<T>
 {
     /// <summary>
     /// Creates a <see cref="QueryDefinition"/> from a Linq expression.

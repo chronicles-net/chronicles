@@ -5,16 +5,16 @@ using Microsoft.Azure.Cosmos;
 namespace Chronicles.Documents.Testing
 {
     /// <summary>
-    /// Represents a fake <see cref="ICosmosWriter{T}"/> that can be
+    /// Represents a fake <see cref="IDocumentWriter{T}"/> that can be
     /// used when unit testing client code.
     /// </summary>
     /// <typeparam name="T">
-    /// The type of <see cref="ICosmosDocument"/>
+    /// The type of <see cref="IDocument"/>
     /// to be read by this reader.
     /// </typeparam>
     public class FakeCosmosWriter<T> :
-        ICosmosWriter<T>
-        where T : class, ICosmosDocument
+        IDocumentWriter<T>
+        where T : class, IDocument
     {
         private readonly JsonSerializerOptions? serializerOptions;
 
@@ -33,7 +33,7 @@ namespace Chronicles.Documents.Testing
         public IList<T> Documents { get; set; }
             = new List<T>();
 
-        public ICosmosTransaction<T> CreateTransaction(string partitionKey)
+        public IDocumentTransaction<T> CreateTransaction(string partitionKey)
             => new FakeCosmosTransaction<T>(this, partitionKey);
 
         public virtual Task<T> CreateAsync(
@@ -162,7 +162,7 @@ namespace Chronicles.Documents.Testing
         }
 
         protected void GuardNotExists(
-            ICosmosDocument document)
+            IDocument document)
         {
             var existingDocument = Documents.FirstOrDefault(d
                 => d.GetDocumentId() == document.GetDocumentId()
@@ -179,7 +179,7 @@ namespace Chronicles.Documents.Testing
             }
         }
 
-        protected T GuardExists(ICosmosDocument document)
+        protected T GuardExists(IDocument document)
             => GuardExists(document.GetDocumentId(), document.GetPartitionKey());
 
         protected T GuardExists(

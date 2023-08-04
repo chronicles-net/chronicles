@@ -10,7 +10,7 @@ public interface ICosmosContainerProvider
     /// <summary>
     /// Get the configured container for the specified document type.
     /// </summary>
-    /// <typeparam name="T">The <see cref="ICosmosDocument"/>.</typeparam>
+    /// <typeparam name="T">The <see cref="IDocument"/>.</typeparam>
     /// Boolean indicating if the container should
     /// be configured for bulk operations. Default is false.
     /// <returns>A cosmos <see cref="Container"/>.</returns>

@@ -3,15 +3,15 @@ using Chronicles.Documents;
 namespace Chronicles.EventStore.Internal.Streams;
 
 public abstract record StreamDocument()
-    : ICosmosDocument
+    : IDocument
 {
     protected abstract string GetPartitionKey();
 
     protected abstract string GetDocumentId();
 
-    string ICosmosDocument.GetDocumentId()
+    string IDocument.GetDocumentId()
         => GetDocumentId();
 
-    string ICosmosDocument.GetPartitionKey()
+    string IDocument.GetPartitionKey()
         => GetPartitionKey();
 }

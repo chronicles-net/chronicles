@@ -2,7 +2,7 @@ using Chronicles.Documents;
 
 namespace Chronicles.Tests.Cosmos;
 
-public class TestDocument : CosmosDocument
+public class TestDocument : Document
 {
     public string Id { get; set; } = string.Empty;
 

@@ -1,4 +1,4 @@
-﻿namespace Chronicles.Documents;
+namespace Chronicles.Documents;
 
 public class PagedResult<T>
 {

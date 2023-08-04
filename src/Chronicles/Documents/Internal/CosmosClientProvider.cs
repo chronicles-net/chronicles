@@ -6,13 +6,13 @@ namespace Chronicles.Documents.Internal;
 
 public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
 {
-    private readonly IOptions<ChroniclesCosmosOptions> cosmosOptions;
+    private readonly IOptions<DocumentOptions> cosmosOptions;
     private readonly IOptions<CosmosClientOptions> cosmosClientOptions;
     private readonly IJsonCosmosSerializer serializer;
     private CosmosClient? client;
 
     public CosmosClientProvider(
-        IOptions<ChroniclesCosmosOptions> cosmosOptions,
+        IOptions<DocumentOptions> cosmosOptions,
         IOptions<CosmosClientOptions> cosmosClientOptions,
         IJsonCosmosSerializer serializer)
     {
@@ -24,7 +24,7 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
         if (!IsValid(options))
         {
             throw new InvalidOperationException(
-                $"Invalid configuration in {nameof(ChroniclesCosmosOptions)}.");
+                $"Invalid configuration in {nameof(DocumentOptions)}.");
         }
     }
 
@@ -36,7 +36,7 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
         client?.Dispose();
     }
 
-    private static bool IsValid(ChroniclesCosmosOptions? options)
+    private static bool IsValid(DocumentOptions? options)
         => options is not null
         && !string.IsNullOrEmpty(options.AccountEndpoint)
         && (!string.IsNullOrEmpty(options.AccountKey) || options.Credential is not null)

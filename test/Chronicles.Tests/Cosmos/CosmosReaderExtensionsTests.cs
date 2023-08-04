@@ -8,13 +8,13 @@ public class CosmosReaderExtensionsTests
 {
     [Theory, AutoNSubstituteData]
     public async Task FindAsync_Calls_ReadAsync_On_CosmosReader(
-        ICosmosReader<TestDocument> reader,
+        IDocumentReader<TestDocument> reader,
         string documentId,
         string partitionKey,
         ItemRequestOptions options,
         CancellationToken cancellationToken)
     {
-        await CosmosReaderExtensions
+        await DocumentReaderExtensions
             .FindAsync<TestDocument, TestDocument>(
                 reader,
                 documentId,
@@ -33,7 +33,7 @@ public class CosmosReaderExtensionsTests
 
     [Theory, AutoNSubstituteData]
     public async Task FindAsync_Returns_TestDocument_From_CosmosReader(
-        ICosmosReader<TestDocument> reader,
+        IDocumentReader<TestDocument> reader,
         string partitionKey,
         string documentId,
         ItemRequestOptions options,
@@ -43,7 +43,7 @@ public class CosmosReaderExtensionsTests
         reader
             .ReadAsync<TestDocument>(default, default, default, default)
             .ReturnsForAnyArgs(document);
-        var result = await CosmosReaderExtensions
+        var result = await DocumentReaderExtensions
             .FindAsync<TestDocument, TestDocument>(
                 reader,
                 documentId,
@@ -57,7 +57,7 @@ public class CosmosReaderExtensionsTests
 
     [Theory, AutoNSubstituteData]
     public async Task FindAsync_Returns_Default_When_CosmosReader_Throws_NotFound(
-        ICosmosReader<TestDocument> reader,
+        IDocumentReader<TestDocument> reader,
         CosmosException exception,
         string documentId,
         string partitionKey,
@@ -74,7 +74,7 @@ public class CosmosReaderExtensionsTests
             .ReadAsync<TestDocument>(default, default, default, default)
             .ReturnsForAnyArgs(Task.FromException<TestDocument>(exception));
 
-        var response = await CosmosReaderExtensions.FindAsync<TestDocument, TestDocument>(
+        var response = await DocumentReaderExtensions.FindAsync<TestDocument, TestDocument>(
             reader,
             documentId,
             partitionKey,
@@ -88,13 +88,13 @@ public class CosmosReaderExtensionsTests
 
     [Theory, AutoNSubstituteData]
     public void ReadAllAsync_Calls_CreateQuery_On_CosmosReader(
-        ICosmosReader<TestDocument> reader,
+        IDocumentReader<TestDocument> reader,
         string partitionKey,
         QueryRequestOptions options,
         IQueryable<TestDocument> queryable,
         CancellationToken cancellationToken)
     {
-        _ = CosmosReaderExtensions.ReadAllAsync(
+        _ = DocumentReaderExtensions.ReadAllAsync(
             reader,
             partitionKey,
             options,
@@ -113,7 +113,7 @@ public class CosmosReaderExtensionsTests
 
     [Theory, AutoNSubstituteData]
     public void ReadAllAsync_Calls_QueyrAsync_On_Cosmos(
-        ICosmosReader<TestDocument> reader,
+        IDocumentReader<TestDocument> reader,
         string partitionKey,
         QueryRequestOptions options,
         QueryDefinition query,
@@ -123,7 +123,7 @@ public class CosmosReaderExtensionsTests
             .CreateQuery<TestDocument>(default)
             .ReturnsForAnyArgs(query);
 
-        _ = CosmosReaderExtensions.ReadAllAsync(
+        _ = DocumentReaderExtensions.ReadAllAsync(
             reader,
             partitionKey,
             options,
@@ -141,7 +141,7 @@ public class CosmosReaderExtensionsTests
     [Theory, AutoNSubstituteData]
     public void ReadAllAsync_Returns_From_QueryAsync(
         IAsyncEnumerable<TestDocument> queryResult,
-        ICosmosReader<TestDocument> reader,
+        IDocumentReader<TestDocument> reader,
         string partitionKey,
         QueryRequestOptions options,
         CancellationToken cancellationToken)
@@ -150,7 +150,7 @@ public class CosmosReaderExtensionsTests
             .QueryAsync<TestDocument>(default, default, default, default)
             .ReturnsForAnyArgs(queryResult);
 
-        var result = CosmosReaderExtensions.ReadAllAsync(
+        var result = DocumentReaderExtensions.ReadAllAsync(
             reader,
             partitionKey,
             options,

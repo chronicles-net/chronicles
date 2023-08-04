@@ -9,11 +9,11 @@ public class CosmosContainerProvider : ICosmosContainerProvider
 {
     private static readonly ConcurrentDictionary<Type, Container> Containers = new();
     private readonly ICosmosClientProvider clientProvider;
-    private readonly IOptions<ChroniclesCosmosOptions> options;
+    private readonly IOptions<DocumentOptions> options;
 
     public CosmosContainerProvider(
         ICosmosClientProvider clientProvider,
-        IOptions<ChroniclesCosmosOptions> options)
+        IOptions<DocumentOptions> options)
     {
         this.clientProvider = clientProvider;
         this.options = options;

@@ -4,9 +4,9 @@ using Microsoft.Azure.Cosmos;
 namespace Chronicles.Documents.Testing
 {
     public sealed class FakeCosmos<T> :
-        ICosmosReader<T>,
-        ICosmosWriter<T>
-        where T : class, ICosmosDocument
+        IDocumentReader<T>,
+        IDocumentWriter<T>
+        where T : class, IDocument
     {
         public FakeCosmos()
             : this(
@@ -54,43 +54,43 @@ namespace Chronicles.Documents.Testing
 
         public FakeCosmosWriter<T> Writer { get; }
 
-        QueryDefinition ICosmosReader<T>.CreateQuery<TResult>(
+        QueryDefinition IDocumentReader<T>.CreateQuery<TResult>(
             QueryExpression<T, TResult> query)
-            => ((ICosmosReader<T>)Reader).CreateQuery(query);
+            => ((IDocumentReader<T>)Reader).CreateQuery(query);
 
-        Task<TResult> ICosmosReader<T>.ReadAsync<TResult>(
+        Task<TResult> IDocumentReader<T>.ReadAsync<TResult>(
             string documentId,
             string partitionKey,
             ItemRequestOptions? options,
             CancellationToken cancellationToken)
             where TResult : class
-            => ((ICosmosReader<T>)Reader)
+            => ((IDocumentReader<T>)Reader)
                 .ReadAsync<TResult>(
                     documentId,
                     partitionKey,
                     options,
                     cancellationToken);
 
-        IAsyncEnumerable<TResult> ICosmosReader<T>.QueryAsync<TResult>(
+        IAsyncEnumerable<TResult> IDocumentReader<T>.QueryAsync<TResult>(
             QueryDefinition query,
             string? partitionKey,
             QueryRequestOptions? options,
             CancellationToken cancellationToken)
-            => ((ICosmosReader<T>)Reader)
+            => ((IDocumentReader<T>)Reader)
                 .QueryAsync<TResult>(
                     query,
                     partitionKey,
                     options,
                     cancellationToken);
 
-        Task<PagedResult<TResult>> ICosmosReader<T>.PagedQueryAsync<TResult>(
+        Task<PagedResult<TResult>> IDocumentReader<T>.PagedQueryAsync<TResult>(
             QueryDefinition query,
             string? partitionKey,
             QueryRequestOptions? options,
             int? maxItemCount,
             string? continuationToken,
             CancellationToken cancellationToken)
-            => ((ICosmosReader<T>)Reader)
+            => ((IDocumentReader<T>)Reader)
                 .PagedQueryAsync<TResult>(
                     query,
                     partitionKey,
@@ -99,55 +99,55 @@ namespace Chronicles.Documents.Testing
                     continuationToken,
                     cancellationToken);
 
-        Task<T> ICosmosWriter<T>.CreateAsync(
+        Task<T> IDocumentWriter<T>.CreateAsync(
             T document,
             ItemRequestOptions? options,
             CancellationToken cancellationToken)
-            => ((ICosmosWriter<T>)Writer)
+            => ((IDocumentWriter<T>)Writer)
                 .CreateAsync(
                     document,
                     options,
                     cancellationToken);
 
-        Task<T> ICosmosWriter<T>.WriteAsync(
+        Task<T> IDocumentWriter<T>.WriteAsync(
             T document,
             ItemRequestOptions? options,
             CancellationToken cancellationToken)
-            => ((ICosmosWriter<T>)Writer)
+            => ((IDocumentWriter<T>)Writer)
                 .WriteAsync(
                     document,
                     options,
                     cancellationToken);
 
-        Task<T> ICosmosWriter<T>.ReplaceAsync(
+        Task<T> IDocumentWriter<T>.ReplaceAsync(
             T document,
             ItemRequestOptions? options,
             CancellationToken cancellationToken)
-            => ((ICosmosWriter<T>)Writer)
+            => ((IDocumentWriter<T>)Writer)
                 .ReplaceAsync(
                     document,
                     options,
                     cancellationToken);
 
-        Task ICosmosWriter<T>.DeleteAsync(
+        Task IDocumentWriter<T>.DeleteAsync(
             string documentId,
             string partitionKey,
             ItemRequestOptions? options,
             CancellationToken cancellationToken)
-            => ((ICosmosWriter<T>)Writer)
+            => ((IDocumentWriter<T>)Writer)
                 .DeleteAsync(
                     documentId,
                     partitionKey,
                     options,
                     cancellationToken);
 
-        Task<T> ICosmosWriter<T>.UpdateAsync(
+        Task<T> IDocumentWriter<T>.UpdateAsync(
             string documentId,
             string partitionKey,
             Func<T, Task> updateDocument,
             int retries,
             CancellationToken cancellationToken)
-            => ((ICosmosWriter<T>)Writer)
+            => ((IDocumentWriter<T>)Writer)
                 .UpdateAsync(
                     documentId,
                     partitionKey,
@@ -155,21 +155,21 @@ namespace Chronicles.Documents.Testing
                     retries,
                     cancellationToken);
 
-        Task<T> ICosmosWriter<T>.UpdateOrCreateAsync(
+        Task<T> IDocumentWriter<T>.UpdateOrCreateAsync(
             Func<T> getDefaultDocument,
             Func<T, Task> updateDocument,
             int retries,
             CancellationToken cancellationToken)
-            => ((ICosmosWriter<T>)Writer)
+            => ((IDocumentWriter<T>)Writer)
                 .UpdateOrCreateAsync(
                     getDefaultDocument,
                     updateDocument,
                     retries,
                     cancellationToken);
 
-        public ICosmosTransaction<T> CreateTransaction(
+        public IDocumentTransaction<T> CreateTransaction(
             string partitionKey)
-            => ((ICosmosWriter<T>)Writer)
+            => ((IDocumentWriter<T>)Writer)
                 .CreateTransaction(partitionKey);
     }
 }

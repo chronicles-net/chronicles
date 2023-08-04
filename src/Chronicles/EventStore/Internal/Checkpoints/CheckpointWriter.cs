@@ -5,11 +5,11 @@ namespace Chronicles.EventStore.Internal.Checkpoints;
 internal class CheckpointWriter
 {
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly ICosmosWriter<CheckpointDocument<object?>> writer;
+    private readonly IDocumentWriter<CheckpointDocument<object?>> writer;
 
     public CheckpointWriter(
         IDateTimeProvider dateTimeProvider,
-        ICosmosWriter<CheckpointDocument<object?>> writer)
+        IDocumentWriter<CheckpointDocument<object?>> writer)
     {
         this.dateTimeProvider = dateTimeProvider;
         this.writer = writer;

@@ -3,7 +3,7 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents;
 
-public static class CosmosWriterExtensions
+public static class DocumentWriterExtensions
 {
     /// <summary>
     /// Creates a new <typeparamref name="T"/> document in Cosmos.
@@ -13,16 +13,16 @@ public static class CosmosWriterExtensions
     /// with StatusCode <see cref="HttpStatusCode.Conflict"/>
     /// will be thrown if a document already exists.
     /// </remarks>
-    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
-    /// <param name="writer">The <see cref="ICosmosWriter{T}"/>.</param>
+    /// <typeparam name="T">The type used by the <see cref="IDocumentReader{T}"/>.</typeparam>
+    /// <param name="writer">The <see cref="IDocumentWriter{T}"/>.</param>
     /// <param name="document">The document to be created.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> containing the created <typeparamref name="T"/> document.</returns>
     public static Task<T> CreateAsync<T>(
-        this ICosmosWriter<T> writer,
+        this IDocumentWriter<T> writer,
         T document,
         CancellationToken cancellationToken = default)
-        where T : ICosmosDocument
+        where T : IDocument
         => writer.CreateAsync(
             document,
             options: null,
@@ -31,16 +31,16 @@ public static class CosmosWriterExtensions
     /// <summary>
     /// Writes a <typeparamref name="T"/> document to Cosmos, using upsert behavior.
     /// </summary>
-    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
-    /// <param name="writer">The <see cref="ICosmosWriter{T}"/>.</param>
+    /// <typeparam name="T">The type used by the <see cref="IDocumentReader{T}"/>.</typeparam>
+    /// <param name="writer">The <see cref="IDocumentWriter{T}"/>.</param>
     /// <param name="document">The document to be written.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> containing the written <typeparamref name="T"/> document.</returns>
     public static Task<T> WriteAsync<T>(
-        this ICosmosWriter<T> writer,
+        this IDocumentWriter<T> writer,
         T document,
         CancellationToken cancellationToken = default)
-        where T : ICosmosDocument
+        where T : IDocument
         => writer.WriteAsync(
             document,
             options: null,
@@ -61,16 +61,16 @@ public static class CosmosWriterExtensions
     /// will be thrown if the document has been updated since it was read.
     /// </para>
     /// </remarks>
-    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
-    /// <param name="writer">The <see cref="ICosmosWriter{T}"/>.</param>
+    /// <typeparam name="T">The type used by the <see cref="IDocumentReader{T}"/>.</typeparam>
+    /// <param name="writer">The <see cref="IDocumentWriter{T}"/>.</param>
     /// <param name="document">The document to be created.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
     public static Task<T> ReplaceAsync<T>(
-        this ICosmosWriter<T> writer,
+        this IDocumentWriter<T> writer,
         T document,
         CancellationToken cancellationToken = default)
-        where T : ICosmosDocument
+        where T : IDocument
         => writer.ReplaceAsync(
             document,
             options: null,
@@ -84,18 +84,18 @@ public static class CosmosWriterExtensions
     /// with StatusCode <see cref="HttpStatusCode.NotFound"/>
     /// will be thrown if the document does not already exist in Cosmos.
     /// </remarks>
-    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
-    /// <param name="writer">The <see cref="ICosmosWriter{T}"/>.</param>
+    /// <typeparam name="T">The type used by the <see cref="IDocumentReader{T}"/>.</typeparam>
+    /// <param name="writer">The <see cref="IDocumentWriter{T}"/>.</param>
     /// <param name="documentId">Id of the document.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static Task DeleteAsync<T>(
-        this ICosmosWriter<T> writer,
+        this IDocumentWriter<T> writer,
         string documentId,
         string partitionKey,
         CancellationToken cancellationToken = default)
-        where T : ICosmosDocument
+        where T : IDocument
         => writer.DeleteAsync(
             documentId,
             partitionKey,
@@ -108,18 +108,18 @@ public static class CosmosWriterExtensions
     /// <remarks>
     /// When trying to delete a non existing document, False is returned.
     /// </remarks>
-    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
-    /// <param name="writer">The <see cref="ICosmosWriter{T}"/>.</param>
+    /// <typeparam name="T">The type used by the <see cref="IDocumentReader{T}"/>.</typeparam>
+    /// <param name="writer">The <see cref="IDocumentWriter{T}"/>.</param>
     /// <param name="documentId">Id of the document.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns><c>True</c> if document was deleted otherwise <c>False</c>.</returns>
     public static Task<bool> TryDeleteAsync<T>(
-        this ICosmosWriter<T> writer,
+        this IDocumentWriter<T> writer,
         string documentId,
         string partitionKey,
         CancellationToken cancellationToken = default)
-        where T : ICosmosDocument
+        where T : IDocument
         => writer.TryDeleteAsync(
             documentId,
             partitionKey,
@@ -132,20 +132,20 @@ public static class CosmosWriterExtensions
     /// <remarks>
     /// When trying to delete a non existing document, False is returned.
     /// </remarks>
-    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
-    /// <param name="writer">The <see cref="ICosmosWriter{T}"/>.</param>
+    /// <typeparam name="T">The type used by the <see cref="IDocumentReader{T}"/>.</typeparam>
+    /// <param name="writer">The <see cref="IDocumentWriter{T}"/>.</param>
     /// <param name="documentId">Id of the document.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="options">Options for the item request.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns><c>True</c> if document was deleted otherwise <c>False</c>.</returns>
     public static async Task<bool> TryDeleteAsync<T>(
-        this ICosmosWriter<T> writer,
+        this IDocumentWriter<T> writer,
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
         CancellationToken cancellationToken = default)
-        where T : ICosmosDocument
+        where T : IDocument
     {
         try
         {
@@ -183,8 +183,8 @@ public static class CosmosWriterExtensions
     /// and the <paramref name="retries"/> has run out.
     /// </para>
     /// </remarks>
-    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
-    /// <param name="writer">The <see cref="ICosmosWriter{T}"/>.</param>
+    /// <typeparam name="T">The type used by the <see cref="IDocumentReader{T}"/>.</typeparam>
+    /// <param name="writer">The <see cref="IDocumentWriter{T}"/>.</param>
     /// <param name="documentId">Id of the document.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="updateDocument">Function for applying updates to the document.</param>
@@ -192,13 +192,13 @@ public static class CosmosWriterExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used.</param>
     /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
     public static Task<T> UpdateAsync<T>(
-        this ICosmosWriter<T> writer,
+        this IDocumentWriter<T> writer,
         string documentId,
         string partitionKey,
         Action<T> updateDocument,
         int retries = 0,
         CancellationToken cancellationToken = default)
-        where T : ICosmosDocument
+        where T : IDocument
         => writer.UpdateAsync(
             documentId,
             partitionKey,
@@ -220,20 +220,20 @@ public static class CosmosWriterExtensions
     /// will be thrown if the document is being updated simultanious by another thread
     /// and the <paramref name="retries"/> has run out.
     /// </remarks>
-    /// <typeparam name="T">The type used by the <see cref="ICosmosReader{T}"/>.</typeparam>
-    /// <param name="writer">The <see cref="ICosmosWriter{T}"/>.</param>
+    /// <typeparam name="T">The type used by the <see cref="IDocumentReader{T}"/>.</typeparam>
+    /// <param name="writer">The <see cref="IDocumentWriter{T}"/>.</param>
     /// <param name="getDefaultDocument">Function for creating the default document. The returned document need to have the DocumentId and PartitionKey set.</param>
     /// <param name="updateDocument">Function for applying updates to the document.</param>
     /// <param name="retries">Number of retries when a conflict occurs.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used.</param>
     /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
     public static Task<T> UpdateOrCreateAsync<T>(
-        this ICosmosWriter<T> writer,
+        this IDocumentWriter<T> writer,
         Func<T> getDefaultDocument,
         Action<T> updateDocument,
         int retries = 0,
         CancellationToken cancellationToken = default)
-        where T : ICosmosDocument
+        where T : IDocument
         => writer.UpdateOrCreateAsync(
             getDefaultDocument,
             d =>

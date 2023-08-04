@@ -10,11 +10,11 @@ internal record CheckpointDocument<TState>(
     StreamVersion StreamVersion,
     DateTimeOffset Timestamp,
     TState State)
-    : Checkpoint<TState>(Name, StreamId, StreamVersion, Timestamp, State), ICosmosDocument
+    : Checkpoint<TState>(Name, StreamId, StreamVersion, Timestamp, State), IDocument
 {
-    string ICosmosDocument.GetDocumentId()
+    string IDocument.GetDocumentId()
         => Name;
 
-    string ICosmosDocument.GetPartitionKey()
+    string IDocument.GetPartitionKey()
         => StreamId.Value;
 }

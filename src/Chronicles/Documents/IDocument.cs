@@ -3,7 +3,7 @@ namespace Chronicles.Documents;
 /// <summary>
 /// Represents a resource that can exist as a document in a Cosmos collection.
 /// </summary>
-public interface ICosmosDocument
+public interface IDocument
 {
     /// <summary>
     /// Gets the id of the Cosmos document.

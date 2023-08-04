@@ -7,19 +7,19 @@ namespace Chronicles.Documents;
 /// Represents a writer that can write Cosmos documents.
 /// </summary>
 /// <typeparam name="T">
-/// The type of <see cref="ICosmosDocument"/>
+/// The type of <see cref="IDocument"/>
 /// to be written by this writer.
 /// </typeparam>
-public interface ICosmosWriter<T>
-    where T : ICosmosDocument
+public interface IDocumentWriter<T>
+    where T : IDocument
 {
     /// <summary>
     /// Creates a new transaction batch used to perform operations across multiple items
     /// in the container with the provided partition key in a transactional manner.
     /// </summary>
     /// <param name="partitionKey">Partition key for the transaction.</param>
-    /// <returns>A new instance of <see cref="ICosmosTransaction{T}"/>.</returns>
-    ICosmosTransaction<T> CreateTransaction(
+    /// <returns>A new instance of <see cref="IDocumentTransaction{T}"/>.</returns>
+    IDocumentTransaction<T> CreateTransaction(
         string partitionKey);
 
     /// <summary>

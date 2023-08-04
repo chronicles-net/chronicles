@@ -6,11 +6,11 @@ namespace Chronicles.EventStore.Internal.Streams;
 
 internal class StreamEventReader
 {
-    private readonly ICosmosReader<StreamEventDocument> streamReader;
+    private readonly IDocumentReader<StreamEventDocument> streamReader;
     private readonly StreamMetadataReader metadataReader;
 
     public StreamEventReader(
-        ICosmosReader<StreamEventDocument> streamReader,
+        IDocumentReader<StreamEventDocument> streamReader,
         StreamMetadataReader metadataReader)
     {
         this.streamReader = streamReader;

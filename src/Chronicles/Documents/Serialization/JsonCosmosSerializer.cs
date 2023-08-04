@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Chronicles.Documents;
 using Microsoft.Extensions.Options;
 
 namespace Chronicles.Documents.Serialization;
@@ -14,7 +13,7 @@ public class JsonCosmosSerializer : IJsonCosmosSerializer
     private readonly JsonSerializerOptions options;
 
     public JsonCosmosSerializer(
-        IOptions<ChroniclesCosmosOptions> options)
+        IOptions<DocumentOptions> options)
         => this.options = options.Value.SerializerOptions;
 
     [return: MaybeNull]
