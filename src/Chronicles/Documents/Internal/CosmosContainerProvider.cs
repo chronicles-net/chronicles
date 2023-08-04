@@ -41,7 +41,7 @@ public class CosmosContainerProvider : ICosmosContainerProvider
         return containers
             .GetOrAdd(
                 documentType,
-                t => GetContainer(a.ContainerName, a.ClientName));
+                t => GetContainer(a.ContainerName, a.StoreName));
     }
 
     public Container GetContainer(

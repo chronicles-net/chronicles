@@ -36,10 +36,10 @@ public class CosmosSerializerProvider : ICosmosSerializerProvider
         return serializers
             .GetOrAdd(
                 documentType,
-                t => GetSerializer(a.ClientName));
+                t => GetSerializer(a.StoreName));
     }
 
     public ICosmosSerializer GetSerializer(
-        string? clientName = default)
-        => clientProvider.GetSerializer(clientName);
+        string? storename = default)
+        => clientProvider.GetSerializer(storename);
 }

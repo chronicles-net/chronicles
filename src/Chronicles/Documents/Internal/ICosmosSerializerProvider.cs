@@ -1,5 +1,3 @@
-using Microsoft.Azure.Cosmos;
-
 namespace Chronicles.Documents.Internal;
 
 /// <summary>
@@ -26,8 +24,8 @@ public interface ICosmosSerializerProvider
     /// <summary>
     /// Get the container with a specified name.
     /// </summary>
-    /// <param name="clientName">(Optional) Name of the <see cref="CosmosClient"/>.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <returns>A cosmos <see cref="ICosmosSerializer"/>.</returns>
     ICosmosSerializer GetSerializer(
-        string? clientName = null);
+        string? storeName = null);
 }
