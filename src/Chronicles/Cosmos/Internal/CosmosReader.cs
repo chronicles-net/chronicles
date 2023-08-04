@@ -3,7 +3,6 @@ using Microsoft.Azure.Cosmos;
 namespace Chronicles.Cosmos.Internal;
 
 public class CosmosReader<T> : ICosmosReader<T>
-    where T : class
 {
     private readonly Container container;
     private readonly ICosmosLinqQuery linqQuery;

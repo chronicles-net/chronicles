@@ -52,6 +52,8 @@ public class ChroniclesCosmosOptions
     public JsonSerializerOptions SerializerOptions { get; set; }
         = new JsonSerializerOptions();
 
+    public string DefaultDatabaseName { get; set; } = "Chronicles";
+
     /// <summary>
     /// Configure event store to use <seealso cref="TokenCredential"/> instead <see cref="AuthKey"/>.
     /// </summary>
@@ -102,14 +104,6 @@ public class ChroniclesCosmosOptions
         AccountEndpoint = endpoint;
         AccountKey = EmulatorAuthKey;
         AllowAnyServerCertificate = allowAnyServerCertificate;
-
-        return this;
-    }
-
-    public ChroniclesCosmosOptions UseSerializerOptions(
-        JsonSerializerOptions serializerOptions)
-    {
-        SerializerOptions = serializerOptions;
 
         return this;
     }

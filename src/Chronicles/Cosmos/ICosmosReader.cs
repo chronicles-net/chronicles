@@ -11,7 +11,6 @@ namespace Chronicles.Cosmos;
 /// to be read by this reader.
 /// </typeparam>
 public interface ICosmosReader<T>
-    where T : class
 {
     /// <summary>
     /// Creates a <see cref="QueryDefinition"/> from a Linq expression.

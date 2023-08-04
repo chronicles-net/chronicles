@@ -40,7 +40,7 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
         => options is not null
         && !string.IsNullOrEmpty(options.AccountEndpoint)
         && (!string.IsNullOrEmpty(options.AccountKey) || options.Credential is not null)
-        && !string.IsNullOrEmpty(options.DatabaseName);
+        && !string.IsNullOrEmpty(options.DefaultDatabaseName);
 
     private CosmosClient CreateClient()
     {

@@ -28,7 +28,10 @@ public interface ICosmosContainerProvider
     /// <summary>
     /// Get the container with a specified name.
     /// </summary>
-    /// <param name="name">The name of the container.</param>
+    /// <param name="containerName">The name of the container.</param>
+    /// <param name="databaseName">(Optional) The name of the database.</param>
     /// <returns>A cosmos <see cref="Container"/>.</returns>
-    Container GetContainer(string name);
+    Container GetContainer(
+        string containerName,
+        string? databaseName = null);
 }
