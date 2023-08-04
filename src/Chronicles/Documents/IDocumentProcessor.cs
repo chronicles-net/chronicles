@@ -1,12 +1,12 @@
 namespace Chronicles.Documents;
 
 /// <summary>
-/// Represents a processor for a Cosmos change feed.
+/// Represents a processor for document changes.
 /// </summary>
 /// <typeparam name="T">
 /// The type of document to be processed.
 /// </typeparam>
-public interface IChangeFeedProcessor<in T>
+public interface IDocumentProcessor<in T>
 {
     /// <summary>
     /// Processes a batch of changes.
