@@ -19,7 +19,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICosmosContainerProvider, CosmosContainerProvider>()
             .AddSingleton<ICosmosLinqQuery, CosmosLinqQuery>()
             .AddSingleton<IChangeFeedFactory, ChangeFeedFactory>()
-            .AddSingleton<ISubscriptionManager, SubscriptionManager>();
+            .AddSingleton<ISubscriptionManager, SubscriptionManager>()
+            .AddHostedService<DocumentStoreService>();
 
         return new ChroniclesBuilder(services);
     }

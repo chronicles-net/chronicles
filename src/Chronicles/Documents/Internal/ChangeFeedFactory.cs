@@ -6,14 +6,14 @@ namespace Chronicles.Documents.Internal;
 public class ChangeFeedFactory : IChangeFeedFactory
 {
     private readonly ICosmosContainerProvider containerProvider;
-    private readonly IOptionsMonitor<SubscriptionOptions> optionsMonitor;
+    private readonly IOptionsMonitor<SubscriptionOptions> subscriptionOptions;
 
     public ChangeFeedFactory(
         ICosmosContainerProvider containerProvider,
-        IOptionsMonitor<SubscriptionOptions> optionsMonitor)
+        IOptionsMonitor<SubscriptionOptions> subscriptionOptions)
     {
         this.containerProvider = containerProvider;
-        this.optionsMonitor = optionsMonitor;
+        this.subscriptionOptions = subscriptionOptions;
     }
 
     public ChangeFeedProcessor Create<T>(
@@ -21,7 +21,7 @@ public class ChangeFeedFactory : IChangeFeedFactory
         Container.ChangesHandler<T> onChanges,
         Container.ChangeFeedMonitorErrorDelegate? onError = null)
     {
-        var options = optionsMonitor.Get(subscriptionName);
+        var options = subscriptionOptions.Get(subscriptionName);
         var container = containerProvider.GetContainer<T>();
 
         var builder = container
@@ -29,7 +29,7 @@ public class ChangeFeedFactory : IChangeFeedFactory
                 subscriptionName,
                 onChanges)
             .WithLeaseContainer(
-                containerProvider.GetContainer("Subscriptions"))
+                containerProvider.GetSubscriptionContainer<T>())
             .WithMaxItems(100)
             .WithPollInterval(options.PollingInterval)
             .WithStartTime(DateTime.MinValue.ToUniversalTime()); // Will start from the beginning of feed when no lease is found.

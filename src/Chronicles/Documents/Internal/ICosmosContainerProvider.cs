@@ -32,4 +32,6 @@ public interface ICosmosContainerProvider
     Container GetContainer(
         string containerName,
         string? clientName = null);
+
+    Container GetSubscriptionContainer<T>();
 }

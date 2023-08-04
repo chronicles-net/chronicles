@@ -52,4 +52,25 @@ public class CosmosContainerProvider : ICosmosContainerProvider
             .GetContainer(
                 options.Get(clientName).DatabaseName,
                 containerName);
+
+    public Container GetSubscriptionContainer<T>()
+        => GetSubscriptionContainer(typeof(T));
+
+    public Container GetSubscriptionContainer(Type documentType)
+    {
+        if (documentType.GetCustomAttribute<ContainerNameAttribute>(inherit: true) is not { } a)
+        {
+            throw new ArgumentException(
+                $"Type {documentType.Name} is not supported. " +
+                $"Missing {nameof(ContainerNameAttribute)}.",
+                nameof(documentType));
+        }
+
+        return GetSubscriptionContainer(a.StoreName);
+    }
+
+    public Container GetSubscriptionContainer(string? storeName)
+        => GetContainer(
+            options.Get(storeName).SubscriptionContainerName,
+            storeName);
 }
