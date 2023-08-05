@@ -1,4 +1,4 @@
-﻿using Chronicles.Documents;
+using Chronicles.Documents;
 using Chronicles.Documents.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -25,12 +25,12 @@ public class ChroniclesBuilder
         string storeName)
         => AddDocumentStore(storeName, options => { });
 
-    public ChroniclesBuilder AddSubcription<TDocument, TProcessor>(
+    public ChroniclesBuilder AddSubscription<TDocument, TProcessor>(
         string subscriptionName)
         where TProcessor : class, IDocumentProcessor<TDocument>
-        => AddSubcription<TDocument, TProcessor>(subscriptionName, o => { });
+        => AddSubscription<TDocument, TProcessor>(subscriptionName, o => { });
 
-    public ChroniclesBuilder AddSubcription<TDocument, TProcessor>(
+    public ChroniclesBuilder AddSubscription<TDocument, TProcessor>(
         string subscriptionName,
         Action<SubscriptionOptions> optionsProvider)
         where TProcessor : class, IDocumentProcessor<TDocument>
