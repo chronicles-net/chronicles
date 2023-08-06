@@ -5,7 +5,7 @@ using Dasync.Collections;
 using Microsoft.Azure.Cosmos;
 using NSubstitute;
 
-namespace Chronicles.Tests.Cosmos.Internal;
+namespace Chronicles.Tests.Documents.Internal;
 
 public class CosmosReaderTests
 {

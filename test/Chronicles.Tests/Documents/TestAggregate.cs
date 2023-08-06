@@ -1,4 +1,4 @@
-namespace Chronicles.Tests.Cosmos;
+namespace Chronicles.Tests.Documents;
 
 public class TestAggregate
 {

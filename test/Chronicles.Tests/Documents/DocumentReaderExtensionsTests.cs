@@ -2,9 +2,9 @@ using Chronicles.Documents;
 using Microsoft.Azure.Cosmos;
 using NSubstitute;
 
-namespace Chronicles.Tests.Cosmos;
+namespace Chronicles.Tests.Documents;
 
-public class CosmosReaderExtensionsTests
+public class DocumentReaderExtensionsTests
 {
     [Theory, AutoNSubstituteData]
     public async Task FindAsync_Calls_ReadAsync_On_CosmosReader(
@@ -14,9 +14,7 @@ public class CosmosReaderExtensionsTests
         ItemRequestOptions options,
         CancellationToken cancellationToken)
     {
-        await DocumentReaderExtensions
-            .FindAsync<TestDocument, TestDocument>(
-                reader,
+        await reader.FindAsync<TestDocument, TestDocument>(
                 documentId,
                 partitionKey,
                 options,
@@ -43,9 +41,7 @@ public class CosmosReaderExtensionsTests
         reader
             .ReadAsync<TestDocument>(default, default, default, default)
             .ReturnsForAnyArgs(document);
-        var result = await DocumentReaderExtensions
-            .FindAsync<TestDocument, TestDocument>(
-                reader,
+        var result = await reader.FindAsync<TestDocument, TestDocument>(
                 documentId,
                 partitionKey,
                 options,
@@ -74,8 +70,7 @@ public class CosmosReaderExtensionsTests
             .ReadAsync<TestDocument>(default, default, default, default)
             .ReturnsForAnyArgs(Task.FromException<TestDocument>(exception));
 
-        var response = await DocumentReaderExtensions.FindAsync<TestDocument, TestDocument>(
-            reader,
+        var response = await reader.FindAsync<TestDocument, TestDocument>(
             documentId,
             partitionKey,
             options,
@@ -94,8 +89,7 @@ public class CosmosReaderExtensionsTests
         IQueryable<TestDocument> queryable,
         CancellationToken cancellationToken)
     {
-        _ = DocumentReaderExtensions.ReadAllAsync(
-            reader,
+        _ = reader.ReadAllAsync(
             partitionKey,
             options,
             cancellationToken);
@@ -123,8 +117,7 @@ public class CosmosReaderExtensionsTests
             .CreateQuery<TestDocument>(default)
             .ReturnsForAnyArgs(query);
 
-        _ = DocumentReaderExtensions.ReadAllAsync(
-            reader,
+        _ = reader.ReadAllAsync(
             partitionKey,
             options,
             cancellationToken);
@@ -150,8 +143,7 @@ public class CosmosReaderExtensionsTests
             .QueryAsync<TestDocument>(default, default, default, default)
             .ReturnsForAnyArgs(queryResult);
 
-        var result = DocumentReaderExtensions.ReadAllAsync(
-            reader,
+        var result = reader.ReadAllAsync(
             partitionKey,
             options,
             cancellationToken);

@@ -1,6 +1,6 @@
 using Chronicles.Documents;
 
-namespace Chronicles.Tests.Cosmos;
+namespace Chronicles.Tests.Documents;
 
 public sealed class TestDocument<T> : IDocument
 {
