@@ -69,6 +69,7 @@ public class CosmosWriter<T> : IDocumentWriter<T>
             .DeleteItemAsync<object>(
                 documentId,
                 new PartitionKey(partitionKey),
+                options,
                 cancellationToken: cancellationToken);
 
     public async Task<T> UpdateAsync(
