@@ -1,16 +1,18 @@
 using System.Collections.Concurrent;
-using System.Reflection;
 
 namespace Chronicles.Documents.Internal;
 
 public class CosmosSerializerProvider : ICosmosSerializerProvider
 {
     private readonly ConcurrentDictionary<Type, ICosmosSerializer> serializers = new();
+    private readonly IContainerNameRegistry registry;
     private readonly ICosmosClientProvider clientProvider;
 
     public CosmosSerializerProvider(
+        IContainerNameRegistry registry,
         ICosmosClientProvider clientProvider)
     {
+        this.registry = registry;
         this.clientProvider = clientProvider;
     }
 
@@ -25,18 +27,11 @@ public class CosmosSerializerProvider : ICosmosSerializerProvider
             return serializer;
         }
 
-        if (documentType.GetCustomAttribute<ContainerNameAttribute>(inherit: true) is not { } a)
-        {
-            throw new ArgumentException(
-                $"Type {documentType.Name} is not supported. " +
-                $"Missing {nameof(ContainerNameAttribute)}.",
-                nameof(documentType));
-        }
-
+        var name = registry.GetContainerName(documentType);
         return serializers
             .GetOrAdd(
                 documentType,
-                t => GetSerializer(a.StoreName));
+                t => GetSerializer(name.StoreName));
     }
 
     public ICosmosSerializer GetSerializer(

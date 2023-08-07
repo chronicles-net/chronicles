@@ -11,18 +11,20 @@ public static class ServiceCollectionExtensions
     {
         services.Configure(optionsProvider);
 
+        var registry = new ContainerNameRegistry();
         services
             .AddSingleton(typeof(IDocumentReader<>), typeof(CosmosReader<>))
             .AddSingleton(typeof(IDocumentWriter<>), typeof(CosmosWriter<>))
             .AddSingleton<ICosmosClientProvider, CosmosClientProvider>()
             .AddSingleton<ICosmosSerializerProvider, CosmosSerializerProvider>()
+            .AddSingleton<IContainerNameRegistry>(registry)
             .AddSingleton<ICosmosContainerProvider, CosmosContainerProvider>()
             .AddSingleton<ICosmosLinqQuery, CosmosLinqQuery>()
             .AddSingleton<IChangeFeedFactory, ChangeFeedFactory>()
             .AddSingleton<ISubscriptionManager, SubscriptionManager>()
             .AddHostedService<DocumentStoreService>();
 
-        return new ChroniclesBuilder(services);
+        return new ChroniclesBuilder(services, registry);
     }
 
     public static ChroniclesBuilder AddChronicles(

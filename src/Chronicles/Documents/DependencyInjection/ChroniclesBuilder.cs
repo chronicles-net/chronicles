@@ -5,10 +5,14 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public class ChroniclesBuilder
 {
+    private readonly IContainerNameRegistry registry;
+
     public ChroniclesBuilder(
-        IServiceCollection services)
+        IServiceCollection services,
+        IContainerNameRegistry registry)
     {
-        this.Services = services;
+        Services = services;
+        this.registry = registry;
     }
 
     public IServiceCollection Services { get; }
@@ -24,6 +28,24 @@ public class ChroniclesBuilder
     public ChroniclesBuilder AddDocumentStore(
         string storeName)
         => AddDocumentStore(storeName, options => { });
+
+    public ChroniclesBuilder AddContainer<T>(
+        string containerName,
+        string? storeName = null)
+        => AddContainer(typeof(T), containerName, storeName);
+
+    public ChroniclesBuilder AddContainer(
+        Type documentType,
+        string containerName,
+        string? storeName = null)
+    {
+        registry.AddContainerName(
+            documentType,
+            containerName,
+            storeName);
+
+        return this;
+    }
 
     public ChroniclesBuilder AddSubscription<TDocument, TProcessor>(
         string subscriptionName)

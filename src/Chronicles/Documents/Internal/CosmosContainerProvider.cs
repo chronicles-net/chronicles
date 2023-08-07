@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Reflection;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
 
@@ -9,13 +8,16 @@ public class CosmosContainerProvider : ICosmosContainerProvider
 {
     private readonly ConcurrentDictionary<Type, Container> containers = new();
     private readonly ICosmosClientProvider clientProvider;
+    private readonly IContainerNameRegistry registry;
     private readonly IOptionsMonitor<DocumentOptions> options;
 
     public CosmosContainerProvider(
         ICosmosClientProvider clientProvider,
+        IContainerNameRegistry registry,
         IOptionsMonitor<DocumentOptions> options)
     {
         this.clientProvider = clientProvider;
+        this.registry = registry;
         this.options = options;
     }
 
@@ -30,23 +32,16 @@ public class CosmosContainerProvider : ICosmosContainerProvider
             return container;
         }
 
-        if (documentType.GetCustomAttribute<ContainerNameAttribute>(inherit: true) is not { } a)
-        {
-            throw new ArgumentException(
-                $"Type {documentType.Name} is not supported. " +
-                $"Missing {nameof(ContainerNameAttribute)}.",
-                nameof(documentType));
-        }
-
+        var name = registry.GetContainerName(documentType);
         return containers
             .GetOrAdd(
                 documentType,
-                t => GetContainer(a.ContainerName, a.StoreName));
+                t => GetContainer(name.ContainerName, name.StoreName));
     }
 
     public Container GetContainer(
         string containerName,
-        string? storeName = default)
+        string? storeName = null)
         => clientProvider
             .GetClient(storeName)
             .GetContainer(
@@ -57,19 +52,12 @@ public class CosmosContainerProvider : ICosmosContainerProvider
         => GetSubscriptionContainer(typeof(T));
 
     public Container GetSubscriptionContainer(Type documentType)
-    {
-        if (documentType.GetCustomAttribute<ContainerNameAttribute>(inherit: true) is not { } a)
-        {
-            throw new ArgumentException(
-                $"Type {documentType.Name} is not supported. " +
-                $"Missing {nameof(ContainerNameAttribute)}.",
-                nameof(documentType));
-        }
+        => GetSubscriptionContainer(
+            registry
+                .GetContainerName(documentType).StoreName);
 
-        return GetSubscriptionContainer(a.StoreName);
-    }
-
-    public Container GetSubscriptionContainer(string? storeName)
+    public Container GetSubscriptionContainer(
+        string? storeName = null)
         => GetContainer(
             options.Get(storeName).SubscriptionContainerName,
             storeName);
