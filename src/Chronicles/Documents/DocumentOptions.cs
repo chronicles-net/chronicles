@@ -52,7 +52,7 @@ public class DocumentOptions
     /// Gets or sets the options for controlling the json serializer.
     /// </summary>
     public JsonSerializerOptions SerializerOptions { get; set; }
-        = new JsonSerializerOptions();
+        = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     public string DatabaseName { get; set; } = "Chronicles";
 

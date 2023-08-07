@@ -11,10 +11,10 @@ public class CosmosWriter<T> : IDocumentWriter<T>
 
     public CosmosWriter(
         ICosmosContainerProvider containerProvider,
-        ICosmosSerializer serializer)
+        ICosmosSerializerProvider serializer)
     {
         container = containerProvider.GetContainer<T>();
-        this.serializer = serializer;
+        this.serializer = serializer.GetSerializer<T>();
     }
 
     public IDocumentTransaction<T> CreateTransaction(
