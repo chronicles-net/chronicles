@@ -15,15 +15,15 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
         => this.documentOptions = documentOptions;
 
     public CosmosClient GetClient(
-        string? clientName = null)
+        string? storeName = null)
         => clients
             .GetOrAdd(
-                clientName ?? Options.DefaultName,
-                _ => CreateClient(clientName));
+                storeName ?? Options.DefaultName,
+                _ => CreateClient(storeName));
 
     public ICosmosSerializer GetSerializer(
-        string? clientName = null)
-        => GetSerializer(clientName, null);
+        string? storeName = null)
+        => GetSerializer(storeName, null);
 
     public void Dispose()
     {
@@ -34,11 +34,11 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
     }
 
     private CosmosClient CreateClient(
-        string? clientName = null)
+        string? storeName = null)
     {
-        var options = GetOptions(clientName);
+        var options = GetOptions(storeName);
         options.CosmosClientOptions.Serializer = new CosmosSerializerAdapter(
-            GetSerializer(clientName, options));
+            GetSerializer(storeName, options));
 
         return options.Credential is not null
             ? new CosmosClient(
@@ -52,22 +52,22 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
     }
 
     private ICosmosSerializer GetSerializer(
-        string? clientName,
+        string? storeName,
         DocumentOptions? options)
         => serializers
             .GetOrAdd(
-                clientName ?? Options.DefaultName,
+                storeName ?? Options.DefaultName,
                 _ => new CosmosSerializer(
-                    (options ?? GetOptions(clientName)).SerializerOptions));
+                    (options ?? GetOptions(storeName)).SerializerOptions));
 
-    private DocumentOptions GetOptions(string? name)
+    private DocumentOptions GetOptions(string? storeName)
     {
-        var options = documentOptions.Get(name);
+        var options = documentOptions.Get(storeName);
         if (!IsValid(options))
         {
-            var storeName = string.IsNullOrEmpty(name) ? "dafault" : $"\"{name}\"";
+            var name = string.IsNullOrEmpty(storeName) ? "default" : $"\"{storeName}\"";
             throw new InvalidOperationException(
-                $"The {nameof(DocumentOptions)} for {storeName} document store is not correctly configured.");
+                $"The {nameof(DocumentOptions)} for {name} document store is not correctly configured.");
         }
 
         return options;

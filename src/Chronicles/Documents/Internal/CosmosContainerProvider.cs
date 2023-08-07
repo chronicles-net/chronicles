@@ -46,11 +46,11 @@ public class CosmosContainerProvider : ICosmosContainerProvider
 
     public Container GetContainer(
         string containerName,
-        string? clientName = default)
+        string? storeName = default)
         => clientProvider
-            .GetClient(clientName)
+            .GetClient(storeName)
             .GetContainer(
-                options.Get(clientName).DatabaseName,
+                options.Get(storeName).DatabaseName,
                 containerName);
 
     public Container GetSubscriptionContainer<T>()
