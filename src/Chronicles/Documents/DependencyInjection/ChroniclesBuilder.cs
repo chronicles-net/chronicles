@@ -1,5 +1,6 @@
 using Chronicles.Documents;
 using Chronicles.Documents.Internal;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -18,30 +19,16 @@ public class ChroniclesBuilder
         Action<DocumentOptions> optionsProvider)
     {
         Services.Configure(storeName, optionsProvider);
+        Services.AddSingleton<IDocumentStore>(s => new DocumentStore(
+            storeName,
+            s.GetRequiredService<IOptionsMonitor<DocumentOptions>>()));
+
         return this;
     }
 
     public ChroniclesBuilder AddDocumentStore(
         string storeName)
         => AddDocumentStore(storeName, options => { });
-
-    public ChroniclesBuilder AddContainer<T>(
-        string containerName,
-        string? storeName = null)
-        => AddContainer(typeof(T), containerName, storeName);
-
-    public ChroniclesBuilder AddContainer(
-        Type documentType,
-        string containerName,
-        string? storeName = null)
-    {
-        Services.AddSingleton(new ContainerNameRegistration(
-            documentType,
-            containerName,
-            storeName));
-
-        return this;
-    }
 
     public ChroniclesBuilder AddSubscription<TDocument, TProcessor>(
         string subscriptionName)

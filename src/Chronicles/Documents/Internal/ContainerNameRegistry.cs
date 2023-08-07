@@ -1,27 +1,28 @@
 using System.Collections.Concurrent;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Chronicles.Documents.Internal;
 
 public class ContainerNameRegistry : IContainerNameRegistry
 {
-    private readonly ConcurrentDictionary<Type, ContainerNameRegistration> names;
+    private readonly ConcurrentDictionary<Type, DocumentContainer> names;
 
     public ContainerNameRegistry(
-        IEnumerable<ContainerNameRegistration> registrations)
+        IEnumerable<IDocumentStore> stores)
     {
-        this.names = new(registrations
+        names = new(
+            stores
+            .SelectMany(s => s.Options.ContainerNames.Select(c => new DocumentContainer(c.Key, c.Value, s.Name)))
             .GroupBy(r => r.DocumentType)
             .ToDictionary(
                 r => r.Key,
                 r => r.First()));
     }
 
-    public ContainerNameRegistration GetContainerName<T>()
+    public DocumentContainer GetContainerName<T>()
         => GetContainerName(typeof(T));
 
-    public ContainerNameRegistration GetContainerName(
+    public DocumentContainer GetContainerName(
         Type documentType)
     {
         if (names.TryGetValue(documentType, out var containerName))
@@ -50,7 +51,7 @@ public class ContainerNameRegistry : IContainerNameRegistry
         throw new ArgumentException(
             $"Type {documentType.Name} is not supported. " +
             $"Missing {nameof(ContainerNameAttribute)} or " +
-            $"registration via the {nameof(ChroniclesBuilder)}.{nameof(ChroniclesBuilder.AddContainer)}.",
+            $"container registration in {nameof(DocumentOptions)}.",
             nameof(documentType));
     }
 }

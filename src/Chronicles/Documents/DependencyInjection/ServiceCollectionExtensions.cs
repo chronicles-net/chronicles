@@ -1,5 +1,6 @@
 using Chronicles.Documents;
 using Chronicles.Documents.Internal;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -9,7 +10,11 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         Action<DocumentOptions> optionsProvider)
     {
-        services.Configure(optionsProvider);
+        services
+            .Configure(optionsProvider)
+            .AddSingleton<IDocumentStore>(s => new DocumentStore(
+                Options.Options.DefaultName,
+                s.GetRequiredService<IOptionsMonitor<DocumentOptions>>()));
 
         services
             .AddSingleton(typeof(IDocumentReader<>), typeof(CosmosReader<>))

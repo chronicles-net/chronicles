@@ -11,6 +11,7 @@ public class DocumentOptions
 {
     public const string EmulatorEndpoint = "https://localhost:8081/";
     public const string EmulatorAuthKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
+    private readonly Dictionary<Type, string> containerNames = new();
 
     /// <summary>
     /// Gets the Cosmos account endpoint URI.
@@ -58,6 +59,8 @@ public class DocumentOptions
     public string SubscriptionContainerName { get; set; } = "Subscriptions";
 
     public CosmosClientOptions CosmosClientOptions { get; } = new();
+
+    public IReadOnlyDictionary<Type, string> ContainerNames => containerNames;
 
     /// <summary>
     /// Configure event store to use <seealso cref="TokenCredential"/>.
@@ -110,6 +113,15 @@ public class DocumentOptions
         AccountKey = EmulatorAuthKey;
         AllowAnyServerCertificate = allowAnyServerCertificate;
 
+        return this;
+    }
+
+    public DocumentOptions AddContainer<T>(string containerName)
+        => AddContainer(typeof(T), containerName);
+
+    public DocumentOptions AddContainer(Type documentType, string containerName)
+    {
+        containerNames[documentType] = containerName;
         return this;
     }
 }
