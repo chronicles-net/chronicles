@@ -176,6 +176,52 @@ public class CosmosReaderTests
     }
 
     [Theory, AutoNSubstituteData]
+    public void QueryAsync_Calls_GetItemQuery_Iterator_On_Container(
+        QueryDefinition query,
+        QueryRequestOptions options,
+        CancellationToken cancellationToken)
+    {
+        _ = sut.QueryAsync<TestDocument>(
+            query,
+            partitionKey: null,
+            options,
+            cancellationToken);
+
+        container
+            .Received(1)
+            .GetItemQueryIterator<TestDocument>(
+                query,
+                null,
+                options);
+    }
+
+    [Theory, AutoNSubstituteData]
+    public void QueryAsync_Calls_GetItemQuery_Iterator_On_Container_With_PartitionKey(
+        QueryDefinition query,
+        string partitionKey,
+        QueryRequestOptions options,
+        CancellationToken cancellationToken)
+    {
+        _ = sut.QueryAsync<TestDocument>(
+            query,
+            partitionKey,
+            options,
+            cancellationToken);
+
+        container
+            .Received(1)
+            .GetItemQueryIterator<TestDocument>(
+                query,
+                null,
+                Arg.Is<QueryRequestOptions>(o => o.PartitionKey == new PartitionKey(partitionKey)));
+
+        container
+            .ReceivedCallWithArgument<QueryRequestOptions>()
+            .Should()
+            .BeEquivalentTo(options, c => c.Excluding(o => o.PartitionKey));
+    }
+
+    [Theory, AutoNSubstituteData]
     public async Task QueryAsync_Returns_Empty_No_More_Result(
         QueryDefinition query,
         string partitionKey,
@@ -292,6 +338,63 @@ public class CosmosReaderTests
         containerProvider
             .Received(1)
             .GetContainer<TestDocument>();
+    }
+
+    [Theory, AutoNSubstituteData]
+    public async Task PagedQueryAsync_Calls_GetItemQuery_Iterator_On_Container(
+        QueryDefinition query,
+        QueryRequestOptions options,
+        string continuationToken,
+        CancellationToken cancellationToken)
+    {
+        await sut.PagedQueryAsync<TestDocument>(
+            query,
+            partitionKey: null,
+            options,
+            maxItemCount: null,
+            continuationToken,
+            cancellationToken);
+
+        container
+            .Received(1)
+            .GetItemQueryIterator<TestDocument>(
+                query,
+                continuationToken,
+                options);
+    }
+
+    [Theory, AutoNSubstituteData]
+    public async Task PagedQueryAsync_Calls_GetItemQuery_Iterator_On_Container_With_PartitionKey(
+        QueryDefinition query,
+        string partitionKey,
+        QueryRequestOptions options,
+        int maxItemCount,
+        string continuationToken,
+        CancellationToken cancellationToken)
+    {
+        await sut.PagedQueryAsync<TestDocument>(
+            query,
+            partitionKey,
+            options,
+            maxItemCount,
+            continuationToken,
+            cancellationToken);
+
+        container
+            .Received(1)
+            .GetItemQueryIterator<TestDocument>(
+                query,
+                continuationToken,
+                Arg.Is<QueryRequestOptions>(o
+                    => o.PartitionKey == new PartitionKey(partitionKey)
+                    && o.MaxItemCount == maxItemCount));
+
+        container
+            .ReceivedCallWithArgument<QueryRequestOptions>()
+            .Should()
+            .BeEquivalentTo(options, c=> c
+                .Excluding(o => o.PartitionKey)
+                .Excluding(o => o.MaxItemCount));
     }
 
     [Theory, AutoNSubstituteData]

@@ -324,5 +324,28 @@ namespace Chronicles.Tests.Documents.Internal
                     Arg.Any<ItemRequestOptions>(),
                     cancellationToken);
         }
+
+        [Theory, AutoNSubstituteData]
+        public void CreateTransaction_Calls_CreateTransactionalBatch_On_Container(
+            string partitionKey)
+        {
+            sut.CreateTransaction(partitionKey);
+
+            container
+                .Received(1)
+                .CreateTransactionalBatch(
+                    new PartitionKey(partitionKey));
+        }
+
+
+        [Theory, AutoNSubstituteData]
+        public void CreateTransaction_Returns_CosmosTransaction(
+            string partitionKey)
+        {
+            var result = sut.CreateTransaction(partitionKey);
+            result
+                .Should()
+                .BeAssignableTo<CosmosTransaction<TestDocument>>();
+        }
     }
 }
