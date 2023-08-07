@@ -21,7 +21,7 @@ public static class DocumentReaderExtensions
         string documentId,
         string partitionKey,
         CancellationToken cancellationToken = default)
-        => reader.FindAsync(
+        => reader.FindAsync<T, T>(
             documentId,
             partitionKey,
             options: null,
@@ -44,7 +44,7 @@ public static class DocumentReaderExtensions
         string partitionKey,
         ItemRequestOptions? options,
         CancellationToken cancellationToken = default)
-        => reader.FindAsync(
+        => reader.FindAsync<T, T>(
             documentId,
             partitionKey,
             options,
