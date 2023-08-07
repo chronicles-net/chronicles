@@ -15,6 +15,7 @@ namespace Chronicles.Tests.Documents.Internal
         private readonly Container container;
         private readonly ICosmosContainerProvider containerProvider;
         private readonly ICosmosSerializer serializer;
+        private readonly ICosmosSerializerProvider serializerProvider;
         private readonly CosmosWriter<TestDocument> sut;
 
         public CosmosWriterTests()
@@ -57,7 +58,12 @@ namespace Chronicles.Tests.Documents.Internal
                 .FromString<TestDocument>(default)
                 .ReturnsForAnyArgs(new Fixture().Create<TestDocument>());
 
-            sut = new CosmosWriter<TestDocument>(containerProvider, serializer);
+            serializerProvider = Substitute.For<ICosmosSerializerProvider>();
+            serializerProvider
+                .GetSerializer<object>()
+                .ReturnsForAnyArgs(serializer);
+
+            sut = new CosmosWriter<TestDocument>(containerProvider, serializerProvider);
         }
 
         [Fact]
