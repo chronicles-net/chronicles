@@ -6,26 +6,22 @@ namespace Chronicles.Documents.Internal;
 
 public class ContainerNameRegistry : IContainerNameRegistry
 {
-    private readonly ConcurrentDictionary<Type, ContainerNameAttribute> names = new();
+    private readonly ConcurrentDictionary<Type, ContainerNameRegistration> names;
 
-    public void AddContainerName<T>(
-        string containerName,
-        string? storeName = null)
-        => AddContainerName(typeof(T), containerName, storeName);
+    public ContainerNameRegistry(
+        IEnumerable<ContainerNameRegistration> registrations)
+    {
+        this.names = new(registrations
+            .GroupBy(r => r.DocumentType)
+            .ToDictionary(
+                r => r.Key,
+                r => r.First()));
+    }
 
-    public void AddContainerName(
-        Type documentType,
-        string containerName,
-        string? storeName = null)
-        => names[documentType] = new(containerName)
-        {
-            StoreName = storeName,
-        };
-
-    public ContainerNameAttribute GetContainerName<T>()
+    public ContainerNameRegistration GetContainerName<T>()
         => GetContainerName(typeof(T));
 
-    public ContainerNameAttribute GetContainerName(
+    public ContainerNameRegistration GetContainerName(
         Type documentType)
     {
         if (names.TryGetValue(documentType, out var containerName))
@@ -33,9 +29,12 @@ public class ContainerNameRegistry : IContainerNameRegistry
             return containerName;
         }
 
-        if (documentType.GetCustomAttribute<ContainerNameAttribute>(inherit: true) is { } result)
+        if (documentType.GetCustomAttribute<ContainerNameAttribute>(inherit: true) is { } attribute)
         {
-            return names[documentType] = result;
+            return names[documentType] = new(
+                documentType,
+                attribute.ContainerName,
+                attribute.StoreName);
         }
 
         var baseType = documentType.BaseType;

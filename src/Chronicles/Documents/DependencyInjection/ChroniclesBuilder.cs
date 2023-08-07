@@ -5,14 +5,10 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public class ChroniclesBuilder
 {
-    private readonly IContainerNameRegistry registry;
-
     public ChroniclesBuilder(
-        IServiceCollection services,
-        IContainerNameRegistry registry)
+        IServiceCollection services)
     {
         Services = services;
-        this.registry = registry;
     }
 
     public IServiceCollection Services { get; }
@@ -39,10 +35,10 @@ public class ChroniclesBuilder
         string containerName,
         string? storeName = null)
     {
-        registry.AddContainerName(
+        Services.AddSingleton(new ContainerNameRegistration(
             documentType,
             containerName,
-            storeName);
+            storeName));
 
         return this;
     }
