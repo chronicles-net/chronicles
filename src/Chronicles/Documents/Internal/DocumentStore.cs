@@ -6,13 +6,17 @@ public class DocumentStore : IDocumentStore
 {
     public DocumentStore(
         string name,
-        IOptionsMonitor<DocumentOptions> optionsMonitor)
+        IOptionsMonitor<DocumentOptions> documentOptions,
+        IOptionsMonitor<InitializationOptions> initializationOptions)
     {
         Name = name;
-        Options = optionsMonitor.Get(name);
+        Options = documentOptions.Get(name);
+        Initialization = initializationOptions.Get(name);
     }
 
     public string Name { get; }
 
     public DocumentOptions Options { get; }
+
+    public InitializationOptions Initialization { get; }
 }

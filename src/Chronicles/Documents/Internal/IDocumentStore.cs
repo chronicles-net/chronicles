@@ -1,10 +1,10 @@
-﻿using Chronicles.Documents;
-
 namespace Chronicles.Documents.Internal;
 
 public interface IDocumentStore
 {
-    public string Name { get; }
+    string Name { get; }
 
-    public DocumentOptions Options { get; }
+    DocumentOptions Options { get; }
+
+    InitializationOptions Initialization { get; }
 }

@@ -21,7 +21,8 @@ public class ChroniclesBuilder
         Services.Configure(storeName, optionsProvider);
         Services.AddSingleton<IDocumentStore>(s => new DocumentStore(
             storeName,
-            s.GetRequiredService<IOptionsMonitor<DocumentOptions>>()));
+            s.GetRequiredService<IOptionsMonitor<DocumentOptions>>(),
+            s.GetRequiredService<IOptionsMonitor<InitializationOptions>>()));
 
         return this;
     }
@@ -49,6 +50,18 @@ public class ChroniclesBuilder
                 s.GetRequiredService<IChangeFeedFactory>(),
                 s.GetRequiredService<TProcessor>()));
 
+        return this;
+    }
+
+    public ChroniclesBuilder AddInitialization(
+        Action<InitializationOptions> optionsProvider)
+        => AddInitialization(Options.Options.DefaultName, optionsProvider);
+
+    public ChroniclesBuilder AddInitialization(
+        string storeName,
+        Action<InitializationOptions> optionsProvider)
+    {
+        Services.Configure(storeName, optionsProvider);
         return this;
     }
 }

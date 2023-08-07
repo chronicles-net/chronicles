@@ -14,7 +14,8 @@ public static class ServiceCollectionExtensions
             .Configure(optionsProvider)
             .AddSingleton<IDocumentStore>(s => new DocumentStore(
                 Options.Options.DefaultName,
-                s.GetRequiredService<IOptionsMonitor<DocumentOptions>>()));
+                s.GetRequiredService<IOptionsMonitor<DocumentOptions>>(),
+                s.GetRequiredService<IOptionsMonitor<InitializationOptions>>()));
 
         services
             .AddSingleton(typeof(IDocumentReader<>), typeof(CosmosReader<>))
@@ -26,6 +27,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICosmosLinqQuery, CosmosLinqQuery>()
             .AddSingleton<IChangeFeedFactory, ChangeFeedFactory>()
             .AddSingleton<ISubscriptionManager, SubscriptionManager>()
+            .AddSingleton<IDocumentStoreInitializer, DocumentStoreInitializer>()
             .AddHostedService<DocumentStoreService>();
 
         return new ChroniclesBuilder(services);
