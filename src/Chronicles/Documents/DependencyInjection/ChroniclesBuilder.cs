@@ -21,8 +21,7 @@ public class ChroniclesBuilder
         Services.Configure(storeName, optionsProvider);
         Services.AddSingleton<IDocumentStore>(s => new DocumentStore(
             storeName,
-            s.GetRequiredService<IOptionsMonitor<DocumentOptions>>(),
-            s.GetRequiredService<IOptionsMonitor<InitializationOptions>>()));
+            s.GetRequiredService<IOptionsMonitor<DocumentOptions>>()));
 
         return this;
     }

@@ -26,6 +26,7 @@ public class DocumentStoreInitializer : IDocumentStoreInitializer
                 .ConfigureAwait(false);
 
             var initializerTasks = store
+                .Options
                 .Initialization
                 .Containers
                 .Select(init => init.InitializeAsync(database, cancellationToken));
@@ -41,7 +42,7 @@ public class DocumentStoreInitializer : IDocumentStoreInitializer
     {
         try
         {
-            if (store.Initialization.Database == null)
+            if (store.Options.Initialization.Database == null)
             {
                 return provider
                     .GetClient(store.Name)
@@ -52,7 +53,7 @@ public class DocumentStoreInitializer : IDocumentStoreInitializer
                 .GetClient(store.Name)
                 .CreateDatabaseIfNotExistsAsync(
                     store.Options.DatabaseName,
-                    store.Initialization.Database,
+                    store.Options.Initialization.Database,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 

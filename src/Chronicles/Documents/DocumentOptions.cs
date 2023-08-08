@@ -58,7 +58,9 @@ public class DocumentOptions
 
     public string SubscriptionContainerName { get; set; } = "Subscriptions";
 
-    public CosmosClientOptions CosmosClientOptions { get; } = new();
+    public CosmosClientOptions CosmosClient { get; } = new();
+
+    public InitializationOptions Initialization { get; } = new();
 
     public IReadOnlyDictionary<Type, string> ContainerNames => containerNames;
 
@@ -116,12 +118,30 @@ public class DocumentOptions
         return this;
     }
 
-    public DocumentOptions AddContainer<T>(string containerName)
-        => AddContainer(typeof(T), containerName);
+    public DocumentOptions AddDocumentType<T>(string containerName)
+        => AddDocumentType(typeof(T), containerName);
 
-    public DocumentOptions AddContainer(Type documentType, string containerName)
+    public DocumentOptions AddDocumentType(Type documentType, string containerName)
     {
         containerNames[documentType] = containerName;
+        return this;
+    }
+
+    public DocumentOptions AddInitialization(Action<InitializationOptions> optionsProvider)
+    {
+        optionsProvider(Initialization);
+        return this;
+    }
+
+    public DocumentOptions UseDatabase(string databaseName)
+    {
+        DatabaseName = databaseName;
+        return this;
+    }
+
+    public DocumentOptions UseSubscriptionContainer(string containerName)
+    {
+        SubscriptionContainerName = containerName;
         return this;
     }
 }

@@ -14,8 +14,7 @@ public static class ServiceCollectionExtensions
             .Configure(optionsProvider)
             .AddSingleton<IDocumentStore>(s => new DocumentStore(
                 Options.Options.DefaultName,
-                s.GetRequiredService<IOptionsMonitor<DocumentOptions>>(),
-                s.GetRequiredService<IOptionsMonitor<InitializationOptions>>()));
+                s.GetRequiredService<IOptionsMonitor<DocumentOptions>>()));
 
         services
             .AddSingleton(typeof(IDocumentReader<>), typeof(CosmosReader<>))

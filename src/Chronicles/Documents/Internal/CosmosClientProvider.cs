@@ -37,18 +37,18 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
         string? storeName = null)
     {
         var options = GetOptions(storeName);
-        options.CosmosClientOptions.Serializer = new CosmosSerializerAdapter(
+        options.CosmosClient.Serializer = new CosmosSerializerAdapter(
             GetSerializer(storeName, options));
 
         return options.Credential is not null
             ? new CosmosClient(
                 options.AccountEndpoint,
                 options.Credential,
-                options.CosmosClientOptions)
+                options.CosmosClient)
             : new CosmosClient(
                 $"AccountEndpoint={options.AccountEndpoint};" +
                 $"AccountKey={options.AccountKey}",
-                options.CosmosClientOptions);
+                options.CosmosClient);
     }
 
     private ICosmosSerializer GetSerializer(

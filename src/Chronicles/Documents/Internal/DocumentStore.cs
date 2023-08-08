@@ -4,19 +4,17 @@ namespace Chronicles.Documents.Internal;
 
 public class DocumentStore : IDocumentStore
 {
+    private readonly IOptionsMonitor<DocumentOptions> options;
+
     public DocumentStore(
         string name,
-        IOptionsMonitor<DocumentOptions> documentOptions,
-        IOptionsMonitor<InitializationOptions> initializationOptions)
+        IOptionsMonitor<DocumentOptions> options)
     {
         Name = name;
-        Options = documentOptions.Get(name);
-        Initialization = initializationOptions.Get(name);
+        this.options = options;
     }
 
     public string Name { get; }
 
-    public DocumentOptions Options { get; }
-
-    public InitializationOptions Initialization { get; }
+    public DocumentOptions Options => options.Get(Name);
 }

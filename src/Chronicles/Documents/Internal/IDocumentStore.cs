@@ -5,6 +5,4 @@ public interface IDocumentStore
     string Name { get; }
 
     DocumentOptions Options { get; }
-
-    InitializationOptions Initialization { get; }
 }

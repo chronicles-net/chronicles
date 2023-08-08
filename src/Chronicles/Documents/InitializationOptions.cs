@@ -7,7 +7,7 @@ public class InitializationOptions
 {
     private readonly List<IContainerInitializer> initializers = new();
 
-    public ThroughputProperties? Database { get; set; }
+    public ThroughputProperties? Database { get; private set; }
 
     public IReadOnlyList<IContainerInitializer> Containers => initializers;
 
