@@ -13,17 +13,9 @@ builder.Services
         .UseCosmosEmulator()
         .AddInitialization(i => i
             .CreateDatabase(ThroughputProperties.CreateManualThroughput(400))
-            .CreateContainer(new ContainerProperties
-            {
-                Id = "forecasts",
-                PartitionKeyPath = "/id",
-                IndexingPolicy = new()
-                {
-                    Automatic = true,
-                    IndexingMode = IndexingMode.Consistent,
-                    IncludedPaths = { new() { Path = "/*" } },
-                },
-            })));
+            .CreateContainer<WeatherForecast>(
+                p => p.PartitionKeyPath = "/id",
+                ThroughputProperties.CreateManualThroughput(400))));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

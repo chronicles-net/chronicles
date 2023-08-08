@@ -4,26 +4,39 @@ namespace Chronicles.Documents.Internal;
 
 public class ContainerInitializer : IContainerInitializer
 {
-    private readonly ContainerProperties properties;
+    private readonly Action<ContainerProperties> containerProperties;
     private readonly ThroughputProperties? throughput;
 
     public ContainerInitializer(
-        ContainerProperties properties,
+        Type documentType,
+        Action<ContainerProperties> containerProperties,
         ThroughputProperties? throughput = null)
     {
-        this.properties = properties;
+        DocumentType = documentType;
+        this.containerProperties = containerProperties;
         this.throughput = throughput;
     }
 
-    public Task InitializeAsync(
+    public Type DocumentType { get; }
+
+    public async Task InitializeAsync(
         Database database,
-        CancellationToken cancellationToken)
-        => throughput == null
-         ? database.CreateContainerIfNotExistsAsync(
-            properties,
-            cancellationToken: cancellationToken)
-         : database.CreateContainerIfNotExistsAsync(
-            properties,
-            throughput,
-            cancellationToken: cancellationToken);
+        ContainerProperties properties,
+        CancellationToken cancellationToken = default)
+    {
+        containerProperties.Invoke(properties);
+        if (throughput == null)
+        {
+            await database.CreateContainerIfNotExistsAsync(
+               properties,
+               cancellationToken: cancellationToken);
+        }
+        else
+        {
+            await database.CreateContainerIfNotExistsAsync(
+                properties,
+                throughput,
+                cancellationToken: cancellationToken);
+        }
+    }
 }

@@ -7,13 +7,16 @@ public class DocumentStoreInitializer : IDocumentStoreInitializer
 {
     private readonly ICosmosClientProvider provider;
     private readonly IEnumerable<IDocumentStore> stores;
+    private readonly IContainerNameRegistry registry;
 
     public DocumentStoreInitializer(
         ICosmosClientProvider provider,
-        IEnumerable<IDocumentStore> stores)
+        IEnumerable<IDocumentStore> stores,
+        IContainerNameRegistry registry)
     {
         this.provider = provider;
         this.stores = stores;
+        this.registry = registry;
     }
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
@@ -25,14 +28,21 @@ public class DocumentStoreInitializer : IDocumentStoreInitializer
                 cancellationToken)
                 .ConfigureAwait(false);
 
-            var initializerTasks = store
-                .Options
-                .Initialization
-                .Containers
-                .Select(init => init.InitializeAsync(database, cancellationToken));
+            foreach (var initializer in store.Options.Initialization.Containers)
+            {
+                var containerName = registry
+                    .GetContainerName(initializer.DocumentType)
+                    .ContainerName;
 
-            await Task.WhenAll(initializerTasks)
-                .ConfigureAwait(false);
+                await initializer.InitializeAsync(
+                    database,
+                    new()
+                    {
+                        Id = containerName,
+                        PartitionKeyPath = "/id",
+                    },
+                    cancellationToken);
+            }
         }
     }
 

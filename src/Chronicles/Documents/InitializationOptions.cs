@@ -17,12 +17,22 @@ public class InitializationOptions
         return this;
     }
 
+    public InitializationOptions CreateContainer<T>(
+        Action<ContainerProperties> containerProperties,
+        ThroughputProperties? throughputProperties = null)
+        => CreateContainer(
+            typeof(T),
+            containerProperties,
+            throughputProperties);
+
     public InitializationOptions CreateContainer(
-        ContainerProperties properties,
+        Type documentType,
+        Action<ContainerProperties> containerProperties,
         ThroughputProperties? throughput = null)
         => CreateContainer(
             new ContainerInitializer(
-                properties,
+                documentType,
+                containerProperties,
                 throughput));
 
     public InitializationOptions CreateContainer(
