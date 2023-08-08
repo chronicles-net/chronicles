@@ -1,7 +1,6 @@
 using System.Text.Json.Serialization;
 using Chronicles.Documents;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Cosmos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,10 +11,8 @@ builder.Services
         .AddDocumentType<WeatherForecast>("forecasts")
         .UseCosmosEmulator()
         .AddInitialization(i => i
-            .CreateDatabase(ThroughputProperties.CreateManualThroughput(400))
-            .CreateContainer<WeatherForecast>(
-                p => p.PartitionKeyPath = "/id",
-                ThroughputProperties.CreateManualThroughput(400))));
+            .CreateDatabase()
+            .CreateContainer<WeatherForecast>()));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

@@ -11,18 +11,21 @@ public class InitializationOptions
 
     public IReadOnlyList<IContainerInitializer> Containers => initializers;
 
-    public InitializationOptions CreateDatabase(ThroughputProperties throughput)
+    public InitializationOptions CreateDatabase(
+        ThroughputProperties? throughput = null)
     {
-        Database = throughput;
+        Database = throughput
+            ?? ThroughputProperties.CreateManualThroughput(400);
+
         return this;
     }
 
     public InitializationOptions CreateContainer<T>(
-        Action<ContainerProperties> containerProperties,
+        Action<ContainerProperties>? containerProperties = null,
         ThroughputProperties? throughputProperties = null)
         => CreateContainer(
             typeof(T),
-            containerProperties,
+            containerProperties ?? (_ => { }),
             throughputProperties);
 
     public InitializationOptions CreateContainer(
