@@ -9,10 +9,10 @@ namespace Chronicles.EventStore.Internal.Converters;
 /// </summary>
 internal sealed class StreamEventJsonConverter : JsonConverter<StreamEvent>
 {
-    private readonly IStreamEventCatalog dataConverter;
+    private readonly StreamEventConverter dataConverter;
 
     public StreamEventJsonConverter(
-        IStreamEventCatalog dataConverter)
+        StreamEventConverter dataConverter)
         => this.dataConverter = dataConverter;
 
     public override StreamEvent Read(

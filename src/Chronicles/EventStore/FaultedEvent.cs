@@ -1,4 +1,4 @@
-namespace Chronicles.EventStore.Internal.Events;
+namespace Chronicles.EventStore;
 
 /// <summary>
 /// Represents a faulted event read from the stream.

@@ -61,30 +61,6 @@ public interface IEventStoreClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets or creates an event subscription for all streams.
-    /// </summary>
-    /// <param name="consumerGroup">The name the subscription is persisted with.</param>
-    /// <param name="startOptions">Start options for subscription.</param>
-    /// <param name="eventsHandler">Delegate called when events arrives.</param>
-    /// <param name="exceptionHandler">Delegate called when an exception occurred.</param>
-    /// <returns>Event subscription.</returns>
-    IStreamSubscription SubscribeToStreams(
-        ConsumerGroup consumerGroup,
-        SubscriptionStartOptions startOptions,
-        ProcessEventsHandler eventsHandler,
-        ProcessExceptionHandler exceptionHandler);
-
-    /// <summary>
-    /// Delete subscription.
-    /// </summary>
-    /// <param name="consumerGroup">Consumer group to remove subscription from.</param>
-    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task DeleteSubscriptionAsync(
-        ConsumerGroup consumerGroup,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Search for streams matching a given filter expression.
     /// </summary>
     /// <param name="filter">

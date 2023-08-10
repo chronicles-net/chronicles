@@ -55,7 +55,7 @@ internal static class Arguments
 
     internal static long EnsureVersionRange(long streamVersion, string argumentName)
     {
-        if (streamVersion < StreamVersion.AnyValue)
+        if (streamVersion < StreamVersion.RequireNotEmptyValue)
         {
             throw new ArgumentOutOfRangeException(
                 argumentName,

@@ -58,11 +58,6 @@ internal class EventStoreClient : IEventStoreClient
             .GetAsync(streamId, cancellationToken)
             .ConfigureAwait(false);
 
-    public Task DeleteSubscriptionAsync(
-        ConsumerGroup consumerGroup,
-        CancellationToken cancellationToken = default)
-        => throw new NotImplementedException();
-
     public Task<Checkpoint<T>?> GetStreamCheckpointAsync<T>(
         string name,
         StreamId streamId,
@@ -93,11 +88,4 @@ internal class EventStoreClient : IEventStoreClient
                 version,
                 state,
                 cancellationToken);
-
-    public IStreamSubscription SubscribeToStreams(
-        ConsumerGroup consumerGroup,
-        SubscriptionStartOptions startOptions,
-        ProcessEventsHandler eventsHandler,
-        ProcessExceptionHandler exceptionHandler)
-        => throw new NotImplementedException();
 }

@@ -5,27 +5,23 @@ namespace Chronicles.EventStore.Internal.Events;
 public class SingleEventDataConverter :
     IEventDataConverter
 {
-    private readonly EventName name;
-    private readonly Type eventType;
-
     public SingleEventDataConverter(
-        EventName name,
+        string eventName,
         Type eventType)
     {
-        this.name = name;
-        this.eventType = eventType;
+        EventName = eventName;
+        EventType = eventType;
     }
+
+    public string EventName { get; }
+
+    public Type EventType { get; }
 
     public virtual object? Convert(
         EventConverterContext context)
-        => context.Metadata.Name == name
+        => context.Metadata.Name == EventName
          ? context.Data.Deserialize(
-             eventType,
+             EventType,
              context.Options)
          : null;
-
-    public virtual EventName GetName(Type type)
-        => eventType == type
-         ? name
-         : EventName.Unknown;
 }

@@ -49,7 +49,7 @@ internal class StreamEventWriter
 
         var transaction = writer.CreateTransaction(streamId.Value);
         transaction
-            .Replace(
+            .Write(
                 batch.Metadata,
                 new() { IfMatchEtag = batch.Metadata.Etag ?? string.Empty });
 

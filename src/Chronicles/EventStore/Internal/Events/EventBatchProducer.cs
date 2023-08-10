@@ -5,15 +5,10 @@ namespace Chronicles.EventStore.Internal.Events;
 internal class EventDocumentBatchProducer
 {
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly StreamEventCatalog catalog;
 
     public EventDocumentBatchProducer(
-        IDateTimeProvider dateTimeProvider,
-        StreamEventCatalog catalog)
-    {
-        this.dateTimeProvider = dateTimeProvider;
-        this.catalog = catalog;
-    }
+        IDateTimeProvider dateTimeProvider)
+        => this.dateTimeProvider = dateTimeProvider;
 
     public virtual StreamEventBatch FromEvents(
         IReadOnlyCollection<object> events,
@@ -43,7 +38,7 @@ internal class EventDocumentBatchProducer
             documents);
     }
 
-    private StreamEventDocument Convert(
+    private static StreamEventDocument Convert(
         object evt,
         StreamMetadata metadata,
         long version,
@@ -55,7 +50,7 @@ internal class EventDocumentBatchProducer
             Pk: metadata.StreamId.Value,
             Data: evt,
             Properties: new EventMetadata(
-                (string)catalog.GetName(evt.GetType()),
+                "unknown",
                 CorrelationId: correlationId,
                 CausationId: causationId,
                 metadata.StreamId,

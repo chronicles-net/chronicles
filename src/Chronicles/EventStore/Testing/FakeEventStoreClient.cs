@@ -2,11 +2,6 @@ namespace Chronicles.EventStore.Testing;
 
 public sealed class FakeEventStoreClient : IEventStoreClient
 {
-    Task IEventStoreClient.DeleteSubscriptionAsync(
-        ConsumerGroup consumerGroup,
-        CancellationToken cancellationToken)
-        => throw new NotImplementedException();
-
     Task<Checkpoint<T>?> IEventStoreClient.GetStreamCheckpointAsync<T>(
         string name,
         StreamId streamId,
@@ -38,13 +33,6 @@ public sealed class FakeEventStoreClient : IEventStoreClient
         StreamVersion version,
         object? state,
         CancellationToken cancellationToken)
-        => throw new NotImplementedException();
-
-    IStreamSubscription IEventStoreClient.SubscribeToStreams(
-        ConsumerGroup consumerGroup,
-        SubscriptionStartOptions startOptions,
-        ProcessEventsHandler eventsHandler,
-        ProcessExceptionHandler exceptionHandler)
         => throw new NotImplementedException();
 
     Task<StreamMetadata> IEventStoreClient.WriteStreamAsync(
