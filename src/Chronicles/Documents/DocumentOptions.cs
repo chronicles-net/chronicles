@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Azure.Core;
 using Microsoft.Azure.Cosmos;
 
@@ -52,7 +53,11 @@ public class DocumentOptions
     /// Gets or sets the options for controlling the json serializer.
     /// </summary>
     public JsonSerializerOptions SerializerOptions { get; set; }
-        = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Converters = { new JsonStringEnumConverter() },
+        };
 
     public string DatabaseName { get; set; } = "Chronicles";
 
