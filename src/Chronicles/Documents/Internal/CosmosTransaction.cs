@@ -17,7 +17,7 @@ public class CosmosTransaction<T> : IDocumentTransaction<T>
         T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
-        transaction.UpsertItem(document, options);
+        transaction.UpsertItem<object>(document, options);
         return this;
     }
 
@@ -25,7 +25,7 @@ public class CosmosTransaction<T> : IDocumentTransaction<T>
         T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
-        transaction.CreateItem(document, options);
+        transaction.CreateItem<object>(document, options);
         return this;
     }
 
@@ -33,7 +33,7 @@ public class CosmosTransaction<T> : IDocumentTransaction<T>
         T document,
         TransactionalBatchItemRequestOptions? options = null)
     {
-        transaction.ReplaceItem(document.GetDocumentId(), document, options);
+        transaction.ReplaceItem<object>(document.GetDocumentId(), document, options);
         return this;
     }
 
