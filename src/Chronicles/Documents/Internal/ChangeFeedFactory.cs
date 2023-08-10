@@ -31,8 +31,14 @@ public class ChangeFeedFactory : IChangeFeedFactory
             .WithLeaseContainer(
                 containerProvider.GetSubscriptionContainer<T>())
             .WithMaxItems(100)
-            .WithPollInterval(options.PollingInterval)
-            .WithStartTime(DateTime.MinValue.ToUniversalTime()); // Will start from the beginning of feed when no lease is found.
+            .WithPollInterval(options.PollingInterval);
+
+        if (options.StartOptions == SubscriptionStartOptions.FromBeginning)
+        {
+            // Instruct processor to start from beginning.
+            // see https://docs.microsoft.com/en-us/azure/cosmos-db/change-feed-processor#reading-from-the-beginning
+            builder.WithStartTime(DateTime.MinValue.ToUniversalTime());
+        }
 
         if (!options.ForceSingleInstance)
         {
