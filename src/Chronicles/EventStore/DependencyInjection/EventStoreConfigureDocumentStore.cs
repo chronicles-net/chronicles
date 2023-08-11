@@ -1,4 +1,4 @@
-﻿using Chronicles.Documents;
+using Chronicles.Documents;
 using Chronicles.EventStore;
 using Chronicles.EventStore.Internal.Checkpoints;
 using Chronicles.EventStore.Internal.Converters;
@@ -42,6 +42,7 @@ public class EventStoreConfigureDocumentStore
         options.AddDocumentType(typeof(StreamEventDocument), eventStore.EventStoreContainer);
         options.AddDocumentType(typeof(StreamDocument), eventStore.EventStoreContainer);
         options.AddDocumentType(typeof(StreamMetadataDocument), eventStore.EventStoreContainer);
+        options.AddDocumentType(typeof(StreamEvent), eventStore.EventStoreContainer);
 
         var eventRegistry = new EventRegistry(eventStoreOptions);
         options.SerializerOptions.Converters.Add(new StreamVersionJsonConverter());
