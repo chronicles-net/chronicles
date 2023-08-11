@@ -51,16 +51,4 @@ public class ChroniclesBuilder
 
         return this;
     }
-
-    public ChroniclesBuilder AddInitialization(
-        Action<InitializationOptions> optionsProvider)
-        => AddInitialization(Options.Options.DefaultName, optionsProvider);
-
-    public ChroniclesBuilder AddInitialization(
-        string storeName,
-        Action<InitializationOptions> optionsProvider)
-    {
-        Services.Configure(storeName, optionsProvider);
-        return this;
-    }
 }
