@@ -51,7 +51,7 @@ internal class StreamEventWriter
         transaction
             .Write(
                 batch.Metadata,
-                new() { IfMatchEtag = batch.Metadata.Etag ?? string.Empty });
+                new() { IfMatchEtag = batch.Metadata.Etag });
 
         foreach (var document in batch.Events)
         {

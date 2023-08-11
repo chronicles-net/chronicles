@@ -28,8 +28,8 @@ internal class StreamMetadataReader
         {
             { } metadata => metadata,
             _ => new StreamMetadataDocument(
-                streamId.Value,
-                JsonPropertyNames.StreamMetadataId,
+                Id: JsonPropertyNames.StreamMetadataId,
+                Pk: streamId.Value,
                 streamId,
                 StreamState.New,
                 0,
