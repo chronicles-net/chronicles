@@ -4,11 +4,11 @@ namespace Chronicles.EventStore.Internal.Streams;
 
 internal class StreamMetadataReader
 {
-    private readonly IDocumentReader<StreamDocument> reader;
+    private readonly IDocumentReader<StreamMetadataDocument> reader;
     private readonly IDateTimeProvider dateTimeProvider;
 
     public StreamMetadataReader(
-        IDocumentReader<StreamDocument> reader,
+        IDocumentReader<StreamMetadataDocument> reader,
         IDateTimeProvider dateTimeProvider)
     {
         this.reader = reader;
@@ -19,7 +19,7 @@ internal class StreamMetadataReader
         StreamId streamId,
         CancellationToken cancellationToken)
         => await reader
-            .FindAsync<StreamDocument, StreamMetadataDocument>(
+            .FindAsync(
                 JsonPropertyNames.StreamMetadataId,
                 streamId.Value,
                 options: null,
