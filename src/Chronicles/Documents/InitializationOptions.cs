@@ -11,6 +11,17 @@ public class InitializationOptions
 
     public IReadOnlyList<IContainerInitializer> Containers => initializers;
 
+    public InitializationOptions CreateSubscriptionContainer(
+        ThroughputProperties? throughput = null)
+    {
+        if (initializers.OfType<SubscriptionInitializer>().Any())
+        {
+            return this;
+        }
+
+        return CreateContainer(new SubscriptionInitializer(throughput));
+    }
+
     public InitializationOptions CreateDatabase(
         ThroughputProperties? throughput = null)
     {
@@ -33,7 +44,7 @@ public class InitializationOptions
         Action<ContainerProperties> containerProperties,
         ThroughputProperties? throughput = null)
         => CreateContainer(
-            new ContainerInitializer(
+            new DocumentInitializer(
                 documentType,
                 containerProperties,
                 throughput));

@@ -30,17 +30,22 @@ public class DocumentStoreInitializer : IDocumentStoreInitializer
 
             foreach (var initializer in store.Options.Initialization.Containers)
             {
-                var containerName = registry
-                    .GetContainerName(initializer.DocumentType)
-                    .ContainerName;
+                var properties = new ContainerProperties();
+                if (initializer is DocumentInitializer docInitializer)
+                {
+                    properties.Id = registry
+                        .GetContainerName(docInitializer.DocumentType)
+                        .ContainerName;
+                }
+                else if (initializer is SubscriptionInitializer)
+                {
+                    properties.Id = store.Options.SubscriptionContainerName;
+                }
+                properties.PartitionKeyPath = "/id";
 
                 await initializer.InitializeAsync(
                     database,
-                    new()
-                    {
-                        Id = containerName,
-                        PartitionKeyPath = "/id",
-                    },
+                    properties,
                     cancellationToken);
             }
         }

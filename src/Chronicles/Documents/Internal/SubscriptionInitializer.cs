@@ -2,29 +2,21 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
 
-public class ContainerInitializer : IContainerInitializer
+public class SubscriptionInitializer : IContainerInitializer
 {
-    private readonly Action<ContainerProperties> containerProperties;
     private readonly ThroughputProperties? throughput;
 
-    public ContainerInitializer(
-        Type documentType,
-        Action<ContainerProperties> containerProperties,
+    public SubscriptionInitializer(
         ThroughputProperties? throughput = null)
-    {
-        DocumentType = documentType;
-        this.containerProperties = containerProperties;
-        this.throughput = throughput;
-    }
-
-    public Type DocumentType { get; }
+        => this.throughput = throughput;
 
     public async Task InitializeAsync(
         Database database,
         ContainerProperties properties,
         CancellationToken cancellationToken = default)
     {
-        containerProperties.Invoke(properties);
+        properties.PartitionKeyPath = "/id";
+
         if (throughput == null)
         {
             await database.CreateContainerIfNotExistsAsync(
