@@ -1,6 +1,4 @@
-﻿using Chronicles.Documents.Internal;
-
-namespace Chronicles.Documents;
+namespace Chronicles.Documents.Internal;
 
 public class SubscriptionManager : ISubscriptionManager
 {
