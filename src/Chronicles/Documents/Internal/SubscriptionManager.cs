@@ -10,7 +10,7 @@ public class SubscriptionManager : ISubscriptionManager
         this.subscriptions = subscriptions;
     }
 
-    public IDocumentSubscription GetSubscriptions(string subscriptionName)
+    public IDocumentSubscription? GetSubscription(string subscriptionName)
         => subscriptions.FirstOrDefault(s => s.SubscriptionName == subscriptionName);
 
     public async Task StartAsync(CancellationToken cancellationToken)

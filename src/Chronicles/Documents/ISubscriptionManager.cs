@@ -4,7 +4,7 @@ namespace Chronicles.Documents;
 
 public interface ISubscriptionManager
 {
-    IDocumentSubscription GetSubscriptions(string subscriptionName);
+    IDocumentSubscription? GetSubscription(string subscriptionName);
 
     Task StartAsync(CancellationToken cancellationToken);
 
