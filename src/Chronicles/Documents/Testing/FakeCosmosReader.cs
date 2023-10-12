@@ -38,33 +38,21 @@ namespace Chronicles.Documents.Testing
 
         /// <summary>
         /// Gets or sets the list of custom results to be returned by the
-        /// <see cref="QueryAsync{TResult}(QueryDefinition, string, QueryRequestOptions, CancellationToken)"/> method.
+        /// <see cref="QueryAsync{TResult}(QueryDefinition, string, QueryRequestOptions, string?, CancellationToken)"/> method.
         /// </summary>
         public IList<object> QueryResults { get; set; }
             = new List<object>();
 
         public QueryDefinition CreateQuery<TResult>(
-            QueryExpression<T, TResult> query)
+            QueryExpression<T, TResult> query,
+            string? storeName = null)
             => new FakeQueryDefinition<T>(s => query.Invoke(s));
-
-        public virtual Task<TResult?> FindAsync<TResult>(
-            string documentId,
-            string partitionKey,
-            ItemRequestOptions? options,
-            CancellationToken cancellationToken = default)
-            where TResult : class, T
-            => Task.FromResult(
-                Documents
-                    .OfType<TResult>()
-                    .FirstOrDefault(d
-                        => d.GetDocumentId() == documentId
-                        && d.GetPartitionKey() == partitionKey)
-                    ?.DeepClone(serializerOptions));
 
         public virtual Task<TResult> ReadAsync<TResult>(
             string documentId,
             string partitionKey,
             ItemRequestOptions? options,
+            string? storeName = null,
             CancellationToken cancellationToken = default)
             where TResult : T
         {
@@ -89,54 +77,22 @@ namespace Chronicles.Documents.Testing
             return Task.FromResult(item.DeepClone(serializerOptions));
         }
 
-        public virtual IAsyncEnumerable<T> ReadAllAsync(
-            string? partitionKey,
-            QueryRequestOptions? options,
-            CancellationToken cancellationToken = default)
-            => GetAsyncEnumerator(Documents
-                .Where(d => partitionKey == null || d.GetPartitionKey() == partitionKey)
-                .DeepClone(serializerOptions));
-
-        public virtual IAsyncEnumerable<T> QueryAsync(
-            QueryDefinition query,
-            string? partitionKey,
-            QueryRequestOptions? options,
-            CancellationToken cancellationToken = default)
-            => QueryAsync<T>(
-                query,
-                partitionKey,
-                options,
-                cancellationToken);
-
         public virtual IAsyncEnumerable<TResult> QueryAsync<TResult>(
             QueryDefinition query,
             string? partitionKey,
             QueryRequestOptions? options,
+            string? storeName = null,
             CancellationToken cancellationToken = default)
             => GetAsyncEnumerator(
                 QueryItems<TResult>(query, partitionKey));
 
-        public virtual Task<PagedResult<T>> PagedQueryAsync(
-            QueryDefinition query,
-            string? partitionKey,
-            QueryRequestOptions? options,
-            int? maxItemCount,
-            string? continuationToken = default,
-            CancellationToken cancellationToken = default)
-            => PagedQueryAsync<T>(
-                query,
-                partitionKey,
-                options,
-                maxItemCount,
-                continuationToken,
-                cancellationToken);
-
         public virtual Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
             QueryDefinition query,
             string? partitionKey,
-            QueryRequestOptions? options,
             int? maxItemCount,
-            string? continuationToken = default,
+            string? continuationToken,
+            QueryRequestOptions? options,
+            string? storeName = null,
             CancellationToken cancellationToken = default)
         {
             var startIndex = GetStartIndex(continuationToken);

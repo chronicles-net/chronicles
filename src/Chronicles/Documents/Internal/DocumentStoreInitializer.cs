@@ -34,8 +34,7 @@ public class DocumentStoreInitializer : IDocumentStoreInitializer
                 if (initializer is DocumentInitializer docInitializer)
                 {
                     properties.Id = registry
-                        .GetContainerName(docInitializer.DocumentType)
-                        .ContainerName;
+                        .GetContainerName(docInitializer.DocumentType);
                 }
                 else if (initializer is SubscriptionInitializer)
                 {

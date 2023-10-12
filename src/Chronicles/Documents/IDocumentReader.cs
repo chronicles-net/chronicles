@@ -17,8 +17,11 @@ public interface IDocumentReader<T>
     /// </summary>
     /// <typeparam name="TResult">The return type of the </typeparam>
     /// <param name="query">The Linq query to use for the <see cref="QueryDefinition"/>.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <returns>The <see cref="QueryDefinition"/> representing the Linq query.</returns>
-    public QueryDefinition CreateQuery<TResult>(QueryExpression<T, TResult> query);
+    public QueryDefinition CreateQuery<TResult>(
+        QueryExpression<T, TResult> query,
+        string? storeName = null);
 
     /// <summary>
     /// Reads the specified <typeparamref name="T"/> document from the configured
@@ -36,12 +39,14 @@ public interface IDocumentReader<T>
     /// <param name="documentId">Id of the document.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> the requested <typeparamref name="T"/> document.</returns>
     public Task<TResult> ReadAsync<TResult>(
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         where TResult : T;
 
@@ -52,12 +57,14 @@ public interface IDocumentReader<T>
     /// <param name="query">Cosmos query to execute.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="TResult"/> documents.</returns>
     public IAsyncEnumerable<TResult> QueryAsync<TResult>(
         QueryDefinition query,
         string? partitionKey,
         QueryRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -66,16 +73,18 @@ public interface IDocumentReader<T>
     /// <typeparam name="TResult">The type used for the custom query result.</typeparam>
     /// <param name="query">Cosmos query to execute.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
-    /// <param name="options">(Optional) Query request options to use.</param>
     /// <param name="maxItemCount">The number of items to return per page.</param>
     /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
+    /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <typeparamref name="TResult"/> containing the custom query result.</returns>
     public Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
         QueryDefinition query,
         string? partitionKey,
-        QueryRequestOptions? options,
         int? maxItemCount,
-        string? continuationToken = default,
+        string? continuationToken,
+        QueryRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default);
 }

@@ -23,6 +23,7 @@ public class DocumentWriterExtensionsTests
             .CreateAsync(
                 document,
                 options: null,
+                storeName: null,
                 cancellationToken);
     }
 
@@ -41,6 +42,7 @@ public class DocumentWriterExtensionsTests
             .WriteAsync(
                 document,
                 options: null,
+                storeName: null,
                 cancellationToken);
     }
 
@@ -59,6 +61,7 @@ public class DocumentWriterExtensionsTests
             .ReplaceAsync(
                 document,
                 options: null,
+                storeName: null,
                 cancellationToken);
     }
 
@@ -80,6 +83,7 @@ public class DocumentWriterExtensionsTests
                 documentId,
                 partitionKey,
                 options: null,
+                storeName: null,
                 cancellationToken);
     }
 
@@ -89,12 +93,14 @@ public class DocumentWriterExtensionsTests
         string documentId,
         string partitionKey,
         ItemRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         var deleted = await writer.TryDeleteAsync(
             documentId,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
         deleted
@@ -107,6 +113,7 @@ public class DocumentWriterExtensionsTests
                 documentId,
                 partitionKey,
                 options,
+                storeName,
                 cancellationToken);
     }
 
@@ -116,6 +123,7 @@ public class DocumentWriterExtensionsTests
         string documentId,
         string partitionKey,
         ItemRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         writer
@@ -126,6 +134,7 @@ public class DocumentWriterExtensionsTests
             documentId,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
         deleted
@@ -138,6 +147,7 @@ public class DocumentWriterExtensionsTests
                 documentId,
                 partitionKey,
                 options,
+                storeName,
                 cancellationToken);
     }
 
@@ -159,6 +169,7 @@ public class DocumentWriterExtensionsTests
                 documentId,
                 partitionKey,
                 options: null,
+                storeName: null,
                 cancellationToken);
     }
 
@@ -168,6 +179,7 @@ public class DocumentWriterExtensionsTests
         TestDocument document,
         [Substitute] Action<TestDocument> updateDocument,
         int retries,
+        string storeName,
         CancellationToken cancellationToken)
     {
         await writer.UpdateAsync(
@@ -175,6 +187,7 @@ public class DocumentWriterExtensionsTests
             document.Pk,
             updateDocument,
             retries,
+            storeName,
             cancellationToken);
 
         _ = writer
@@ -184,6 +197,7 @@ public class DocumentWriterExtensionsTests
                 document.Pk,
                 Arg.Any<Func<TestDocument, Task>>(),
                 retries,
+                storeName,
                 cancellationToken);
 
         _ = writer
@@ -200,6 +214,7 @@ public class DocumentWriterExtensionsTests
         TestDocument document,
         [Substitute] Action<TestDocument> updateDocument,
         int retries,
+        string storeName,
         CancellationToken cancellationToken)
     {
         var getDefaultDocument = () => document;
@@ -207,6 +222,7 @@ public class DocumentWriterExtensionsTests
             getDefaultDocument,
             updateDocument,
             retries,
+            storeName,
             cancellationToken);
 
         _ = writer
@@ -215,6 +231,7 @@ public class DocumentWriterExtensionsTests
                 getDefaultDocument,
                 Arg.Any<Func<TestDocument, Task>>(),
                 retries,
+                storeName,
                 cancellationToken);
 
         _ = writer

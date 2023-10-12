@@ -26,6 +26,7 @@ public static class DocumentWriterExtensions
         => writer.CreateAsync(
             document,
             options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -44,6 +45,7 @@ public static class DocumentWriterExtensions
         => writer.WriteAsync(
             document,
             options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -74,6 +76,7 @@ public static class DocumentWriterExtensions
         => writer.ReplaceAsync(
             document,
             options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -100,6 +103,7 @@ public static class DocumentWriterExtensions
             documentId,
             partitionKey,
             options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -124,6 +128,7 @@ public static class DocumentWriterExtensions
             documentId,
             partitionKey,
             options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -137,6 +142,7 @@ public static class DocumentWriterExtensions
     /// <param name="documentId">Id of the document.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="options">Options for the item request.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns><c>True</c> if document was deleted otherwise <c>False</c>.</returns>
     public static async Task<bool> TryDeleteAsync<T>(
@@ -144,6 +150,7 @@ public static class DocumentWriterExtensions
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         where T : IDocument
     {
@@ -154,6 +161,7 @@ public static class DocumentWriterExtensions
                     documentId,
                     partitionKey,
                     options,
+                    storeName,
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -189,6 +197,7 @@ public static class DocumentWriterExtensions
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="updateDocument">Function for applying updates to the document.</param>
     /// <param name="retries">Number of retries when a conflict occurs.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used.</param>
     /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
     public static Task<T> UpdateAsync<T>(
@@ -197,6 +206,7 @@ public static class DocumentWriterExtensions
         string partitionKey,
         Action<T> updateDocument,
         int retries = 0,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         where T : IDocument
         => writer.UpdateAsync(
@@ -208,6 +218,7 @@ public static class DocumentWriterExtensions
                 return Task.CompletedTask;
             },
             retries,
+            storeName,
             cancellationToken);
 
     /// <summary>
@@ -225,6 +236,7 @@ public static class DocumentWriterExtensions
     /// <param name="getDefaultDocument">Function for creating the default document. The returned document need to have the DocumentId and PartitionKey set.</param>
     /// <param name="updateDocument">Function for applying updates to the document.</param>
     /// <param name="retries">Number of retries when a conflict occurs.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used.</param>
     /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
     public static Task<T> UpdateOrCreateAsync<T>(
@@ -232,6 +244,7 @@ public static class DocumentWriterExtensions
         Func<T> getDefaultDocument,
         Action<T> updateDocument,
         int retries = 0,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         where T : IDocument
         => writer.UpdateOrCreateAsync(
@@ -242,5 +255,6 @@ public static class DocumentWriterExtensions
                 return Task.CompletedTask;
             },
             retries,
+            storeName,
             cancellationToken);
 }

@@ -25,6 +25,7 @@ public static class DocumentReaderExtensions
             documentId,
             partitionKey,
             options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -36,6 +37,7 @@ public static class DocumentReaderExtensions
     /// <param name="documentId">Id of the document.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> containing the requested <typeparamref name="T"/> document, or null.</returns>
     public static Task<T?> FindAsync<T>(
@@ -43,11 +45,13 @@ public static class DocumentReaderExtensions
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         => reader.FindAsync<T, T>(
             documentId,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
     /// <summary>
@@ -63,6 +67,7 @@ public static class DocumentReaderExtensions
     /// <param name="documentId">Id of the document.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> containing the requested <typeparamref name="T"/> document, or null.</returns>
     public static async Task<TResult?> FindAsync<T, TResult>(
@@ -70,6 +75,7 @@ public static class DocumentReaderExtensions
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         where TResult : T
     {
@@ -80,6 +86,7 @@ public static class DocumentReaderExtensions
                     documentId,
                     partitionKey,
                     options,
+                    storeName,
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -114,6 +121,7 @@ public static class DocumentReaderExtensions
             documentId,
             partitionKey,
             options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -130,6 +138,7 @@ public static class DocumentReaderExtensions
     /// <param name="documentId">Id of the document.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> the requested <typeparamref name="T"/> document.</returns>
     public static Task<T> ReadAsync<T>(
@@ -137,11 +146,13 @@ public static class DocumentReaderExtensions
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         => reader.ReadAsync<T>(
             documentId,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
     /// <summary>
@@ -160,6 +171,7 @@ public static class DocumentReaderExtensions
         => reader.ReadAllAsync(
             partitionKey,
             options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -170,17 +182,20 @@ public static class DocumentReaderExtensions
     /// <param name="reader">The <see cref="IDocumentReader{T}"/>.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> over all the <typeparamref name="T"/> documents.</returns>
     public static IAsyncEnumerable<T> ReadAllAsync<T>(
         this IDocumentReader<T> reader,
         string? partitionKey,
         QueryRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         => reader.QueryAsync<T>(
             reader.CreateQuery(q => q),
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
     /// <summary>
@@ -201,6 +216,7 @@ public static class DocumentReaderExtensions
             query,
             partitionKey,
             options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -222,6 +238,7 @@ public static class DocumentReaderExtensions
             query,
             partitionKey,
             options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -233,6 +250,7 @@ public static class DocumentReaderExtensions
     /// <param name="query">The Linq query to execute.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
     public static IAsyncEnumerable<TResult> QueryAsync<T, TResult>(
@@ -240,11 +258,13 @@ public static class DocumentReaderExtensions
         QueryExpression<T, TResult> query,
         string? partitionKey,
         QueryRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         => reader.QueryAsync<TResult>(
             reader.CreateQuery(query),
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
     /// <summary>
@@ -265,6 +285,7 @@ public static class DocumentReaderExtensions
             predicate,
             partitionKey,
             options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -275,6 +296,7 @@ public static class DocumentReaderExtensions
     /// <param name="predicate">The predicate for selecting <typeparamref name="T"/> results.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
     public static IAsyncEnumerable<T> QueryAsync<T>(
@@ -282,11 +304,13 @@ public static class DocumentReaderExtensions
         Expression<Func<T, bool>> predicate,
         string? partitionKey,
         QueryRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         => reader.QueryAsync<T>(
             reader.CreateQuery(q => q.Where(predicate)),
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
     /// <summary>
@@ -310,9 +334,10 @@ public static class DocumentReaderExtensions
         => reader.PagedQueryAsync<T>(
             query,
             partitionKey,
-            options: null,
             maxItemCount,
             continuationToken,
+            options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -337,9 +362,10 @@ public static class DocumentReaderExtensions
         => reader.PagedQueryAsync(
             query,
             partitionKey,
-            options: null,
             maxItemCount,
             continuationToken,
+            options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -350,25 +376,28 @@ public static class DocumentReaderExtensions
     /// <param name="reader">The <see cref="IDocumentReader{T}"/>.</param>
     /// <param name="query">Cosmos query to execute.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
-    /// <param name="options">(Optional) Query request options to use.</param>
     /// <param name="maxItemCount">The number of items to return per page.</param>
     /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
+    /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
     public static Task<PagedResult<TResult>> PagedQueryAsync<T, TResult>(
         this IDocumentReader<T> reader,
         QueryExpression<T, TResult> query,
         string? partitionKey,
-        QueryRequestOptions? options,
         int? maxItemCount,
-        string? continuationToken = default,
+        string? continuationToken,
+        QueryRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         => reader.PagedQueryAsync<TResult>(
             reader.CreateQuery(query),
             partitionKey,
-            options,
             maxItemCount,
             continuationToken,
+            options,
+            storeName,
             cancellationToken);
 
     /// <summary>
@@ -392,9 +421,10 @@ public static class DocumentReaderExtensions
         => reader.PagedQueryAsync(
             predicate,
             partitionKey,
-            options: null,
             maxItemCount,
             continuationToken,
+            options: null,
+            storeName: null,
             cancellationToken);
 
     /// <summary>
@@ -404,24 +434,27 @@ public static class DocumentReaderExtensions
     /// <param name="reader">The <see cref="IDocumentReader{T}"/>.</param>
     /// <param name="predicate">The predicate for selecting <typeparamref name="T"/> results.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
-    /// <param name="options">(Optional) Query request options to use.</param>
     /// <param name="maxItemCount">The number of items to return per page.</param>
     /// <param name="continuationToken">(Optional) The continuationToken for getting the next page of a previous query.</param>
+    /// <param name="options">(Optional) Query request options to use.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> over the requested <typeparamref name="T"/> documents.</returns>
     public static Task<PagedResult<T>> PagedQueryAsync<T>(
         this IDocumentReader<T> reader,
         Expression<Func<T, bool>> predicate,
         string? partitionKey,
-        QueryRequestOptions? options,
         int? maxItemCount,
-        string? continuationToken = default,
+        string? continuationToken,
+        QueryRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         => reader.PagedQueryAsync<T>(
             reader.CreateQuery(q => q.Where(predicate)),
             partitionKey,
-            options,
             maxItemCount,
             continuationToken,
+            options,
+            storeName,
             cancellationToken);
 }

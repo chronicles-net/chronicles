@@ -6,66 +6,80 @@ namespace Chronicles.Documents.Internal;
 public class CosmosWriter<T> : IDocumentWriter<T>
     where T : IDocument
 {
-    private readonly Container container;
-    private readonly ICosmosSerializer serializer;
+    private readonly ICosmosContainerProvider containers;
 
     public CosmosWriter(
-        ICosmosContainerProvider containerProvider,
-        ICosmosSerializerProvider serializer)
+        ICosmosContainerProvider containerProvider)
     {
-        container = containerProvider.GetContainer<T>();
-        this.serializer = serializer.GetSerializer<T>();
+        this.containers = containerProvider;
     }
 
     public IDocumentTransaction<T> CreateTransaction(
-        string partitionKey)
+        string partitionKey,
+        string? storeName = null)
         => new CosmosTransaction<T>(
-            container.CreateTransactionalBatch(
-                new PartitionKey(partitionKey)));
+            containers
+                .GetContainer<T>(storeName)
+                .CreateTransactionalBatch(
+                    new PartitionKey(partitionKey)));
 
     public Task<T> CreateAsync(
         T document,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
-        => container
+        => containers
+            .GetContainer<T>(storeName)
             .CreateItemAsync<object>(
                 document,
                 new PartitionKey(document.GetPartitionKey()),
                 options,
                 cancellationToken)
-            .GetItemOrDefaultAsync(serializer, document);
+            .GetItemOrDefaultAsync(
+                containers.GetSerializer(storeName),
+                document);
 
     public Task<T> WriteAsync(
         T document,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
-        => container
+        => containers
+            .GetContainer<T>(storeName)
             .UpsertItemAsync<object>(
                 document,
                 new PartitionKey(document.GetPartitionKey()),
                 options,
                 cancellationToken)
-            .GetItemOrDefaultAsync(serializer, document);
+            .GetItemOrDefaultAsync(
+                containers.GetSerializer(storeName),
+                document);
 
     public Task<T> ReplaceAsync(
         T document,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
-        => container
+        => containers
+            .GetContainer<T>(storeName)
             .ReplaceItemAsync<object>(
                 document,
                 document.GetDocumentId(),
                 new PartitionKey(document.GetPartitionKey()),
                 options,
                 cancellationToken)
-            .GetItemOrDefaultAsync(serializer, document);
+            .GetItemOrDefaultAsync(
+                containers.GetSerializer(storeName),
+                document);
 
     public Task DeleteAsync(
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
-        => container
+        => containers
+            .GetContainer<T>(storeName)
             .DeleteItemAsync<object>(
                 documentId,
                 new PartitionKey(partitionKey),
@@ -77,6 +91,7 @@ public class CosmosWriter<T> : IDocumentWriter<T>
         string partitionKey,
         Func<T, Task> updateDocument,
         int retries = 0,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
     {
         while (true)
@@ -84,7 +99,8 @@ public class CosmosWriter<T> : IDocumentWriter<T>
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                var response = await container
+                var response = await containers
+                    .GetContainer<T>(storeName)
                     .ReadItemAsync<T>(
                         documentId,
                         new PartitionKey(partitionKey),
@@ -104,6 +120,7 @@ public class CosmosWriter<T> : IDocumentWriter<T>
                         {
                             IfMatchEtag = etag,
                         },
+                        storeName,
                         cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -122,6 +139,7 @@ public class CosmosWriter<T> : IDocumentWriter<T>
         Func<T> getDefaultDocument,
         Func<T, Task> updateDocument,
         int retries = 0,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
     {
         while (true)
@@ -142,7 +160,8 @@ public class CosmosWriter<T> : IDocumentWriter<T>
             bool documentExists;
             try
             {
-                var response = await container
+                var response = await containers
+                    .GetContainer<T>(storeName)
                     .ReadItemAsync<T>(
                         document.GetDocumentId(),
                         new PartitionKey(document.GetPartitionKey()),
@@ -169,6 +188,7 @@ public class CosmosWriter<T> : IDocumentWriter<T>
                     return await CreateAsync(
                        document,
                        null,
+                       storeName,
                        cancellationToken).ConfigureAwait(false);
                 }
 
@@ -178,6 +198,7 @@ public class CosmosWriter<T> : IDocumentWriter<T>
                     {
                         IfMatchEtag = etag,
                     },
+                    storeName,
                     cancellationToken)
                     .ConfigureAwait(false);
             }

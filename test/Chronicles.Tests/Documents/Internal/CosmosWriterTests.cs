@@ -15,7 +15,6 @@ namespace Chronicles.Tests.Documents.Internal
         private readonly Container container;
         private readonly ICosmosContainerProvider containerProvider;
         private readonly ICosmosSerializer serializer;
-        private readonly ICosmosSerializerProvider serializerProvider;
         private readonly CosmosWriter<TestDocument> sut;
 
         public CosmosWriterTests()
@@ -25,14 +24,22 @@ namespace Chronicles.Tests.Documents.Internal
 
             container = Substitute.For<Container>();
 
+            serializer = Substitute.For<ICosmosSerializer>();
+            serializer
+                .FromString<TestDocument>(default)
+                .ReturnsForAnyArgs(new Fixture().Create<TestDocument>());
+
             containerProvider = Substitute.For<ICosmosContainerProvider>();
             containerProvider
-                .GetContainer<TestDocument>()
-                .ReturnsForAnyArgs(container, null);
+                .GetContainer<TestDocument>(default)
+                .ReturnsForAnyArgs(container);
+            containerProvider
+                .GetSerializer(default)
+                .ReturnsForAnyArgs(serializer);
 
             var response = Substitute.For<ItemResponse<object>>();
             response.Resource.Returns(fixture.Create<string>());
-            
+
             container
                 .CreateItemAsync<object>(default, default, default, default)
                 .ReturnsForAnyArgs(response);
@@ -53,17 +60,7 @@ namespace Chronicles.Tests.Documents.Internal
                 .ReadItemAsync<TestDocument>(default, default, default, default)
                 .ReturnsForAnyArgs(documentResponse);
 
-            serializer = Substitute.For<ICosmosSerializer>();
-            serializer
-                .FromString<TestDocument>(default)
-                .ReturnsForAnyArgs(new Fixture().Create<TestDocument>());
-
-            serializerProvider = Substitute.For<ICosmosSerializerProvider>();
-            serializerProvider
-                .GetSerializer<object>()
-                .ReturnsForAnyArgs(serializer);
-
-            sut = new CosmosWriter<TestDocument>(containerProvider, serializerProvider);
+            sut = new CosmosWriter<TestDocument>(containerProvider);
         }
 
         [Fact]
@@ -73,24 +70,34 @@ namespace Chronicles.Tests.Documents.Internal
         [Theory, AutoNSubstituteData]
         public async Task WriteAsync_Uses_The_Right_Container(
             ItemRequestOptions options,
+            string storeName,
             CancellationToken cancellationToken)
         {
-            await sut.WriteAsync(document, options, cancellationToken);
+            await sut.WriteAsync(document, options, storeName, cancellationToken);
+
             containerProvider
                 .Received(1)
-                .GetContainer<TestDocument>();
+                .GetContainer<TestDocument>(storeName);
+            containerProvider
+                .Received(1)
+                .GetContainer<TestDocument>(storeName);
         }
 
         [Theory, AutoNSubstituteData]
         public async Task WriteAsync_UpsertItem_In_Container(
             ItemRequestOptions options,
+            string storeName,
             CancellationToken cancellationToken)
         {
             containerProvider
                 .GetContainer<TestDocument>()
                 .ReturnsForAnyArgs(container);
 
-            await sut.WriteAsync(document, options, cancellationToken);
+            await sut.WriteAsync(document, options, storeName, cancellationToken);
+
+            containerProvider
+                .Received(1)
+                .GetContainer<TestDocument>(storeName);
             await container
                 .Received(1)
                 .UpsertItemAsync<object>(
@@ -103,9 +110,14 @@ namespace Chronicles.Tests.Documents.Internal
         [Theory, AutoNSubstituteData]
         public async Task ReplaceAsync_Calls_ReplaceItemAsync_On_Container(
             ItemRequestOptions options,
+            string storeName,
             CancellationToken cancellationToken)
         {
-            await sut.ReplaceAsync(document, options, cancellationToken);
+            await sut.ReplaceAsync(document, options, storeName, cancellationToken);
+
+            containerProvider
+                .Received(1)
+                .GetContainer<TestDocument>(storeName);
             _ = container
                 .Received(1)
                 .ReplaceItemAsync<object>(
@@ -119,9 +131,14 @@ namespace Chronicles.Tests.Documents.Internal
         [Theory, AutoNSubstituteData]
         public async Task DeleteAsync_Calls_DeleteItemAsync_On_Container(
             ItemRequestOptions options,
+            string storeName,
             CancellationToken cancellationToken)
         {
-            await sut.DeleteAsync(document.Id, document.Pk, options, cancellationToken);
+            await sut.DeleteAsync(document.Id, document.Pk, options, storeName, cancellationToken);
+
+            containerProvider
+                .Received(1)
+                .GetContainer<TestDocument>(storeName);
             _ = container
                 .Received(1)
                 .DeleteItemAsync<object>(
@@ -134,17 +151,21 @@ namespace Chronicles.Tests.Documents.Internal
         [Theory, AutoNSubstituteData]
         public void Multiple_Operations_Uses_Same_Container(
             ItemRequestOptions options,
+            string storeName,
             CancellationToken cancellationToken)
         {
-            _ = sut.WriteAsync(document, options, cancellationToken);
-            _ = sut.WriteAsync(document, options, cancellationToken);
-            _ = sut.CreateAsync(document, options, cancellationToken);
-            _ = sut.CreateAsync(document, options, cancellationToken);
-            _ = sut.ReplaceAsync(document, options, cancellationToken);
-            _ = sut.ReplaceAsync(document, options, cancellationToken);
-            _ = sut.DeleteAsync(document.Id, document.Pk, options, cancellationToken);
-            _ = sut.DeleteAsync(document.Id, document.Pk, options, cancellationToken);
+            _ = sut.WriteAsync(document, options, storeName, cancellationToken);
+            _ = sut.WriteAsync(document, options, storeName, cancellationToken);
+            _ = sut.CreateAsync(document, options, storeName, cancellationToken);
+            _ = sut.CreateAsync(document, options, storeName, cancellationToken);
+            _ = sut.ReplaceAsync(document, options, storeName, cancellationToken);
+            _ = sut.ReplaceAsync(document, options, storeName, cancellationToken);
+            _ = sut.DeleteAsync(document.Id, document.Pk, options, storeName, cancellationToken);
+            _ = sut.DeleteAsync(document.Id, document.Pk, options, storeName, cancellationToken);
 
+            containerProvider
+                .Received(8)
+                .GetContainer<TestDocument>(storeName);
             container
                 .ReceivedCalls()
                 .Should()
@@ -157,6 +178,7 @@ namespace Chronicles.Tests.Documents.Internal
             string partitionKey,
             Func<TestDocument, Task> updateDocument,
             int retries,
+            string storeName,
             CancellationToken cancellationToken)
         {
             await sut.UpdateAsync(
@@ -164,8 +186,12 @@ namespace Chronicles.Tests.Documents.Internal
                 partitionKey,
                 updateDocument,
                 retries,
+                storeName,
                 cancellationToken);
 
+            containerProvider
+                .Received()
+                .GetContainer<TestDocument>(storeName);
             _ = container
                 .Received(1)
                 .ReadItemAsync<TestDocument>(
@@ -180,6 +206,7 @@ namespace Chronicles.Tests.Documents.Internal
             string partitionKey,
             [Substitute] Func<TestDocument, Task> updateDocument,
             int retries,
+            string storeName,
             CancellationToken cancellationToken)
         {
             await sut.UpdateAsync(
@@ -187,6 +214,7 @@ namespace Chronicles.Tests.Documents.Internal
                 partitionKey,
                 updateDocument,
                 retries,
+                storeName,
                 cancellationToken);
 
             _ = updateDocument
@@ -200,6 +228,7 @@ namespace Chronicles.Tests.Documents.Internal
             string partitionKey,
             [Substitute] Func<TestDocument, Task> updateDocument,
             int retries,
+            string storeName,
             CancellationToken cancellationToken)
         {
             await sut.UpdateAsync(
@@ -207,8 +236,12 @@ namespace Chronicles.Tests.Documents.Internal
                 partitionKey,
                 updateDocument,
                 retries,
+                storeName,
                 cancellationToken);
 
+            containerProvider
+                .Received()
+                .GetContainer<TestDocument>(storeName);
             _ = container
                 .Received(1)
                 .ReplaceItemAsync<object>(
@@ -223,6 +256,7 @@ namespace Chronicles.Tests.Documents.Internal
         public async Task UpdateOrCreateAsync_Reads_The_Document(
            Func<TestDocument, Task> updateDocument,
            int retries,
+           string storeName,
            TestDocument defaultDocument,
            CancellationToken cancellationToken)
         {
@@ -230,8 +264,12 @@ namespace Chronicles.Tests.Documents.Internal
                 () => defaultDocument,
                 updateDocument,
                 retries,
+                storeName,
                 cancellationToken);
 
+            containerProvider
+                .Received()
+                .GetContainer<TestDocument>(storeName);
             _ = container
                 .Received(1)
                 .ReadItemAsync<TestDocument>(
@@ -244,6 +282,7 @@ namespace Chronicles.Tests.Documents.Internal
         public async Task UpdateAsync_Calls_UpdateDocument_With_Found_Document(
             [Substitute] Action<TestDocument> updateDocument,
             int retries,
+            string storeName,
             TestDocument defaultDocument,
             CancellationToken cancellationToken)
         {
@@ -251,6 +290,7 @@ namespace Chronicles.Tests.Documents.Internal
                 () => defaultDocument,
                 updateDocument,
                 retries,
+                storeName,
                 cancellationToken);
 
             updateDocument
@@ -262,6 +302,7 @@ namespace Chronicles.Tests.Documents.Internal
         public async Task UpdateAsync_Calls_UpdateDocument_With_Default_Document_If_Not_Found(
             [Substitute] Func<TestDocument, Task> updateDocument,
             int retries,
+            string storeName,
             TestDocument defaultDocument,
             CancellationToken cancellationToken)
         {
@@ -274,6 +315,7 @@ namespace Chronicles.Tests.Documents.Internal
                 () => defaultDocument,
                 updateDocument,
                 retries,
+                storeName,
                 cancellationToken);
 
             _ = updateDocument
@@ -285,6 +327,7 @@ namespace Chronicles.Tests.Documents.Internal
         public async Task UpdateOrCreateAsync_Calls_ReplaceItem_If_Document_Was_Found(
             [Substitute] Action<TestDocument> updateDocument,
             int retries,
+            string storeName,
             TestDocument defaultDocument,
             CancellationToken cancellationToken)
         {
@@ -292,8 +335,12 @@ namespace Chronicles.Tests.Documents.Internal
                 () => defaultDocument,
                 updateDocument,
                 retries,
+                storeName,
                 cancellationToken);
 
+            containerProvider
+                .Received()
+                .GetContainer<TestDocument>(storeName);
             _ = container
                 .Received(1)
                 .ReplaceItemAsync<object>(
@@ -308,6 +355,7 @@ namespace Chronicles.Tests.Documents.Internal
         public async Task UpdateOrCreateAsync_Calls_CreateItem_If_Document_Was_Not_Found(
             [Substitute] Action<TestDocument> updateDocument,
             int retries,
+            string storeName,
             TestDocument defaultDocument,
             CancellationToken cancellationToken)
         {
@@ -320,8 +368,12 @@ namespace Chronicles.Tests.Documents.Internal
                 () => defaultDocument,
                 updateDocument,
                 retries,
+                storeName,
                 cancellationToken);
 
+            containerProvider
+                .Received()
+                .GetContainer<TestDocument>(storeName);
             _ = container
                 .Received(1)
                 .CreateItemAsync<object>(
@@ -333,10 +385,14 @@ namespace Chronicles.Tests.Documents.Internal
 
         [Theory, AutoNSubstituteData]
         public void CreateTransaction_Calls_CreateTransactionalBatch_On_Container(
-            string partitionKey)
+            string partitionKey,
+            string storeName)
         {
-            sut.CreateTransaction(partitionKey);
+            sut.CreateTransaction(partitionKey, storeName);
 
+            containerProvider
+                .Received(1)
+                .GetContainer<TestDocument>(storeName);
             container
                 .Received(1)
                 .CreateTransactionalBatch(
@@ -346,9 +402,10 @@ namespace Chronicles.Tests.Documents.Internal
 
         [Theory, AutoNSubstituteData]
         public void CreateTransaction_Returns_CosmosTransaction(
-            string partitionKey)
+            string partitionKey,
+            string storeName)
         {
-            var result = sut.CreateTransaction(partitionKey);
+            var result = sut.CreateTransaction(partitionKey, storeName);
             result
                 .Should()
                 .BeAssignableTo<CosmosTransaction<TestDocument>>();

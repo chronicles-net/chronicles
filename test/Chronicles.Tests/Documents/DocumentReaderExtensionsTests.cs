@@ -13,12 +13,14 @@ public class DocumentReaderExtensionsTests
         string documentId,
         string partitionKey,
         ItemRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         await reader.FindAsync<TestDocument, TestDocument>(
                 documentId,
                 partitionKey,
                 options,
+                storeName,
                 cancellationToken);
 
         _ = reader
@@ -27,6 +29,7 @@ public class DocumentReaderExtensionsTests
                 documentId,
                 partitionKey,
                 options,
+                storeName,
                 cancellationToken);
     }
 
@@ -36,16 +39,18 @@ public class DocumentReaderExtensionsTests
         string partitionKey,
         string documentId,
         ItemRequestOptions options,
+        string storeName,
         TestDocument document,
         CancellationToken cancellationToken)
     {
         reader
-            .ReadAsync<TestDocument>(default, default, default, default)
+            .ReadAsync<TestDocument>(default, default, default, default, default)
             .ReturnsForAnyArgs(document);
         var result = await reader.FindAsync<TestDocument, TestDocument>(
                 documentId,
                 partitionKey,
                 options,
+                storeName,
                 cancellationToken);
         result
             .Should()
@@ -59,6 +64,7 @@ public class DocumentReaderExtensionsTests
         string documentId,
         string partitionKey,
         ItemRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         exception = new(
@@ -68,13 +74,14 @@ public class DocumentReaderExtensionsTests
             exception.ActivityId,
             exception.RequestCharge);
         reader
-            .ReadAsync<TestDocument>(default, default, default, default)
+            .ReadAsync<TestDocument>(default, default, default, default, default)
             .ReturnsForAnyArgs(Task.FromException<TestDocument>(exception));
 
         var response = await reader.FindAsync<TestDocument, TestDocument>(
             documentId,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
         response
@@ -88,12 +95,14 @@ public class DocumentReaderExtensionsTests
         string documentId,
         string partitionKey,
         ItemRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         await reader.FindAsync(
             documentId,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
         _ = reader
@@ -102,6 +111,7 @@ public class DocumentReaderExtensionsTests
                 documentId,
                 partitionKey,
                 options,
+                storeName,
                 cancellationToken);
     }
 
@@ -123,6 +133,7 @@ public class DocumentReaderExtensionsTests
                 documentId,
                 partitionKey,
                 options: null,
+                storeName: null,
                 cancellationToken);
     }
 
@@ -132,12 +143,14 @@ public class DocumentReaderExtensionsTests
         string documentId,
         string partitionKey,
         ItemRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         await reader.ReadAsync(
             documentId,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
         _ = reader
@@ -146,6 +159,7 @@ public class DocumentReaderExtensionsTests
                 documentId,
                 partitionKey,
                 options,
+                storeName,
                 cancellationToken);
     }
 
@@ -167,6 +181,7 @@ public class DocumentReaderExtensionsTests
                 documentId,
                 partitionKey,
                 options: null,
+                storeName: null,
                 cancellationToken);
     }
 
@@ -175,12 +190,14 @@ public class DocumentReaderExtensionsTests
         IDocumentReader<TestDocument> reader,
         string partitionKey,
         QueryRequestOptions options,
+        string storeName,
         IQueryable<TestDocument> queryable,
         CancellationToken cancellationToken)
     {
         _ = reader.ReadAllAsync(
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
         _ = reader
@@ -199,16 +216,18 @@ public class DocumentReaderExtensionsTests
         IDocumentReader<TestDocument> reader,
         string partitionKey,
         QueryRequestOptions options,
+        string storeName,
         QueryDefinition query,
         CancellationToken cancellationToken)
     {
         reader
-            .CreateQuery<TestDocument>(default)
+            .CreateQuery<TestDocument>(default, default)
             .ReturnsForAnyArgs(query);
 
         _ = reader.ReadAllAsync(
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
         _ = reader
@@ -217,6 +236,7 @@ public class DocumentReaderExtensionsTests
                 query,
                 partitionKey,
                 options,
+                storeName,
                 cancellationToken);
     }
 
@@ -226,15 +246,17 @@ public class DocumentReaderExtensionsTests
         IDocumentReader<TestDocument> reader,
         string partitionKey,
         QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         reader
-            .QueryAsync<TestDocument>(default, default, default, default)
+            .QueryAsync<TestDocument>(default, default, default, default, default)
             .ReturnsForAnyArgs(queryResult);
 
         var result = reader.ReadAllAsync(
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
         result
@@ -250,7 +272,7 @@ public class DocumentReaderExtensionsTests
         CancellationToken cancellationToken)
     {
         reader
-            .CreateQuery<TestDocument>(default)
+            .CreateQuery<TestDocument>(default, default)
             .ReturnsForAnyArgs(query);
 
         _ = reader.ReadAllAsync(
@@ -263,6 +285,7 @@ public class DocumentReaderExtensionsTests
                 query,
                 partitionKey,
                 options: null,
+                storeName: null,
                 cancellationToken);
     }
 
@@ -284,6 +307,7 @@ public class DocumentReaderExtensionsTests
                 query,
                 partitionKey,
                 options: null,
+                storeName: null,
                 cancellationToken);
     }
 
@@ -308,9 +332,10 @@ public class DocumentReaderExtensionsTests
             .PagedQueryAsync<TestDocument>(
                 query,
                 partitionKey,
-                options: null,
                 maxItemCount,
                 continuationToken,
+                options: null,
+                storeName: null,
                 cancellationToken);
     }
 
@@ -321,6 +346,7 @@ public class DocumentReaderExtensionsTests
         QueryExpression<TestDocument, TestAggregate> queryExpression,
         string? partitionKey,
         QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         reader
@@ -331,6 +357,7 @@ public class DocumentReaderExtensionsTests
             queryExpression,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
         _ = reader
@@ -343,6 +370,7 @@ public class DocumentReaderExtensionsTests
                 query,
                 partitionKey,
                 options,
+                storeName,
                 cancellationToken);
     }
 
@@ -352,9 +380,10 @@ public class DocumentReaderExtensionsTests
         QueryDefinition query,
         QueryExpression<TestDocument, TestAggregate> queryExpression,
         string? partitionKey,
-        QueryRequestOptions options,
         int maxItemCount,
         string continuationToken,
+        QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         reader
@@ -364,9 +393,10 @@ public class DocumentReaderExtensionsTests
         _ = reader.PagedQueryAsync(
             queryExpression,
             partitionKey,
-            options,
             maxItemCount,
             continuationToken,
+            options,
+            storeName,
             cancellationToken);
 
         _ = reader
@@ -378,9 +408,10 @@ public class DocumentReaderExtensionsTests
             .PagedQueryAsync<TestAggregate>(
                 query,
                 partitionKey,
-                options,
                 maxItemCount,
                 continuationToken,
+                options,
+                storeName,
                 cancellationToken);
     }
 
@@ -411,6 +442,7 @@ public class DocumentReaderExtensionsTests
                 query,
                 partitionKey,
                 options: null,
+                storeName: null,
                 cancellationToken);
     }
 
@@ -444,9 +476,10 @@ public class DocumentReaderExtensionsTests
             .PagedQueryAsync<TestAggregate>(
                 query,
                 partitionKey,
-                options: null,
                 maxItemCount,
                 continuationToken,
+                options: null,
+                storeName: null,
                 cancellationToken);
     }
 
@@ -457,6 +490,7 @@ public class DocumentReaderExtensionsTests
         Expression<Func<TestDocument, bool>> queryPredicate,
         string? partitionKey,
         QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         reader
@@ -467,6 +501,7 @@ public class DocumentReaderExtensionsTests
             queryPredicate,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
         _ = reader
@@ -479,6 +514,7 @@ public class DocumentReaderExtensionsTests
                 query,
                 partitionKey,
                 options,
+                storeName,
                 cancellationToken);
     }
 
@@ -488,9 +524,10 @@ public class DocumentReaderExtensionsTests
         QueryDefinition query,
         Expression<Func<TestDocument, bool>> queryPredicate,
         string? partitionKey,
-        QueryRequestOptions options,
         int maxItemCount,
         string continuationToken,
+        QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         reader
@@ -500,9 +537,10 @@ public class DocumentReaderExtensionsTests
         _ = reader.PagedQueryAsync(
             queryPredicate,
             partitionKey,
-            options,
             maxItemCount,
             continuationToken,
+            options,
+            storeName,
             cancellationToken);
 
         _ = reader
@@ -514,9 +552,10 @@ public class DocumentReaderExtensionsTests
             .PagedQueryAsync<TestDocument>(
                 query,
                 partitionKey,
-                options,
                 maxItemCount,
                 continuationToken,
+                options,
+                storeName,
                 cancellationToken);
     }
 
@@ -547,6 +586,7 @@ public class DocumentReaderExtensionsTests
                 query,
                 partitionKey,
                 options: null,
+                storeName: null,
                 cancellationToken);
     }
 
@@ -580,9 +620,10 @@ public class DocumentReaderExtensionsTests
             .PagedQueryAsync<TestDocument>(
                 query,
                 partitionKey,
-                options: null,
                 maxItemCount,
                 continuationToken,
+                options: null,
+                storeName: null,
                 cancellationToken);
     }
 }

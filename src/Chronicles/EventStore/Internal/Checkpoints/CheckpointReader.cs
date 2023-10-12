@@ -20,6 +20,7 @@ internal class CheckpointReader
                 name,
                 streamId.Value,
                 options: null,
+                storeName: null,
                 cancellationToken)
             .ConfigureAwait(false);
 }

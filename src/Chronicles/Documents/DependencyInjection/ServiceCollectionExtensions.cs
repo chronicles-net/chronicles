@@ -20,7 +20,6 @@ public static class ServiceCollectionExtensions
             .AddSingleton(typeof(IDocumentReader<>), typeof(CosmosReader<>))
             .AddSingleton(typeof(IDocumentWriter<>), typeof(CosmosWriter<>))
             .AddSingleton<ICosmosClientProvider, CosmosClientProvider>()
-            .AddSingleton<ICosmosSerializerProvider, CosmosSerializerProvider>()
             .AddSingleton<IContainerNameRegistry, ContainerNameRegistry>()
             .AddSingleton<ICosmosContainerProvider, CosmosContainerProvider>()
             .AddSingleton<ICosmosLinqQuery, CosmosLinqQuery>()

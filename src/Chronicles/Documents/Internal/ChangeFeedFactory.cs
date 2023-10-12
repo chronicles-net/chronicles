@@ -19,7 +19,8 @@ public class ChangeFeedFactory : IChangeFeedFactory
     public ChangeFeedProcessor Create<T>(
         string subscriptionName,
         Container.ChangesHandler<T> onChanges,
-        Container.ChangeFeedMonitorErrorDelegate? onError = null)
+        Container.ChangeFeedMonitorErrorDelegate? onError = null,
+        string? storeName = null)
     {
         var options = subscriptionOptions.Get(subscriptionName);
         var container = containerProvider.GetContainer<T>();
@@ -29,7 +30,7 @@ public class ChangeFeedFactory : IChangeFeedFactory
                 subscriptionName,
                 onChanges)
             .WithLeaseContainer(
-                containerProvider.GetSubscriptionContainer<T>())
+                containerProvider.GetSubscriptionContainer(storeName))
             .WithMaxItems(100)
             .WithPollInterval(options.PollingInterval);
 

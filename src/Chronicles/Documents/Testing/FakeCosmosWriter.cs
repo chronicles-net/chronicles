@@ -33,12 +33,15 @@ namespace Chronicles.Documents.Testing
         public IList<T> Documents { get; set; }
             = new List<T>();
 
-        public IDocumentTransaction<T> CreateTransaction(string partitionKey)
+        public IDocumentTransaction<T> CreateTransaction(
+            string partitionKey,
+            string? storeName = null)
             => new FakeCosmosTransaction<T>(this, partitionKey);
 
         public virtual Task<T> CreateAsync(
             T document,
             ItemRequestOptions? options,
+            string? storeName = null,
             CancellationToken cancellationToken = default)
         {
             GuardNotExists(document);
@@ -51,6 +54,7 @@ namespace Chronicles.Documents.Testing
         public virtual Task<T> WriteAsync(
             T document,
             ItemRequestOptions? options,
+            string? storeName = null,
             CancellationToken cancellationToken = default)
         {
             RemoveAll(d
@@ -66,6 +70,7 @@ namespace Chronicles.Documents.Testing
         public virtual Task<T> ReplaceAsync(
             T document,
             ItemRequestOptions? options,
+            string? storeName = null,
             CancellationToken cancellationToken = default)
         {
             GuardExists(document);
@@ -84,6 +89,7 @@ namespace Chronicles.Documents.Testing
             string documentId,
             string partitionKey,
             ItemRequestOptions? options,
+            string? storeName = null,
             CancellationToken cancellationToken = default)
         {
             GuardExists(documentId, partitionKey);
@@ -95,35 +101,12 @@ namespace Chronicles.Documents.Testing
             return Task.CompletedTask;
         }
 
-        public async Task<bool> TryDeleteAsync(
-            string documentId,
-            string partitionKey,
-            ItemRequestOptions? options,
-            CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                await DeleteAsync(
-                    documentId,
-                    partitionKey,
-                    options,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            }
-            catch (CosmosException ex)
-             when (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         public virtual Task<T> UpdateAsync(
             string documentId,
             string partitionKey,
             Func<T, Task> updateDocument,
             int retries = 0,
+            string? storeName = null,
             CancellationToken cancellationToken = default)
         {
             var document = GuardExists(documentId, partitionKey);
@@ -141,6 +124,7 @@ namespace Chronicles.Documents.Testing
             Func<T> getDefaultDocument,
             Func<T, Task> updateDocument,
             int retries = 0,
+            string? storeName = null,
             CancellationToken cancellationToken = default)
         {
             var defaultDocument = getDefaultDocument();

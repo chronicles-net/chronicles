@@ -23,6 +23,7 @@ internal class StreamMetadataReader
                 JsonPropertyNames.StreamMetadataId,
                 streamId.Value,
                 options: null,
+                storeName: null,
                 cancellationToken)
             .ConfigureAwait(false) switch
         {

@@ -20,9 +20,4 @@ public sealed class ContainerNameAttribute : Attribute
     /// Gets the name of the container to use for the annoteted type.
     /// </summary>
     public string ContainerName { get; }
-
-    /// <summary>
-    /// Gets of sets the name of the configured document store for the container.
-    /// </summary>
-    public string? StoreName { get; set; }
 }

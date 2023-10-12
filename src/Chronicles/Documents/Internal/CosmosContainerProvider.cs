@@ -6,7 +6,7 @@ namespace Chronicles.Documents.Internal;
 
 public class CosmosContainerProvider : ICosmosContainerProvider
 {
-    private readonly ConcurrentDictionary<Type, Container> containers = new();
+    private readonly ConcurrentDictionary<DocumentTypeKey, Container> containers = new();
     private readonly ICosmosClientProvider clientProvider;
     private readonly IContainerNameRegistry registry;
     private readonly IOptionsMonitor<DocumentOptions> options;
@@ -21,13 +21,16 @@ public class CosmosContainerProvider : ICosmosContainerProvider
         this.options = options;
     }
 
-    public Container GetContainer<T>()
-        => GetContainer(typeof(T));
+    public Container GetContainer<T>(
+        string? storeName = null)
+        => GetContainer(typeof(T), storeName);
 
     public Container GetContainer(
-        Type documentType)
+        Type documentType,
+        string? storeName = null)
     {
-        if (containers.TryGetValue(documentType, out var container))
+        var key = new DocumentTypeKey(storeName ?? string.Empty, documentType);
+        if (containers.TryGetValue(key, out var container))
         {
             return container;
         }
@@ -35,8 +38,8 @@ public class CosmosContainerProvider : ICosmosContainerProvider
         var name = registry.GetContainerName(documentType);
         return containers
             .GetOrAdd(
-                documentType,
-                t => GetContainer(name.ContainerName, name.StoreName));
+                key,
+                t => GetContainer(name, storeName));
     }
 
     public Container GetContainer(
@@ -48,17 +51,13 @@ public class CosmosContainerProvider : ICosmosContainerProvider
                 options.Get(storeName).DatabaseName,
                 containerName);
 
-    public Container GetSubscriptionContainer<T>()
-        => GetSubscriptionContainer(typeof(T));
-
-    public Container GetSubscriptionContainer(Type documentType)
-        => GetSubscriptionContainer(
-            registry
-                .GetContainerName(documentType).StoreName);
-
     public Container GetSubscriptionContainer(
         string? storeName = null)
         => GetContainer(
             options.Get(storeName).SubscriptionContainerName,
             storeName);
+
+    public ICosmosSerializer GetSerializer(
+        string? storeName = default)
+        => clientProvider.GetSerializer(storeName);
 }

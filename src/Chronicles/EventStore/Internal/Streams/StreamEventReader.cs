@@ -47,7 +47,8 @@ internal class StreamEventReader
             .QueryAsync<StreamEvent>(
                 GetQueryDefinition(fromVersion, filter),
                 streamId.Value,
-                null,
+                options: null,
+                storeName: null,
                 cancellationToken))
         {
             yield return evt;

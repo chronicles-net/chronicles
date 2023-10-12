@@ -10,7 +10,6 @@ namespace Chronicles.Tests.Documents.Internal;
 public class CosmosReaderTests
 {
     private readonly ICosmosSerializer serializer;
-    private readonly ICosmosSerializerProvider serializerProvider;
     private readonly IQueryable<TestDocument> queryable;
     private readonly QueryDefinition query;
     private readonly ItemResponse<TestDocument> itemResponse;
@@ -58,10 +57,15 @@ public class CosmosReaderTests
             .GetItemLinqQueryable<TestDocument>(default, default, default, default)
             .ReturnsForAnyArgs(c => queryable);
 
+        serializer = Substitute.For<ICosmosSerializer>();
+
         containerProvider = Substitute.For<ICosmosContainerProvider>();
         containerProvider
-            .GetContainer<TestDocument>()
-            .Returns(container, null);
+            .GetContainer<TestDocument>(default)
+            .ReturnsForAnyArgs(container);
+        containerProvider
+            .GetSerializer(default)
+            .ReturnsForAnyArgs(serializer);
 
         linqQuery = Substitute.For<ICosmosLinqQuery>();
         linqQuery
@@ -71,11 +75,7 @@ public class CosmosReaderTests
             .GetFeedIterator(Arg.Any<IQueryable<TestDocument>>())
             .ReturnsForAnyArgs(feedIterator);
 
-        serializer = Substitute.For<ICosmosSerializer>();
-        serializerProvider = Substitute.For<ICosmosSerializerProvider>();
-        serializerProvider.GetSerializer<TestDocument>().ReturnsForAnyArgs(serializer);
-
-        sut = new CosmosReader<TestDocument>(containerProvider, serializerProvider, linqQuery);
+        sut = new CosmosReader<TestDocument>(containerProvider, linqQuery);
     }
 
     [Fact]
@@ -87,17 +87,19 @@ public class CosmosReaderTests
         string documentId,
         string partitionKey,
         ItemRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         await sut.ReadAsync<TestDocument>(
             documentId,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
         containerProvider
             .Received(1)
-            .GetContainer<TestDocument>();
+            .GetContainer<TestDocument>(storeName);
     }
 
     [Theory, AutoNSubstituteData]
@@ -105,12 +107,14 @@ public class CosmosReaderTests
         string documentId,
         string partitionKey,
         ItemRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         await sut.ReadAsync<TestDocument>(
             documentId,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
         _ = container
@@ -127,12 +131,14 @@ public class CosmosReaderTests
         string documentId,
         string partitionKey,
         ItemRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         var result = await sut.ReadAsync<TestDocument>(
             documentId,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
         result
             .Should()
@@ -145,6 +151,7 @@ public class CosmosReaderTests
         string documentId,
         string partitionKey,
         ItemRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         container
@@ -152,7 +159,7 @@ public class CosmosReaderTests
             .Returns(Task.FromException<ItemResponse<TestDocument>>(exception));
 
         FluentActions
-            .Awaiting(() => sut.ReadAsync<TestDocument>(documentId, partitionKey, options, cancellationToken))
+            .Awaiting(() => sut.ReadAsync<TestDocument>(documentId, partitionKey, options, storeName, cancellationToken))
             .Should()
             .ThrowAsync<CosmosException>();
     }
@@ -162,31 +169,38 @@ public class CosmosReaderTests
         QueryDefinition query,
         string partitionKey,
         QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         _ = sut.QueryAsync<TestDocument>(
             query,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
         containerProvider
             .Received(1)
-            .GetContainer<TestDocument>();
+            .GetContainer<TestDocument>(storeName);
     }
 
     [Theory, AutoNSubstituteData]
     public void QueryAsync_Calls_GetItemQuery_Iterator_On_Container(
         QueryDefinition query,
         QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         _ = sut.QueryAsync<TestDocument>(
             query,
             partitionKey: null,
             options,
+            storeName,
             cancellationToken);
 
+        containerProvider
+            .Received(1)
+            .GetContainer<TestDocument>(storeName);
         container
             .Received(1)
             .GetItemQueryIterator<TestDocument>(
@@ -200,21 +214,25 @@ public class CosmosReaderTests
         QueryDefinition query,
         string partitionKey,
         QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         _ = sut.QueryAsync<TestDocument>(
             query,
             partitionKey,
             options,
+            storeName,
             cancellationToken);
 
+        containerProvider
+            .Received(1)
+            .GetContainer<TestDocument>(storeName);
         container
             .Received(1)
             .GetItemQueryIterator<TestDocument>(
                 query,
                 null,
                 Arg.Is<QueryRequestOptions>(o => o.PartitionKey == new PartitionKey(partitionKey)));
-
         container
             .ReceivedCallWithArgument<QueryRequestOptions>()
             .Should()
@@ -226,6 +244,7 @@ public class CosmosReaderTests
         QueryDefinition query,
         string partitionKey,
         QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         feedIterator.HasMoreResults.Returns(false);
@@ -234,6 +253,7 @@ public class CosmosReaderTests
             query,
             partitionKey,
             options,
+            storeName,
             cancellationToken)
             .ToListAsync(cancellationToken);
 
@@ -255,6 +275,7 @@ public class CosmosReaderTests
         QueryDefinition query,
         string partitionKey,
         QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         feedIterator.HasMoreResults.Returns(true, false);
@@ -263,6 +284,7 @@ public class CosmosReaderTests
             query,
             partitionKey,
             options,
+            storeName,
             cancellationToken)
             .ToListAsync(cancellationToken);
 
@@ -284,6 +306,7 @@ public class CosmosReaderTests
         QueryDefinition query,
         string partitionKey,
         QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         feedIterator
@@ -298,6 +321,7 @@ public class CosmosReaderTests
             query,
             partitionKey,
             options,
+            storeName,
             cancellationToken)
             .ToListAsync(cancellationToken);
 
@@ -322,39 +346,46 @@ public class CosmosReaderTests
     public void PagedQueryAsync_Uses_The_Right_Container(
         QueryDefinition query,
         string partitionKey,
-        QueryRequestOptions options,
         int maxItemCount,
         string continuationToken,
+        QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         _ = sut.PagedQueryAsync<TestDocument>(
             query,
             partitionKey,
-            options,
             maxItemCount,
             continuationToken,
+            options,
+            storeName,
             cancellationToken);
 
         containerProvider
             .Received(1)
-            .GetContainer<TestDocument>();
+            .GetContainer<TestDocument>(storeName);
     }
 
     [Theory, AutoNSubstituteData]
     public async Task PagedQueryAsync_Calls_GetItemQuery_Iterator_On_Container(
         QueryDefinition query,
-        QueryRequestOptions options,
         string continuationToken,
+        QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         await sut.PagedQueryAsync<TestDocument>(
             query,
             partitionKey: null,
-            options,
             maxItemCount: null,
             continuationToken,
+            options,
+            storeName,
             cancellationToken);
 
+        containerProvider
+            .Received(1)
+            .GetContainer<TestDocument>(storeName);
         container
             .Received(1)
             .GetItemQueryIterator<TestDocument>(
@@ -367,19 +398,24 @@ public class CosmosReaderTests
     public async Task PagedQueryAsync_Calls_GetItemQuery_Iterator_On_Container_With_PartitionKey(
         QueryDefinition query,
         string partitionKey,
-        QueryRequestOptions options,
         int maxItemCount,
         string continuationToken,
+        QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         await sut.PagedQueryAsync<TestDocument>(
             query,
             partitionKey,
-            options,
             maxItemCount,
             continuationToken,
+            options,
+            storeName,
             cancellationToken);
 
+        containerProvider
+            .Received(1)
+            .GetContainer<TestDocument>(storeName);
         container
             .Received(1)
             .GetItemQueryIterator<TestDocument>(
@@ -388,11 +424,10 @@ public class CosmosReaderTests
                 Arg.Is<QueryRequestOptions>(o
                     => o.PartitionKey == new PartitionKey(partitionKey)
                     && o.MaxItemCount == maxItemCount));
-
         container
             .ReceivedCallWithArgument<QueryRequestOptions>()
             .Should()
-            .BeEquivalentTo(options, c=> c
+            .BeEquivalentTo(options, c => c
                 .Excluding(o => o.PartitionKey)
                 .Excluding(o => o.MaxItemCount));
     }
@@ -401,19 +436,24 @@ public class CosmosReaderTests
     public void PagedQueryAsync_Gets_ItemQueryIterator(
         QueryDefinition query,
         string partitionKey,
-        QueryRequestOptions options,
         int maxItemCount,
         string continuationToken,
+        QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         _ = sut.PagedQueryAsync<TestDocument>(
             query,
             partitionKey,
-            options,
             maxItemCount,
             continuationToken,
+            options,
+            storeName,
             cancellationToken);
 
+        containerProvider
+            .Received(1)
+            .GetContainer<TestDocument>(storeName);
         container
             .Received(1)
             .GetItemQueryIterator<TestDocument>(
@@ -428,9 +468,10 @@ public class CosmosReaderTests
     public async Task PagedQueryAsync_Returns_Empty_When_No_More_Result(
         QueryDefinition query,
         string partitionKey,
-        QueryRequestOptions options,
         int maxItemCount,
         string continuationToken,
+        QueryRequestOptions options,
+        string storeName,
         CancellationToken cancellationToken)
     {
         feedIterator.HasMoreResults.Returns(false);
@@ -439,9 +480,10 @@ public class CosmosReaderTests
             .PagedQueryAsync<TestDocument>(
                 query,
                 partitionKey,
-                options,
                 maxItemCount,
                 continuationToken,
+                options,
+                storeName,
                 cancellationToken);
 
         _ = feedIterator
@@ -464,9 +506,10 @@ public class CosmosReaderTests
     public async Task PagedQueryAsync_Returns_Items_When_Query_Matches(
         QueryDefinition query,
         string partitionKey,
-        QueryRequestOptions options,
         int maxItemCount,
         string continuationToken,
+        QueryRequestOptions options,
+        string storeName,
         List<TestDocument> records,
         CancellationToken cancellationToken)
     {
@@ -484,9 +527,10 @@ public class CosmosReaderTests
             .PagedQueryAsync<TestDocument>(
                 query,
                 partitionKey,
-                options,
                 maxItemCount,
-                null,
+                continuationToken: null,
+                options,
+                storeName,
                 cancellationToken);
 
         _ = feedIterator
@@ -507,24 +551,25 @@ public class CosmosReaderTests
     }
 
     [Theory, AutoNSubstituteData]
-    public void Multiple_Operations_Uses_Same_Container(
+    public void Each_Operation_Gets_The_Container(
         QueryDefinition query,
         string documentId,
         string partitionKey,
         int maxItemCount,
         string continuationToken,
+        string storeName,
         CancellationToken cancellationToken)
     {
-        _ = sut.ReadAsync<TestDocument>(documentId, partitionKey, null, cancellationToken);
-        _ = sut.ReadAsync<TestDocumentSubClass>(documentId, partitionKey, null, cancellationToken);
-        _ = sut.QueryAsync<TestDocument>(query, partitionKey, null, cancellationToken).ToListAsync(cancellationToken);
-        _ = sut.QueryAsync<TestAggregate>(query, partitionKey, null, cancellationToken).ToListAsync(cancellationToken);
-        _ = sut.PagedQueryAsync<TestDocument>(query, partitionKey, null, maxItemCount, continuationToken, cancellationToken);
-        _ = sut.PagedQueryAsync<TestAggregate>(query, partitionKey, null, maxItemCount, continuationToken, cancellationToken);
+        _ = sut.ReadAsync<TestDocument>(documentId, partitionKey, options: null, storeName, cancellationToken);
+        _ = sut.ReadAsync<TestDocumentSubClass>(documentId, partitionKey, options: null, storeName, cancellationToken);
+        _ = sut.QueryAsync<TestDocument>(query, partitionKey, options: null, storeName, cancellationToken).ToListAsync(cancellationToken);
+        _ = sut.QueryAsync<TestAggregate>(query, partitionKey, options: null, storeName, cancellationToken).ToListAsync(cancellationToken);
+        _ = sut.PagedQueryAsync<TestDocument>(query, partitionKey, maxItemCount, continuationToken, options: null, storeName, cancellationToken);
+        _ = sut.PagedQueryAsync<TestAggregate>(query, partitionKey, maxItemCount, continuationToken, options: null, storeName, cancellationToken);
 
         containerProvider
-            .Received()
-            .GetContainer<TestDocument>();
+            .Received(6)
+            .GetContainer<TestDocument>(storeName);
 
         container
             .ReceivedCalls()
@@ -535,14 +580,22 @@ public class CosmosReaderTests
     [Theory, AutoNSubstituteData]
     public void CreateQuery_Creates_QueryDefinition_From_Linq_Query(
         QueryExpression<TestDocument, TestDocument> query,
+        string storeName,
         IQueryable<TestDocument> queryResult)
     {
         query
             .Invoke(Arg.Any<IQueryable<TestDocument>>())
             .Returns(queryResult);
 
-        var result = sut.CreateQuery(query);
+        var result = sut.CreateQuery(query, storeName);
 
+        containerProvider
+            .Received(1)
+            .GetContainer<TestDocument>(storeName);
+        container
+            .Received(1)
+            .GetItemLinqQueryable<TestDocument>(
+                linqSerializerOptions: Arg.Any<CosmosLinqSerializerOptions>());
         query
             .Received(1)
             .Invoke(queryable);

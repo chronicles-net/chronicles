@@ -4,37 +4,41 @@ namespace Chronicles.Documents.Internal;
 
 public class CosmosReader<T> : IDocumentReader<T>
 {
-    private readonly Container container;
+    private readonly ICosmosContainerProvider containers;
     private readonly ICosmosLinqQuery linqQuery;
-    private readonly ICosmosSerializer serializer;
 
     public CosmosReader(
         ICosmosContainerProvider containerProvider,
-        ICosmosSerializerProvider serializerProvider,
         ICosmosLinqQuery linqQuery)
     {
-        container = containerProvider.GetContainer<T>();
-        serializer = serializerProvider.GetSerializer<T>();
-
+        this.containers = containerProvider;
         this.linqQuery = linqQuery;
     }
 
     public QueryDefinition CreateQuery<TResult>(
-        QueryExpression<T, TResult> query)
+        QueryExpression<T, TResult> query,
+        string? storeName = null)
         => linqQuery.GetQueryDefinition(
             query.Invoke(
-                container.GetItemLinqQueryable<T>(linqSerializerOptions: new CosmosLinqSerializerOptions
-                {
-                    PropertyNamingPolicy = serializer.PropertyNamingPolicy,
-                })));
+                containers
+                    .GetContainer<T>(storeName)
+                    .GetItemLinqQueryable<T>(
+                        linqSerializerOptions: new()
+                        {
+                            PropertyNamingPolicy = containers
+                                .GetSerializer(storeName)
+                                .PropertyNamingPolicy,
+                        })));
 
     public async Task<TResult> ReadAsync<TResult>(
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         where TResult : T
-        => await container
+        => await containers
+            .GetContainer<T>(storeName)
             .ReadItemAsync<TResult>(
                 documentId,
                 new PartitionKey(partitionKey),
@@ -47,8 +51,10 @@ public class CosmosReader<T> : IDocumentReader<T>
         QueryDefinition query,
         string? partitionKey,
         QueryRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
-        => container
+        => containers
+            .GetContainer<T>(storeName)
             .GetItemQueryIterator<TResult>(
                 query,
                 requestOptions: CreateOptions(options, partitionKey))
@@ -57,11 +63,13 @@ public class CosmosReader<T> : IDocumentReader<T>
     public async Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
         QueryDefinition query,
         string? partitionKey,
-        QueryRequestOptions? options,
         int? maxItemCount,
-        string? continuationToken = null,
+        string? continuationToken,
+        QueryRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
-        => await container
+        => await containers
+            .GetContainer<T>(storeName)
             .GetItemQueryIterator<TResult>(
                 query,
                 continuationToken,

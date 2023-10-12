@@ -11,8 +11,9 @@ public interface ICosmosContainerProvider
     /// Gets the configured container for the specified document type.
     /// </summary>
     /// <typeparam name="T">The document type.</typeparam>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <returns>A cosmos <see cref="Container"/>.</returns>
-    Container GetContainer<T>();
+    Container GetContainer<T>(string? storeName = null);
 
     /// <summary>
     /// Gets the configured container for the specified document type.
@@ -20,8 +21,9 @@ public interface ICosmosContainerProvider
     /// <param name="documentType">
     /// The <see cref="Type"/> of the document.
     /// </param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <returns>A cosmos <see cref="Container"/>.</returns>
-    Container GetContainer(Type documentType);
+    Container GetContainer(Type documentType, string? storeName = null);
 
     /// <summary>
     /// Gets the container with a specified name.
@@ -34,26 +36,18 @@ public interface ICosmosContainerProvider
         string? storeName = null);
 
     /// <summary>
-    /// Gets the container containing the subsription leases for the specified document type.
-    /// </summary>
-    /// <typeparam name="T">The document type.</typeparam>
-    /// <returns>A cosmos <see cref="Container"/>.</returns>
-    Container GetSubscriptionContainer<T>();
-
-    /// <summary>
-    /// Gets the container containing the subscription leases for the specified document type.
-    /// </summary>
-    /// <param name="documentType">
-    /// The <see cref="Type"/> of the document.
-    /// </param>
-    /// <returns>A cosmos <see cref="Container"/>.</returns>
-    Container GetSubscriptionContainer(Type documentType);
-
-    /// <summary>
     /// Gets the container containing the subscription leases for the specified store name.
     /// </summary>
     /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <returns>A cosmos <see cref="Container"/>.</returns>
     Container GetSubscriptionContainer(
+        string? storeName = null);
+
+    /// <summary>
+    /// Get the container with a specified name.
+    /// </summary>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
+    /// <returns>A cosmos <see cref="ICosmosSerializer"/>.</returns>
+    ICosmosSerializer GetSerializer(
         string? storeName = null);
 }

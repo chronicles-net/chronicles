@@ -18,9 +18,11 @@ public interface IDocumentWriter<T>
     /// in the container with the provided partition key in a transactional manner.
     /// </summary>
     /// <param name="partitionKey">Partition key for the transaction.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <returns>A new instance of <see cref="IDocumentTransaction{T}"/>.</returns>
     IDocumentTransaction<T> CreateTransaction(
-        string partitionKey);
+        string partitionKey,
+        string? storeName = null);
 
     /// <summary>
     /// Creates a new <typeparamref name="T"/> document in Cosmos.
@@ -31,11 +33,13 @@ public interface IDocumentWriter<T>
     /// </remarks>
     /// <param name="document">The document to be created.</param>
     /// <param name="options">Options for the item request.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> containing the created <typeparamref name="T"/> document.</returns>
     Task<T> CreateAsync(
         T document,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -47,11 +51,13 @@ public interface IDocumentWriter<T>
     /// </remarks>
     /// <param name="document">The document to be written.</param>
     /// <param name="options">Options for the item request.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> containing the written <typeparamref name="T"/> document.</returns>
     Task<T> WriteAsync(
         T document,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -75,11 +81,13 @@ public interface IDocumentWriter<T>
     /// </remarks>
     /// <param name="document">The document to be created.</param>
     /// <param name="options">Options for the item request.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
     Task<T> ReplaceAsync(
         T document,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -93,12 +101,14 @@ public interface IDocumentWriter<T>
     /// <param name="documentId">Id of the document.</param>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="options">Options for the item request.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public Task DeleteAsync(
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
+        string? storeName = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -122,6 +132,7 @@ public interface IDocumentWriter<T>
     /// <param name="partitionKey">Partition key of the document.</param>
     /// <param name="updateDocument">Function for applying updates to the document.</param>
     /// <param name="retries">Number of retries when a conflict occurs.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used.</param>
     /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
     Task<T> UpdateAsync(
@@ -129,6 +140,7 @@ public interface IDocumentWriter<T>
         string partitionKey,
         Func<T, Task> updateDocument,
         int retries = 0,
+        string? storeName = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -144,11 +156,13 @@ public interface IDocumentWriter<T>
     /// <param name="getDefaultDocument">Function for creating the default document. The returned document need to have the DocumentId and PartitionKey set.</param>
     /// <param name="updateDocument">Function for applying updates to the document.</param>
     /// <param name="retries">Number of retries when a conflict occurs.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used.</param>
     /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
     Task<T> UpdateOrCreateAsync(
         Func<T> getDefaultDocument,
         Func<T, Task> updateDocument,
         int retries = 0,
+        string? storeName = null,
         CancellationToken cancellationToken = default);
 }
