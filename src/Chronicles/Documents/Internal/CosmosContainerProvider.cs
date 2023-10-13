@@ -29,7 +29,7 @@ public class CosmosContainerProvider : ICosmosContainerProvider
         Type documentType,
         string? storeName = null)
     {
-        var key = new DocumentTypeKey(storeName ?? string.Empty, documentType);
+        var key = new DocumentTypeKey(documentType, storeName ?? string.Empty);
         if (containers.TryGetValue(key, out var container))
         {
             return container;

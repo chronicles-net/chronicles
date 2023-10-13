@@ -3,7 +3,7 @@ namespace Chronicles.Documents;
 /// <summary>
 /// Attribute specifying which container to use for the annotated type.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = true)]
 public sealed class ContainerNameAttribute : Attribute
 {
     /// <summary>
@@ -17,7 +17,12 @@ public sealed class ContainerNameAttribute : Attribute
     }
 
     /// <summary>
-    /// Gets the name of the container to use for the annoteted type.
+    /// Gets the name of the container to use for the annotated type.
     /// </summary>
     public string ContainerName { get; }
+
+    /// <summary>
+    /// Gets of sets the name of the configured document store for the container.
+    /// </summary>
+    public string? StoreName { get; set; }
 }

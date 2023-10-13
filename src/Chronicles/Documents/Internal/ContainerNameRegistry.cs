@@ -5,42 +5,58 @@ namespace Chronicles.Documents.Internal;
 
 public class ContainerNameRegistry : IContainerNameRegistry
 {
-    private readonly ConcurrentDictionary<Type, string> names;
+    private readonly ConcurrentDictionary<DocumentTypeKey, string> names;
 
     public ContainerNameRegistry(
         IEnumerable<IDocumentStore> stores)
     {
         names = new(
             stores
-            .SelectMany(s => s.Options.ContainerNames)
-            .GroupBy(r => r.Key, r => r.Value)
+            .SelectMany(s => s
+                .Options
+                .ContainerNames
+                .Select(c => KeyValuePair.Create(
+                    new DocumentTypeKey(c.Key, s.Name),
+                    c.Value)))
             .ToDictionary(
                 r => r.Key,
-                r => r.First()));
+                r => r.Value));
     }
 
-    public string GetContainerName<T>()
-        => GetContainerName(typeof(T));
+    public string GetContainerName<T>(
+        string? storeName = null)
+        => GetContainerName(typeof(T), storeName);
 
     public string GetContainerName(
-        Type documentType)
+        Type documentType,
+        string? storeName = null)
     {
-        if (names.TryGetValue(documentType, out var containerName))
+        var key = new DocumentTypeKey(documentType, storeName ?? string.Empty);
+        if (names.TryGetValue(key, out var containerName))
         {
             return containerName;
         }
 
-        if (documentType.GetCustomAttribute<ContainerNameAttribute>(inherit: true) is { } attribute)
+        if (documentType.GetCustomAttributes<ContainerNameAttribute>(inherit: true) is { } attributes)
         {
-            return names[documentType] = attribute.ContainerName;
+            containerName = attributes
+                .Where(a => (a.StoreName ?? string.Empty) == key.StoreName)
+                .Select(a => a.ContainerName)
+                .FirstOrDefault();
+
+            if (containerName != null)
+            {
+                return names[key] = containerName;
+            }
         }
 
         var baseType = documentType.BaseType;
         while (baseType != null && baseType != typeof(object))
         {
-            if (names.TryGetValue(baseType, out containerName))
+            key = key with { DocumentType = baseType };
+            if (names.TryGetValue(key, out containerName))
             {
-                return containerName;
+                return names[key] = containerName;
             }
             baseType = baseType.BaseType;
         }
