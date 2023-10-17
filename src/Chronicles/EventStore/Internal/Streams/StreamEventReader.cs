@@ -51,6 +51,11 @@ internal class StreamEventReader
                 storeName: null,
                 cancellationToken))
         {
+            if (evt.Data is StreamMetadataDocument)
+            {
+                continue;
+            }
+
             yield return evt;
         }
     }
