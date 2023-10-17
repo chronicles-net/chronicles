@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Chronicles.EventStore.Internal.Events;
+using Chronicles.EventStore.Internal.Streams;
 
 namespace Chronicles.EventStore.Internal.Converters;
 
@@ -31,7 +32,9 @@ internal sealed class StreamEventJsonConverter : JsonConverter<StreamEvent>
         if (jsonDocument.RootElement.TryGetProperty(JsonPropertyNames.Id, out var id)
             && id.GetString() == JsonPropertyNames.StreamMetadataId)
         {
-            return default!;
+            return new StreamEvent(
+                jsonDocument.Deserialize<StreamMetadataDocument>(options)!,
+                EventMetadata.Empty);
         }
 
         if (jsonDocument.RootElement.TryGetProperty(JsonPropertyNames.Properties, out var properties))
