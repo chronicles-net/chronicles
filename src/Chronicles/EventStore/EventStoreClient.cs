@@ -73,7 +73,11 @@ internal class EventStoreClient : IEventStoreClient
         string? filter = null,
         DateTimeOffset? createdAfter = null,
         CancellationToken cancellationToken = default)
-        => throw new NotImplementedException();
+        => metadataReader
+            .QueryAsync(
+                filter,
+                createdAfter,
+                cancellationToken);
 
     public Task SetStreamCheckpointAsync(
         string name,

@@ -1,4 +1,6 @@
+using System.Runtime.CompilerServices;
 using Chronicles.Documents;
+using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.EventStore.Internal.Streams;
 
@@ -36,5 +38,41 @@ internal class StreamMetadataReader
                 0,
                 dateTimeProvider.GetDateTime(),
                 null),
+        };
+
+    public virtual async IAsyncEnumerable<StreamMetadataDocument> QueryAsync(
+        string? filter,
+        DateTimeOffset? createdAfter,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var evt in reader
+            .QueryAsync<StreamMetadataDocument>(
+                GetQueryDefinition(filter, createdAfter),
+                partitionKey: null,
+                options: null,
+                storeName: null,
+                cancellationToken))
+        {
+            yield return evt;
+        }
+    }
+
+    protected virtual QueryDefinition GetQueryDefinition(
+        string? filter,
+        DateTimeOffset? createdAfter)
+        => (filter, createdAfter) switch
+        {
+            ({ } f, { } c) => new QueryDefinition("SELECT * FROM c WHERE c.id == @metadataId AND c.streamId LIKE @filter AND c.timestamp > @createdAfter")
+                                .WithParameter("metadataId", JsonPropertyNames.StreamMetadataId)
+                                .WithParameter("filter", f)
+                                .WithParameter("createdAfter", c),
+            ({ } f, _) => new QueryDefinition("SELECT * FROM c WHERE c.id == @metadataId AND c.streamId LIKE @filter")
+                                .WithParameter("metadataId", JsonPropertyNames.StreamMetadataId)
+                                .WithParameter("filter", f),
+            (_, { } c) => new QueryDefinition("SELECT * FROM c WHERE c.id == @metadataId AND c.timestamp > @createdAfter")
+                                .WithParameter("metadataId", JsonPropertyNames.StreamMetadataId)
+                                .WithParameter("createdAfter", c),
+            _ => new QueryDefinition("SELECT * FROM c WHERE c.id == @metadataId")
+                                .WithParameter("metadataId", JsonPropertyNames.StreamMetadataId),
         };
 }
