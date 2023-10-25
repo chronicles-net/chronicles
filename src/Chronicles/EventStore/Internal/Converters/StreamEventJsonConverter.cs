@@ -34,7 +34,7 @@ internal sealed class StreamEventJsonConverter : JsonConverter<StreamEvent>
         {
             return new StreamEvent(
                 jsonDocument.Deserialize<StreamMetadataDocument>(options)!,
-                EventMetadata.Empty);
+                EventMetadata.StreamMetadata);
         }
 
         if (jsonDocument.RootElement.TryGetProperty(JsonPropertyNames.Properties, out var properties))

@@ -9,34 +9,12 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class EventStoreServiceCollectionExtensions
 {
-    public static ChroniclesBuilder AddEventStore(
-        this ChroniclesBuilder builder,
-        string? storeName = default)
-        => builder.AddEventStore(storeName, o => { });
-
-    public static ChroniclesBuilder AddEventStore(
-        this ChroniclesBuilder builder,
-        Action<EventStoreOptions> configure)
-        => builder.AddEventStore(
-            storeName: Options.Options.DefaultName,
-            configure: configure);
-
-    public static ChroniclesBuilder AddEventStore(
-        this ChroniclesBuilder builder,
-        string? storeName,
-        Action<EventStoreOptions> configure)
+    public static EventStoreBuilder AddEventStore(
+        this DocumentStoreBuilder builder,
+        Action<EventStoreBuilder> configure)
     {
-        if (builder.Services.Any(sd => sd.ServiceType == typeof(StreamEventReader)))
-        {
-            throw new InvalidOperationException(); // Not allowed to register event store more than once.
-        }
-
-        builder.Services.Configure<EventStoreOptions>(o =>
-        {
-            o.DocumentStoreName = storeName ?? Options.Options.DefaultName;
-            configure.Invoke(o);
-        });
-        builder.Services.ConfigureOptions<EventStoreConfigureDocumentStore>();
+        var b = new EventStoreBuilder(builder.Services, builder.StoreName);
+        configure.Invoke(b);
 
         builder.Services.TryAddSingleton<IDateTimeProvider, UtcDateTimeProvider>();
         builder.Services.TryAddSingleton<StreamEventReader>();
@@ -48,6 +26,6 @@ public static class EventStoreServiceCollectionExtensions
 
         builder.Services.AddSingleton<IEventStoreClient, EventStoreClient>();
 
-        return builder;
+        return b;
     }
 }

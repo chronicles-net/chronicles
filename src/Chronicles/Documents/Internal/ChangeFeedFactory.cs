@@ -17,13 +17,13 @@ public class ChangeFeedFactory : IChangeFeedFactory
     }
 
     public ChangeFeedProcessor Create<T>(
+        string? storeName,
         string subscriptionName,
         Container.ChangesHandler<T> onChanges,
-        Container.ChangeFeedMonitorErrorDelegate? onError = null,
-        string? storeName = null)
+        Container.ChangeFeedMonitorErrorDelegate? onError = null)
     {
         var options = subscriptionOptions.Get(subscriptionName);
-        var container = containerProvider.GetContainer<T>();
+        var container = containerProvider.GetContainer<T>(storeName);
 
         var builder = container
             .GetChangeFeedProcessorBuilder(
@@ -31,7 +31,7 @@ public class ChangeFeedFactory : IChangeFeedFactory
                 onChanges)
             .WithLeaseContainer(
                 containerProvider.GetSubscriptionContainer(storeName))
-            .WithMaxItems(100)
+            .WithMaxItems(options.BatchSize)
             .WithPollInterval(options.PollingInterval);
 
         if (options.StartOptions == SubscriptionStartOptions.FromBeginning)

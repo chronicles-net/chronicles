@@ -8,13 +8,12 @@ public static class ServiceCollectionExtensions
 {
     public static ChroniclesBuilder AddChronicles(
         this IServiceCollection services,
-        Action<DocumentOptions> optionsProvider)
+        Action<DocumentStoreBuilder> builder)
     {
-        services
-            .Configure(optionsProvider)
-            .AddSingleton<IDocumentStore>(s => new DocumentStore(
-                Options.Options.DefaultName,
-                s.GetRequiredService<IOptionsMonitor<DocumentOptions>>()));
+        builder.Invoke(new(DocumentOptions.DefaultStoreName, services));
+        services.AddSingleton<IDocumentStore>(s => new DocumentStore(
+            DocumentOptions.DefaultStoreName,
+            s.GetRequiredService<IOptionsMonitor<DocumentOptions>>()));
 
         services
             .AddSingleton(typeof(IDocumentReader<>), typeof(CosmosReader<>))
@@ -30,8 +29,4 @@ public static class ServiceCollectionExtensions
 
         return new ChroniclesBuilder(services);
     }
-
-    public static ChroniclesBuilder AddChronicles(
-        this IServiceCollection services)
-        => AddChronicles(services, options => { });
 }

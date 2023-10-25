@@ -10,6 +10,7 @@ namespace Chronicles.Documents;
 /// </summary>
 public class DocumentOptions
 {
+    public const string DefaultStoreName = "";
     public const string EmulatorEndpoint = "https://localhost:8081/";
     public const string EmulatorAuthKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
     private readonly Dictionary<Type, string> containerNames = new();

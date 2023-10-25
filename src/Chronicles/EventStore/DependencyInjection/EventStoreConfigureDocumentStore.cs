@@ -15,25 +15,24 @@ namespace Microsoft.Extensions.DependencyInjection;
 public class EventStoreConfigureDocumentStore
     : IConfigureNamedOptions<DocumentOptions>
 {
-    private readonly IOptions<EventStoreOptions> eventStoreOptions;
+    private readonly IOptionsMonitor<EventStoreOptions> eventStoreOptions;
 
     public EventStoreConfigureDocumentStore(
-        IOptions<EventStoreOptions> eventStoreOptions)
-    {
-        this.eventStoreOptions = eventStoreOptions;
-    }
+        IOptionsMonitor<EventStoreOptions> eventStoreOptions)
+        => this.eventStoreOptions = eventStoreOptions;
 
     public void Configure(
         DocumentOptions options)
-        => Configure(Options.Options.DefaultName, options);
+        => Configure(DocumentOptions.DefaultStoreName, options);
 
     public void Configure(
         string? name,
         DocumentOptions options)
     {
-        var eventStore = eventStoreOptions.Value;
-        if ((name ?? Options.Options.DefaultName) != eventStore.DocumentStoreName)
+        var eventStore = eventStoreOptions.Get(name);
+        if ((name ?? DocumentOptions.DefaultStoreName) != eventStore.DocumentStoreName)
         {
+            // We don't have a configuration for an event store so skip setting one up.
             return;
         }
 
@@ -44,7 +43,7 @@ public class EventStoreConfigureDocumentStore
         options.AddDocumentType(typeof(StreamMetadataDocument), eventStore.EventStoreContainer);
         options.AddDocumentType(typeof(StreamEvent), eventStore.EventStoreContainer);
 
-        var eventRegistry = new EventRegistry(eventStoreOptions);
+        var eventRegistry = new EventRegistry(eventStore);
         options.SerializerOptions.Converters.Add(new StreamVersionJsonConverter());
         options.SerializerOptions.Converters.Add(new StreamIdJsonConverter());
         options.SerializerOptions.Converters.Add(new StreamEventDocumentJsonConverter(eventRegistry));

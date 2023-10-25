@@ -12,14 +12,14 @@ public interface IChangeFeedFactory
     /// Create a <see cref="ChangeFeedProcessor"/>.
     /// </summary>
     /// <typeparam name="T">The <see cref="IDocument"/>.</typeparam>
+    /// <param name="storeName">A name that identifies the store.</param>
     /// <param name="subscriptionName">A name that identifies the subscription.</param>
     /// <param name="onChanges">Delegate to receive changes.</param>
     /// <param name="onError">A delegate to receive notifications for change feed processor related errors.</param>
-    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <returns>A <see cref="ChangeFeedProcessor"/>.</returns>
     ChangeFeedProcessor Create<T>(
+        string? storeName,
         string subscriptionName,
         Container.ChangesHandler<T> onChanges,
-        Container.ChangeFeedMonitorErrorDelegate? onError = null,
-        string? storeName = null);
+        Container.ChangeFeedMonitorErrorDelegate? onError = null);
 }

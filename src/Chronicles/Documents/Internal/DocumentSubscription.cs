@@ -8,6 +8,7 @@ public class DocumentSubscription<TDocument, TProcessor> : IDocumentSubscription
     private readonly ChangeFeedProcessor changeFeed;
 
     public DocumentSubscription(
+        string storeName,
         string subscriptionName,
         IChangeFeedFactory changeFeedFactory,
         TProcessor processor)
@@ -15,6 +16,7 @@ public class DocumentSubscription<TDocument, TProcessor> : IDocumentSubscription
         SubscriptionName = subscriptionName;
         this.changeFeed = changeFeedFactory
             .Create<TDocument>(
+                storeName,
                 subscriptionName,
                 processor.ProcessAsync,
                 processor.ErrorAsync);

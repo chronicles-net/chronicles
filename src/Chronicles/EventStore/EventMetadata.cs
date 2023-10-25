@@ -1,3 +1,5 @@
+using Chronicles.EventStore.Internal;
+
 namespace Chronicles.EventStore;
 
 /// <summary>
@@ -20,6 +22,15 @@ public record EventMetadata(
     public static EventMetadata Empty
         => new(
             string.Empty,
+            null,
+            null,
+            StreamId.Empty,
+            DateTimeOffset.UtcNow,
+            StreamVersion.Any);
+
+    public static EventMetadata StreamMetadata
+        => new(
+            JsonPropertyNames.StreamMetadataId,
             null,
             null,
             StreamId.Empty,

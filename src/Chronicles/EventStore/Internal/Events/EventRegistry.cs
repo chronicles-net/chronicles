@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Options;
-
 namespace Chronicles.EventStore.Internal.Events;
 
 /// <summary>
@@ -8,13 +6,13 @@ namespace Chronicles.EventStore.Internal.Events;
 public class EventRegistry
 {
     private readonly object syncLock = new();
-    private readonly IOptions<EventStoreOptions> eventStoreOptions;
+    private readonly EventStoreOptions options;
     private Dictionary<Type, SingleEventDataConverter>? types;
     private Dictionary<string, SingleEventDataConverter>? names;
 
     public EventRegistry(
-        IOptions<EventStoreOptions> eventStoreOptions)
-        => this.eventStoreOptions = eventStoreOptions;
+        EventStoreOptions options)
+        => this.options = options;
 
     public virtual IEventDataConverter? GetConverter(
         string eventName)
@@ -63,7 +61,6 @@ public class EventRegistry
             var tempNames = new Dictionary<string, SingleEventDataConverter>();
             var tempTypes = new Dictionary<Type, SingleEventDataConverter>();
 
-            var options = eventStoreOptions.Value;
             if (options.EventNames.Any())
             {
                 foreach (var eventName in options.EventNames)
