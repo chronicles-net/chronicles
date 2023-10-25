@@ -6,13 +6,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add chronicles to the container.
 builder.Services
-    .AddChronicles(o => o
+    .AddChronicles(b => b.Configure(o => o
         .UseDatabase("WeatherForecasts")
         .AddDocumentType<WeatherForecast>("forecasts")
         .UseCosmosEmulator()
         .AddInitialization(i => i
             .CreateDatabase()
-            .CreateContainer<WeatherForecast>()));
+            .CreateContainer<WeatherForecast>())));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -23,8 +23,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+  app.UseSwagger();
+  app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -53,9 +53,9 @@ internal record WeatherForecast(
     int TemperatureC,
     string? Summary) : IDocument
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+  public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 
-    public string GetDocumentId() => Id;
+  public string GetDocumentId() => Id;
 
-    public string GetPartitionKey() => Id;
+  public string GetPartitionKey() => Id;
 }
