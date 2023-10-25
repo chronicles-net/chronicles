@@ -1,51 +1,51 @@
-using System.ComponentModel;
-
 namespace Chronicles.EventStore;
 
-/// <summary>
-/// {tenant}.{stream}
-/// </summary>
-public readonly struct StreamId : IEquatable<StreamId>
+public record StreamId
 {
-    public static readonly StreamId Empty = new StreamId(string.Empty);
+    public static readonly StreamId Empty = new(string.Empty, string.Empty);
 
-    public StreamId(string streamId)
-        => Value = streamId;
+    private readonly string value;
 
-    /// <summary>
-    /// Gets the fully qualified stream id as a string.
-    /// </summary>
-    public string Value { get; }
+    public StreamId(
+        string category,
+        string id)
+    {
+        Category = category;
+        Id = id;
+        value = $"{Category}.{Id}";
+    }
 
-    public static implicit operator StreamId(string id)
-        => new(id);
+    protected StreamId(
+        string category,
+        params string[] compositeId)
+    {
+        if (compositeId.Length == 0)
+        {
+            throw new ArgumentException("Composite id parameters not provided", nameof(compositeId));
+        }
+
+        Category = category;
+        Id = compositeId[^1];
+        value = $"{Category}.{string.Join('.', compositeId)}";
+    }
+
+    private StreamId(string streamId)
+    {
+        var parts = streamId.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        Category = parts[0];
+        Id = parts[^1];
+        value = streamId;
+    }
+
+    public string Category { get; }
+
+    public string Id { get; }
+
+    public override string ToString() => value;
 
     public static explicit operator string(StreamId streamId)
-        => streamId.Value;
+        => streamId.ToString();
 
-    public static bool operator ==(StreamId left, StreamId right)
-        => string.Equals(left.Value, right.Value, StringComparison.Ordinal);
-
-    public static bool operator !=(StreamId left, StreamId right)
-        => !string.Equals(left.Value, right.Value, StringComparison.Ordinal);
-
-    public static StreamId ToStreamId(string streamId)
+    public static StreamId FromString(string streamId)
         => new(streamId);
-
-    public static string FromStreamId(StreamId streamId)
-        => streamId.Value;
-
-    public static bool Equals(StreamId left, StreamId right)
-        => left.Equals(right);
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public override bool Equals(object? obj)
-        => obj is StreamId id && Equals(id);
-
-    public bool Equals(StreamId other)
-        => string.Equals(Value, other.Value, StringComparison.Ordinal);
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public override int GetHashCode()
-        => HashCode.Combine(Value);
 }

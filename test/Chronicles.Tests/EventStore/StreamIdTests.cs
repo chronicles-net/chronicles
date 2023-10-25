@@ -10,7 +10,7 @@ public class StreamIdTests
         [Frozen] string id,
         StreamId sut)
         => sut
-            .Value
+            .ToString()
             .Should()
             .Be(id);
 
@@ -21,22 +21,6 @@ public class StreamIdTests
         StreamId left,
         StreamId right)
         => (left == right)
-            .Should()
-            .BeTrue();
-
-    [Theory, AutoNSubstituteData]
-    public void Should_Be_EqualTo_Using_String_On_LeftSide(
-        [Frozen] string id,
-        StreamId right)
-        => (id == right)
-            .Should()
-            .BeTrue();
-
-    [Theory, AutoNSubstituteData]
-    public void Should_Be_EqualTo_Using_String_On_RightSide(
-        [Frozen] string id,
-        StreamId left)
-        => (left == id)
             .Should()
             .BeTrue();
 
@@ -53,16 +37,7 @@ public class StreamIdTests
         [Frozen] string id,
         StreamId sut)
         => StreamId
-            .FromStreamId(sut)
+            .FromString(sut.ToString())
             .Should()
             .Be(id);
-
-    [Theory, AutoNSubstituteData]
-    public void Should_Support_Getting_StreamId_Using_String(
-        [Frozen] string id,
-        StreamId sut)
-        => StreamId
-            .ToStreamId(id)
-            .Should()
-            .BeEquivalentTo(sut);
 }

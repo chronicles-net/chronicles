@@ -16,5 +16,5 @@ internal record CheckpointDocument<TState>(
         => Name;
 
     string IDocument.GetPartitionKey()
-        => StreamId.Value;
+        => StreamId.ToString();
 }

@@ -47,7 +47,7 @@ internal class StreamEventWriter
                 metadata,
                 options);
 
-        var transaction = writer.CreateTransaction(streamId.Value);
+        var transaction = writer.CreateTransaction(streamId.ToString());
         transaction
             .Write(
                 batch.Metadata,

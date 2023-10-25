@@ -25,7 +25,7 @@ internal class CheckpointWriter
             .WriteAsync(
                 new CheckpointDocument<object?>(
                     name,
-                    streamId.Value,
+                    streamId.ToString(),
                     name,
                     streamId,
                     version,

@@ -46,7 +46,7 @@ internal class StreamEventReader
         await foreach (var evt in streamReader
             .QueryAsync<StreamEvent>(
                 GetQueryDefinition(fromVersion, filter),
-                streamId.Value,
+                streamId.ToString(),
                 options: null,
                 storeName: null,
                 cancellationToken))

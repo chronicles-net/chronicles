@@ -11,7 +11,7 @@ internal class StreamIdJsonConverter : JsonConverter<StreamId>
         JsonSerializerOptions options)
         => reader.GetString() switch
         {
-            { } id => (StreamId)id,
+            { } id => StreamId.FromString(id),
             _ => throw new JsonException(),
         };
 
@@ -19,5 +19,5 @@ internal class StreamIdJsonConverter : JsonConverter<StreamId>
         Utf8JsonWriter writer,
         StreamId value,
         JsonSerializerOptions options)
-        => writer.WriteStringValue(value.Value);
+        => writer.WriteStringValue(value.ToString());
 }
