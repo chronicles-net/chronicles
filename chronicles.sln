@@ -23,7 +23,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{5327
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GettingStarted", "docs\samples\GettingStarted\GettingStarted.csproj", "{9F12BCF0-DC3B-4711-B1CF-286D9CADC6F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeatherForecasts", "docs\samples\WeatherForecasts\WeatherForecasts.csproj", "{19ACE5F1-66AB-43FD-BBED-9FB269D758E9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WeatherForecasts", "docs\samples\WeatherForecasts\WeatherForecasts.csproj", "{19ACE5F1-66AB-43FD-BBED-9FB269D758E9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{594A2902-2662-4168-B24C-3854A6ED2734}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

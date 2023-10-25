@@ -58,7 +58,6 @@
     <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="All" />
     <PackageReference Include="SecurityCodeScan.VS2019" PrivateAssets="All" />
     <PackageReference Include="StyleCop.Analyzers" PrivateAssets="All" />
-    <PackageReference Include="SonarAnalyzer.CSharp" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
