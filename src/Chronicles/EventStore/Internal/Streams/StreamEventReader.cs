@@ -21,11 +21,14 @@ internal class StreamEventReader
         StreamId streamId,
         StreamVersion fromVersion,
         StreamReadFilter? filter,
+        string? storeName,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var metadata = await metadataReader
-            .GetAsync(streamId, cancellationToken)
-            .ConfigureAwait(false);
+            .GetAsync(
+                streamId,
+                storeName: storeName,
+                cancellationToken);
 
         if (filter?.RequiredVersion is { } requiredVersion
         && !metadata.Version.IsValid(requiredVersion))
@@ -48,7 +51,7 @@ internal class StreamEventReader
                 GetQueryDefinition(fromVersion, filter),
                 streamId.ToString(),
                 options: null,
-                storeName: null,
+                storeName: storeName,
                 cancellationToken))
         {
             if (evt.Data is StreamMetadataDocument)

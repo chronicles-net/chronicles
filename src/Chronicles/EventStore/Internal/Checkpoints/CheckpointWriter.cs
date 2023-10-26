@@ -20,6 +20,7 @@ internal class CheckpointWriter
         StreamId streamId,
         StreamVersion version,
         object? state,
+        string? storeName,
         CancellationToken cancellationToken)
         => await writer
             .WriteAsync(
@@ -31,6 +32,8 @@ internal class CheckpointWriter
                     version,
                     dateTimeProvider.GetDateTime(),
                     state),
-                cancellationToken)
+                options: null,
+                storeName: storeName,
+                cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 }

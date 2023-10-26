@@ -26,11 +26,14 @@ internal class StreamEventWriter
         IReadOnlyCollection<object> events,
         StreamVersion version,
         StreamWriteOptions? options,
+        string? storeName,
         CancellationToken cancellationToken)
     {
         var metadata = await metadataReader
-            .GetAsync(streamId, cancellationToken)
-            .ConfigureAwait(false);
+            .GetAsync(
+                streamId,
+                storeName: storeName,
+                cancellationToken);
 
         if (!metadata.Version.IsValid(version))
         {
@@ -47,7 +50,9 @@ internal class StreamEventWriter
                 metadata,
                 options);
 
-        var transaction = writer.CreateTransaction(streamId.ToString());
+        var transaction = writer.CreateTransaction(
+            streamId.ToString(),
+            storeName);
         transaction
             .Write(
                 batch.Metadata,
@@ -61,8 +66,7 @@ internal class StreamEventWriter
         }
 
         using var result = await transaction
-            .CommitAsync(cancellationToken)
-            .ConfigureAwait(false);
+            .CommitAsync(cancellationToken);
 
         return EnsureSuccess(
             result,

@@ -13,6 +13,7 @@ internal class CheckpointReader
     public async Task<Checkpoint<T>?> ReadAsync<T>(
         string name,
         StreamId streamId,
+        string? storeName,
         CancellationToken cancellationToken)
         where T : class
         => await reader
@@ -20,7 +21,7 @@ internal class CheckpointReader
                 name,
                 streamId.ToString(),
                 options: null,
-                storeName: null,
+                storeName: storeName,
                 cancellationToken)
             .ConfigureAwait(false);
 }

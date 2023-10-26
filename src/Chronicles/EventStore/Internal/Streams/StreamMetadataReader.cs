@@ -19,13 +19,14 @@ internal class StreamMetadataReader
 
     public virtual async Task<StreamMetadataDocument> GetAsync(
         StreamId streamId,
+        string? storeName,
         CancellationToken cancellationToken)
         => await reader
             .FindAsync(
                 JsonPropertyNames.StreamMetadataId,
                 streamId.ToString(),
                 options: null,
-                storeName: null,
+                storeName: storeName,
                 cancellationToken)
             .ConfigureAwait(false) switch
         {
@@ -43,6 +44,7 @@ internal class StreamMetadataReader
     public virtual async IAsyncEnumerable<StreamMetadataDocument> QueryAsync(
         string? filter,
         DateTimeOffset? createdAfter,
+        string? storeName,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await foreach (var evt in reader
@@ -50,7 +52,7 @@ internal class StreamMetadataReader
                 GetQueryDefinition(filter, createdAfter),
                 partitionKey: null,
                 options: null,
-                storeName: null,
+                storeName: storeName,
                 cancellationToken))
         {
             yield return evt;

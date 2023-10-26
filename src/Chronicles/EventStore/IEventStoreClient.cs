@@ -24,6 +24,7 @@ public interface IEventStoreClient
     /// </remarks>
     /// <exception cref="StreamConflictException">Will be thrown when the current stream version is not at the expected <paramref name="version"/>.</exception>
     /// <param name="options">(Optional) The options for writing events.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns><see cref="StreamMetadata"/> after write operation.</returns>
     Task<StreamMetadata> WriteStreamAsync(
@@ -31,6 +32,7 @@ public interface IEventStoreClient
         IReadOnlyCollection<object> events,
         StreamVersion? version = default,
         StreamWriteOptions? options = default,
+        string? storeName = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -39,12 +41,14 @@ public interface IEventStoreClient
     /// <param name="streamId">Event stream to read from.</param>
     /// <param name="fromVersion">(Optional) Start reading stream from a given version.</param>
     /// <param name="filter">(Optional) Specify a filter to only include certain events, and/or ensure stream is at a given version.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>List of <seealso cref="StreamEvent"/> from stream.</returns>
     IAsyncEnumerable<StreamEvent> ReadStreamAsync(
         StreamId streamId,
         StreamVersion? fromVersion = default,
         StreamReadFilter? filter = default,
+        string? storeName = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -54,10 +58,12 @@ public interface IEventStoreClient
     /// If the stream is not found the <see cref="StreamMetadata.State"/> is <see cref="StreamState.New"/>.
     /// </remarks>
     /// <param name="streamId">Event stream to read from.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>Stream <seealso cref="StreamMetadata"/> information.</returns>
     Task<StreamMetadata> GetStreamMetadataAsync(
         StreamId streamId,
+        string? storeName = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -68,11 +74,13 @@ public interface IEventStoreClient
     ///   <seealso href="https://devblogs.microsoft.com/cosmosdb/like-keyword-cosmosdb/"/>
     /// </param>
     /// <param name="createdAfter">(Optional) exclude streams created prior to this timestamp.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>List of stream meta-data found.</returns>
     IAsyncEnumerable<StreamMetadata> QueryStreamsAsync(
         string? filter = default,
         DateTimeOffset? createdAfter = default,
+        string? storeName = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -86,6 +94,7 @@ public interface IEventStoreClient
     /// <param name="streamId">Id of stream.</param>
     /// <param name="version">Version within the stream this checkpoint is related too.</param>
     /// <param name="state">(Optional) State object to store along side the checkpoint.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task SetStreamCheckpointAsync(
@@ -93,6 +102,7 @@ public interface IEventStoreClient
         StreamId streamId,
         StreamVersion version,
         object? state = default,
+        string? storeName = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -101,11 +111,13 @@ public interface IEventStoreClient
     /// <typeparam name="T">Type of state.</typeparam>
     /// <param name="name">Name of checkpoint.</param>
     /// <param name="streamId">Id of stream.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A state full <see cref="Checkpoint{TState}"/> or null if not found.</returns>
     Task<Checkpoint<T>?> GetStreamCheckpointAsync<T>(
         string name,
         StreamId streamId,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         where T : class;
 }

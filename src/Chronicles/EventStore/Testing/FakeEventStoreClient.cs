@@ -5,18 +5,21 @@ public sealed class FakeEventStoreClient : IEventStoreClient
     Task<Checkpoint<T>?> IEventStoreClient.GetStreamCheckpointAsync<T>(
         string name,
         StreamId streamId,
+        string? storeName,
         CancellationToken cancellationToken)
         where T : class
         => throw new NotImplementedException();
 
     Task<StreamMetadata> IEventStoreClient.GetStreamMetadataAsync(
         StreamId streamId,
+        string? storeName,
         CancellationToken cancellationToken)
         => throw new NotImplementedException();
 
     IAsyncEnumerable<StreamMetadata> IEventStoreClient.QueryStreamsAsync(
         string? filter,
         DateTimeOffset? createdAfter,
+        string? storeName,
         CancellationToken cancellationToken)
         => throw new NotImplementedException();
 
@@ -24,6 +27,7 @@ public sealed class FakeEventStoreClient : IEventStoreClient
         StreamId streamId,
         StreamVersion? fromVersion,
         StreamReadFilter? filter,
+        string? storeName,
         CancellationToken cancellationToken)
         => throw new NotImplementedException();
 
@@ -32,6 +36,7 @@ public sealed class FakeEventStoreClient : IEventStoreClient
         StreamId streamId,
         StreamVersion version,
         object? state,
+        string? storeName,
         CancellationToken cancellationToken)
         => throw new NotImplementedException();
 
@@ -40,6 +45,7 @@ public sealed class FakeEventStoreClient : IEventStoreClient
         IReadOnlyCollection<object> events,
         StreamVersion? version,
         StreamWriteOptions? options,
+        string? storeName,
         CancellationToken cancellationToken)
         => throw new NotImplementedException();
 }

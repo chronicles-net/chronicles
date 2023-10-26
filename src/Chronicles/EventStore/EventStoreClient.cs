@@ -29,12 +29,14 @@ internal class EventStoreClient : IEventStoreClient
         StreamId streamId,
         StreamVersion? fromVersion = null,
         StreamReadFilter? filter = null,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         => streamReader
             .ReadAsync(
                 streamId,
                 Arguments.EnsureValueRange(fromVersion ?? StreamVersion.Any, nameof(fromVersion)),
                 filter,
+                storeName: storeName,
                 cancellationToken);
 
     public Task<StreamMetadata> WriteStreamAsync(
@@ -42,6 +44,7 @@ internal class EventStoreClient : IEventStoreClient
         IReadOnlyCollection<object> events,
         StreamVersion? version = null,
         StreamWriteOptions? options = null,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         => streamWriter
             .WriteAsync(
@@ -49,34 +52,42 @@ internal class EventStoreClient : IEventStoreClient
                 Arguments.EnsureNoNullValues(events, nameof(events)),
                 version ?? StreamVersion.Any,
                 options,
+                storeName: storeName,
                 cancellationToken);
 
     public async Task<StreamMetadata> GetStreamMetadataAsync(
         StreamId streamId,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         => await metadataReader
-            .GetAsync(streamId, cancellationToken)
-            .ConfigureAwait(false);
+            .GetAsync(
+                streamId,
+                storeName: storeName,
+                cancellationToken);
 
     public Task<Checkpoint<T>?> GetStreamCheckpointAsync<T>(
         string name,
         StreamId streamId,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         where T : class
         => checkpointReader
             .ReadAsync<T>(
                 Arguments.EnsureNotNull(name, nameof(name)),
                 streamId,
+                storeName: storeName,
                 cancellationToken);
 
     public IAsyncEnumerable<StreamMetadata> QueryStreamsAsync(
         string? filter = null,
         DateTimeOffset? createdAfter = null,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         => metadataReader
             .QueryAsync(
                 filter,
                 createdAfter,
+                storeName: storeName,
                 cancellationToken);
 
     public Task SetStreamCheckpointAsync(
@@ -84,6 +95,7 @@ internal class EventStoreClient : IEventStoreClient
         StreamId streamId,
         StreamVersion version,
         object? state = null,
+        string? storeName = null,
         CancellationToken cancellationToken = default)
         => checkpointWriter
             .WriteAsync(
@@ -91,5 +103,6 @@ internal class EventStoreClient : IEventStoreClient
                 streamId,
                 version,
                 state,
+                storeName: storeName,
                 cancellationToken);
 }
