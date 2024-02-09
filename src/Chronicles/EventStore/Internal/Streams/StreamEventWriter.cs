@@ -74,7 +74,7 @@ internal class StreamEventWriter
             GetMetadataFromResponse(result));
     }
 
-    private static StreamMetadata GetMetadataFromResponse(
+    private static StreamMetadataDocument GetMetadataFromResponse(
         TransactionalBatchResponse response)
         => response
             .GetOperationResultAtIndex<StreamMetadataDocument>(0)
