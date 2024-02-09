@@ -7,16 +7,18 @@ public class StreamIdTests
 {
     [Theory, AutoNSubstituteData]
     public void Should_Be_Constructed_With_Id(
+        [Frozen] string category,
         [Frozen] string id,
         StreamId sut)
         => sut
             .ToString()
             .Should()
-            .Be(id);
+            .Be($"{category}.{id}");
 
     [Theory, AutoNSubstituteData]
     [SuppressMessage("Usage", "xUnit1026:Theory methods should use all of their parameters", Justification = "Needed by test")]
     public void Should_Be_EqualTo(
+        [Frozen] string category, // The same id will be injected into both left and right.
         [Frozen] string id, // The same id will be injected into both left and right.
         StreamId left,
         StreamId right)
@@ -26,18 +28,21 @@ public class StreamIdTests
 
     [Theory, AutoNSubstituteData]
     public void Should_Support_Explicit_String_Overload(
+        [Frozen] string category,
         [Frozen] string id,
         StreamId sut)
         => ((string)sut)
             .Should()
-            .Be(id);
+            .Be($"{category}.{id}");
 
     [Theory, AutoNSubstituteData]
     public void Should_Support_Getting_StreamId_As_String(
+        [Frozen] string category,
         [Frozen] string id,
         StreamId sut)
         => StreamId
             .FromString(sut.ToString())
+            .ToString()
             .Should()
-            .Be(id);
+            .Be($"{category}.{id}");
 }
