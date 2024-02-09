@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -25,6 +25,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Chronicles\Chronicles.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="GitHubActionsTestLogger">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

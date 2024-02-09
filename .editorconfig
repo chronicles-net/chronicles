@@ -455,7 +455,7 @@ dotnet_diagnostic.SA1604.severity = none            # https://github.com/atc-net
 dotnet_diagnostic.SA1623.severity = none            # https://github.com/atc-net/atc-coding-rules/blob/main/documentation/CodeAnalyzersRules/StyleCop/SA1623.md
 dotnet_diagnostic.SA1629.severity = none            # https://github.com/atc-net/atc-coding-rules/blob/main/documentation/CodeAnalyzersRules/StyleCop/SA1629.md
 dotnet_diagnostic.SA1633.severity = none            # https://github.com/atc-net/atc-coding-rules/blob/main/documentation/CodeAnalyzersRules/StyleCop/SA1633.md
-
+dotnet_diagnostic.SA1010.severity = none            # Opening square brackets should be spaced correctly. Is not supporting array initializers [].
 
 # SonarAnalyzer.CSharp
 # https://rules.sonarsource.com/csharp
