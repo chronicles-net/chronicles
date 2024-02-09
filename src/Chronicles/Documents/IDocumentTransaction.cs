@@ -5,7 +5,7 @@ namespace Chronicles.Documents;
 /// <summary>
 /// Represents a batch of operations against items with the same <see cref="PartitionKey"/> in a container that
 /// will be performed in a transactional manner at the Azure Cosmos DB service.
-/// Use <see cref="IDocumentWriter{T}.CreateTransaction(string)"/> to create an instance of <see cref="IDocumentTransaction{T}" />.
+/// Use <see cref="IDocumentWriter{T}.CreateTransaction(string, string?)"/> to create an instance of <see cref="IDocumentTransaction{T}" />.
 /// </summary>
 /// <typeparam name="T">
 /// The type of <see cref="IDocument"/>

@@ -51,7 +51,7 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
                 options.CosmosClient);
     }
 
-    private ICosmosSerializer GetSerializer(
+    private CosmosSerializer GetSerializer(
         string? storeName,
         DocumentOptions? options)
         => serializers
