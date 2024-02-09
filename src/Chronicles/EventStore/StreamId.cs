@@ -2,6 +2,7 @@ namespace Chronicles.EventStore;
 
 public record StreamId
 {
+    private static readonly char[] Separator = ['.'];
     public static readonly StreamId Empty = new(string.Empty, string.Empty);
 
     private readonly string value;
@@ -31,7 +32,7 @@ public record StreamId
 
     private StreamId(string streamId)
     {
-        var parts = streamId.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        var parts = streamId.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
         Category = parts[0];
         Id = parts[^1];
         value = streamId;
