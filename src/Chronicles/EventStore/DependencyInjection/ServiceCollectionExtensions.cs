@@ -1,6 +1,7 @@
 using Chronicles;
 using Chronicles.EventStore;
 using Chronicles.EventStore.Internal.Checkpoints;
+using Chronicles.EventStore.Internal.EventConsumers;
 using Chronicles.EventStore.Internal.Events;
 using Chronicles.EventStore.Internal.Streams;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -13,7 +14,7 @@ public static class EventStoreServiceCollectionExtensions
         this DocumentStoreBuilder builder,
         Action<EventStoreBuilder> configure)
     {
-        var b = new EventStoreBuilder(builder.Services, builder.StoreName);
+        var b = new EventStoreBuilder(builder);
         configure.Invoke(b);
 
         builder.Services.TryAddSingleton<IDateTimeProvider, UtcDateTimeProvider>();
@@ -23,6 +24,8 @@ public static class EventStoreServiceCollectionExtensions
         builder.Services.TryAddSingleton<CheckpointWriter>();
         builder.Services.TryAddSingleton<StreamMetadataReader>();
         builder.Services.TryAddSingleton<EventDocumentBatchProducer>();
+        builder.Services.TryAddSingleton<IEventConsumerFactory, EventConsumerFactory>();
+        builder.Services.TryAddSingleton(typeof(EventConsumerReflector<>));
 
         builder.Services.AddSingleton<IEventStoreClient, EventStoreClient>();
 

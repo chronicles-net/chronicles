@@ -1,4 +1,6 @@
 using Chronicles.EventStore;
+using Chronicles.EventStore.Internal.EventConsumers;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -19,7 +21,8 @@ public class EventSubscriptionBuilder
     public EventSubscriptionBuilder AddEventConsumer<T>()
         where T : class
     {
-        Services.AddSingleton<T>();
+        Services.TryAddTransient<T>();
+        Services.TryAddKeyedTransient<IEventConsumer, EventConsumer<T>>(name);
 
         return this;
     }

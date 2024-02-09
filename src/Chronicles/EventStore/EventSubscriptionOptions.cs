@@ -1,8 +1,12 @@
+using Chronicles.Documents;
+
 namespace Chronicles.EventStore;
 
 public class EventSubscriptionOptions
 {
-    public string StreamFilter { get; set; } = "**";
+    public SubscriptionOptions SubscriptionOptions { get; } = new();
+
+    public Func<StreamEvent, bool> Filter { get; set; } = _ => true;
 
     public bool StopOnException { get; set; }
 
