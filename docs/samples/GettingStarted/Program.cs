@@ -10,39 +10,44 @@ using var host = Host.CreateDefaultBuilder()
   {
     services
       .AddChronicles(b => b
-          //.Configure(o => // this will configure options
-          //{
-          //  o.UseDatabase("DropMe");
-          //  o.UseCosmosEmulator();
-          //  o.AddDocumentType<FirmwareDocument>("firmware");
-          //  o.AddInitialization(o => o
-          //      .CreateDatabase()
-          //      .CreateContainer<FirmwareDocument>()
-          //      .CreateEventStore());
-          //})
-          .AddSubscription<StreamEvent, EventSubscriptionSample2>(
-              "my-subscription-01",
-              o => o.PollingInterval = TimeSpan.FromSeconds(5))
+          .Configure(o => // this will configure options
+          {
+            o.UseDatabase("DropMe");
+            o.UseCosmosEmulator();
+            o.AddDocumentType<FirmwareDocument>("firmware");
+            o.AddInitialization(o => o
+                .CreateDatabase()
+                .CreateContainer<FirmwareDocument>()
+                .CreateEventStore());
+          })
+          //.AddSubscription<StreamEvent, EventSubscriptionSample2>(
+          //    "my-subscription-01",
+          //    o => o.PollingInterval = TimeSpan.FromSeconds(5))
           .AddEventStore(b => b
               .Configure(o =>
               {
                 o.AddEvent<FirmwareChangeDetected>("firmware-change-detected:v1");
               })
               .AddEventSubscription(
-                  "my-projection",
+                  "my-projection1",
                   c => c
-                    .Configure(o => o.Strategy = EventPartitioningStrategy.StreamId)
-                    .AddEventConsumer<EventSubscriptionSample2>())))
-      .AddDocumentStore("Firmware", b => b
-          .Configure(o =>
-            {
-              o.UseDatabase("Firmware");
-              o.UseCosmosEmulator();
-              o.UseSubscriptionContainer("subscriptions");
-            })
-          .AddSubscription<FirmwareDocument, FirmwareDocumentSubscription>("read-model")
-          //.AddSubscription<StreamEvent, EventSubscriptionSample>("sample10", o => o.StoreName = "Firmware")
-          );
+                    .Configure(o =>
+                    {
+                      o.Strategy = EventPartitioningStrategy.StreamId;
+                      o.Filter = e => e.Metadata.StreamId.Category.StartsWith("firmware-update");
+                    })
+                    .AddEventConsumer<EventConsumerSample>())))
+      ;
+    //.AddDocumentStore("Firmware", b => b
+    //    .Configure(o =>
+    //      {
+    //        o.UseDatabase("Firmware");
+    //        o.UseCosmosEmulator();
+    //        o.UseSubscriptionContainer("subscriptions");
+    //      })
+    //    .AddSubscription<FirmwareDocument, FirmwareDocumentSubscription>("read-model")
+    //    //.AddSubscription<StreamEvent, EventSubscriptionSample>("sample10", o => o.StoreName = "Firmware")
+    //    );
 
     services.ConfigureOptions<ConfigureDocumentStoreDropMe>();
     //.AddAllStreamSubscription(
@@ -94,16 +99,6 @@ await subscriptions.StopAsync(CancellationToken.None);
 Console.WriteLine("Completed");
 //await host.RunAsync();
 
-//public class DeploymentConsumer
-//{
-//  public void ConsumeEvent(
-//    IEventProcessorContext context,
-//    FirmwareChangeDetected evt)
-//  {
-
-//  }
-//}
-
 [ContainerName("firmware")]
 public record FirmwareDocument(
   string Id,
@@ -153,24 +148,13 @@ public class FirmwareDocumentSubscription
   }
 }
 
-public class EventSubscriptionSample2
-  : IDocumentProcessor<StreamEvent>
+public class EventConsumerSample
+  : IConsumeEvent<FirmwareChangeDetected>
 {
-  public Task ErrorAsync(
-    string leaseToken,
-    Exception exception)
-    => Task.CompletedTask;
-
-  public Task ProcessAsync(
-    IReadOnlyCollection<StreamEvent> changes,
-    CancellationToken cancellationToken)
+  public void Consume(FirmwareChangeDetected evt, EventMetadata metadata)
   {
-    foreach (var streamEvent in changes)
-    {
-      Console.WriteLine($"DropMe: {streamEvent.Metadata.Name}:{streamEvent.Metadata.Version}");
-    }
-
-    return Task.CompletedTask;
+    Console.WriteLine($"{metadata.Name}:{metadata.Version}");
+    Console.WriteLine($"{evt}");
   }
 }
 
@@ -194,3 +178,18 @@ public class ConfigureDocumentStoreDropMe
     }
   }
 }
+
+public record LocationStreamId(
+    string Tenant,
+    string Id)
+    : StreamId("locations", Tenant, Id);
+
+public interface IStreamIdFactory<out TStreamId>
+    where TStreamId : StreamId
+{
+  TStreamId Create(string category, string[] compositeId);
+}
+
+public record ChargePointsStreamId(
+    string Id)
+    : StreamId("charge-points", Id);
