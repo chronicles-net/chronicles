@@ -42,10 +42,10 @@ public record StreamId
 
     public string Id { get; }
 
-    public override string ToString() => value;
+    private string AsString() => value;
 
     public static explicit operator string(StreamId streamId)
-        => streamId.ToString();
+        => streamId.AsString();
 
     public static StreamId FromString(string streamId)
         => new(streamId);

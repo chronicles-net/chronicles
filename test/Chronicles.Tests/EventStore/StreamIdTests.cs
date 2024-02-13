@@ -10,8 +10,7 @@ public class StreamIdTests
         [Frozen] string category,
         [Frozen] string id,
         StreamId sut)
-        => sut
-            .ToString()
+        => ((string)sut)
             .Should()
             .Be($"{category}.{id}");
 
@@ -36,13 +35,13 @@ public class StreamIdTests
             .Be($"{category}.{id}");
 
     [Theory, AutoNSubstituteData]
-    public void Should_Support_Getting_StreamId_As_String(
+    public void Should_Support_Getting_StreamId_FromString(
         [Frozen] string category,
         [Frozen] string id,
         StreamId sut)
         => StreamId
-            .FromString(sut.ToString())
-            .ToString()
+            .FromString((string)sut)
             .Should()
-            .Be($"{category}.{id}");
+            .BeEquivalentTo(
+                new StreamId(category, id));
 }

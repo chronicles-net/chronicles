@@ -47,7 +47,7 @@ internal class EventDocumentBatchProducer
         DateTimeOffset timestamp)
         => new(
             Id: $"{version}",
-            Pk: metadata.StreamId.ToString(),
+            Pk: (string)metadata.StreamId,
             Data: evt,
             Properties: new EventMetadata(
                 "unknown",

@@ -24,7 +24,7 @@ internal class StreamMetadataReader
         => await reader
             .FindAsync(
                 JsonPropertyNames.StreamMetadataId,
-                streamId.ToString(),
+                (string)streamId,
                 options: null,
                 storeName: storeName,
                 cancellationToken)
@@ -33,7 +33,7 @@ internal class StreamMetadataReader
             { } metadata => metadata,
             _ => new StreamMetadataDocument(
                 Id: JsonPropertyNames.StreamMetadataId,
-                Pk: streamId.ToString(),
+                Pk: (string)streamId,
                 streamId,
                 StreamState.New,
                 0,

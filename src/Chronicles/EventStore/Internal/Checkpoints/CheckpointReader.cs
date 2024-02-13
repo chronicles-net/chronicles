@@ -19,7 +19,7 @@ internal class CheckpointReader
         => await reader
             .FindAsync<Checkpoint, CheckpointDocument<T>>(
                 name,
-                streamId.ToString(),
+                (string)streamId,
                 options: null,
                 storeName: storeName,
                 cancellationToken)

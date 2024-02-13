@@ -51,7 +51,7 @@ internal class StreamEventWriter
                 options);
 
         var transaction = writer.CreateTransaction(
-            streamId.ToString(),
+            (string)streamId,
             storeName);
         transaction
             .Write(
