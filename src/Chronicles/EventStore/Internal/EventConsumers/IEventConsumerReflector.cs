@@ -13,5 +13,11 @@ internal interface IEventConsumerReflector
         object projection,
         CancellationToken cancellationToken);
 
+    ValueTask ConsumeAsync(
+        StreamId streamId,
+        StreamEvent[] events,
+        object projection,
+        CancellationToken cancellationToken);
+
     bool IsNotConsumingEvents();
 }

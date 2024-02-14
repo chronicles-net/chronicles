@@ -2,10 +2,11 @@ using System.Reflection;
 
 namespace Chronicles.EventStore.Internal.EventConsumers;
 
-internal class EventConsumerReflector<T> : IEventConsumerReflector
+public class EventConsumerReflector<T> : IEventConsumerReflector
 {
     private readonly Dictionary<Type, MethodInfo> consumeEvents;
     private readonly bool canConsumeAnyEvent;
+    private readonly bool canConsumeGroupedEvent;
 
     public EventConsumerReflector()
     {
@@ -26,6 +27,11 @@ internal class EventConsumerReflector<T> : IEventConsumerReflector
             .GetInterfaces()
             .Any(t => t.UnderlyingSystemType == typeof(IConsumeAnyEvent)
                    || t.UnderlyingSystemType == typeof(IConsumeAnyEventAsync));
+
+        canConsumeGroupedEvent = typeof(T)
+            .GetInterfaces()
+            .Any(t => t.UnderlyingSystemType == typeof(IConsumeGroupedEvents)
+                   || t.UnderlyingSystemType == typeof(IConsumeGroupedEventsAsync));
     }
 
     public bool CanConsumeOneOrMoreEvents(
@@ -35,7 +41,8 @@ internal class EventConsumerReflector<T> : IEventConsumerReflector
     public bool CanConsumeEvent(StreamEvent evt)
         => consumeEvents
             .ContainsKey(evt.Data.GetType())
-        || canConsumeAnyEvent;
+        || canConsumeAnyEvent
+        || canConsumeGroupedEvent;
 
     public bool IsNotConsumingEvents()
         => consumeEvents.Keys.Count == 0
@@ -51,16 +58,6 @@ internal class EventConsumerReflector<T> : IEventConsumerReflector
             return;
         }
 
-        if (consumeEvents.TryGetValue(evt.Data.GetType(), out var method))
-        {
-            var response = method.Invoke(null, new object[] { projection, evt.Data, evt.Metadata, cancellationToken });
-
-            if (response is ValueTask v)
-            {
-                await v;
-            }
-        }
-
         if (canConsumeAnyEvent)
         {
             (projection as IConsumeAnyEvent)?.Consume(evt.Data, evt.Metadata);
@@ -71,6 +68,44 @@ internal class EventConsumerReflector<T> : IEventConsumerReflector
                     .ConsumeAsync(evt.Data, evt.Metadata, cancellationToken)
                     .ConfigureAwait(false);
             }
+        }
+
+        if (consumeEvents.TryGetValue(evt.Data.GetType(), out var method))
+        {
+            var response = method.Invoke(null, new object[] { projection, evt.Data, evt.Metadata, cancellationToken });
+
+            if (response is ValueTask v)
+            {
+                await v;
+            }
+        }
+    }
+
+    public async ValueTask ConsumeAsync(
+        StreamId streamId,
+        StreamEvent[] events,
+        object projection,
+        CancellationToken cancellationToken)
+    {
+        if (canConsumeGroupedEvent)
+        {
+            (projection as IConsumeGroupedEvents)?.Consume(streamId, events);
+
+            if (projection is IConsumeGroupedEventsAsync consumeAsync)
+            {
+                await consumeAsync
+                    .ConsumeAsync(streamId, events, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        foreach (var evt in events)
+        {
+            await ConsumeAsync(
+                    evt,
+                    projection,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 

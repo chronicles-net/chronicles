@@ -1,6 +1,6 @@
-﻿namespace Chronicles.EventStore.Internal.EventConsumers;
+namespace Chronicles.EventStore.Internal.EventConsumers;
 
-internal class EventConsumer<TConsumer>(
+public class EventConsumer<TConsumer>(
     TConsumer consumer,
     EventConsumerReflector<TConsumer> reflector) : IEventConsumer
     where TConsumer : class
@@ -13,4 +13,10 @@ internal class EventConsumer<TConsumer>(
         StreamEvent evt,
         CancellationToken cancellationToken)
         => reflector.ConsumeAsync(evt, consumer, cancellationToken);
+
+    public ValueTask ConsumeAsync(
+        StreamId streamId,
+        StreamEvent[] events,
+        CancellationToken cancellationToken)
+        => reflector.ConsumeAsync(streamId, events, consumer, cancellationToken);
 }

@@ -16,4 +16,15 @@ internal class CompositeEventConsumer(
             await consumer.ConsumeAsync(evt, cancellationToken);
         }
     }
+
+    public async ValueTask ConsumeAsync(
+        StreamId streamId,
+        StreamEvent[] events,
+        CancellationToken cancellationToken)
+    {
+        foreach (var consumer in consumers)
+        {
+            await consumer.ConsumeAsync(streamId, events, cancellationToken);
+        }
+    }
 }

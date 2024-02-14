@@ -1,4 +1,4 @@
-﻿namespace Chronicles.EventStore.Internal.EventConsumers;
+namespace Chronicles.EventStore.Internal.EventConsumers;
 
 internal interface IEventConsumer
 {
@@ -7,5 +7,10 @@ internal interface IEventConsumer
 
     ValueTask ConsumeAsync(
         StreamEvent evt,
+        CancellationToken cancellationToken);
+
+    ValueTask ConsumeAsync(
+        StreamId streamId,
+        StreamEvent[] events,
         CancellationToken cancellationToken);
 }
