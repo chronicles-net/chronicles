@@ -1,6 +1,6 @@
-using Chronicles.Documents;
 using Chronicles.Documents.Internal;
 using Chronicles.EventStore;
+using Chronicles.EventStore.Samples;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -43,20 +43,3 @@ await foreach (var streamEvent in client.ReadStreamAsync(streamId))
 
 Console.WriteLine("Completed");
 
-public record QuestStreamId(
-    string Id) : StreamId("quest", Id);
-
-[ContainerName("quest")]
-public record QuestDocument(
-  string Id,
-  string Pk,
-  string Name,
-  IReadOnlyCollection<string> Members) : IDocument
-{
-    public string GetDocumentId() => Id;
-
-    public string GetPartitionKey() => Pk;
-}
-
-public record QuestStarted(
-  string Name);
