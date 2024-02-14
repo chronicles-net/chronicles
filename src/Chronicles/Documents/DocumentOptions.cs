@@ -62,7 +62,7 @@ public class DocumentOptions
 
     public string DatabaseName { get; set; } = "Chronicles";
 
-    public string SubscriptionContainerName { get; set; } = "Subscriptions";
+    public string SubscriptionContainerName { get; set; } = "subscriptions";
 
     public CosmosClientOptions CosmosClient { get; } = new();
 
