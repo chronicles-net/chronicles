@@ -10,8 +10,6 @@ public class EventSubscriptionOptions
 
     public bool StopOnException { get; set; }
 
-    public int ConcurrencyLimit { get; set; } = 1;
-
     public EventPartitioningStrategy Strategy { get; set; }
         = EventPartitioningStrategy.EventId;
 }
