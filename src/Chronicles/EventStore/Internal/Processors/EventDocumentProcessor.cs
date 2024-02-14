@@ -37,11 +37,10 @@ internal class EventDocumentProcessor
 
         foreach (var group in groups)
         {
-            var consumer = factory.CreateConsumer(name);
-            foreach (var evt in group)
-            {
-                await consumer.ConsumeAsync(evt, cancellationToken);
-            }
+            await factory
+                .CreateConsumer(name)
+                .ConsumeAsync(group.Key, [.. group], cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 }

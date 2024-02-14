@@ -1,5 +1,7 @@
+using Chronicles.Documents;
 using Chronicles.EventStore;
 using Chronicles.EventStore.Internal.EventConsumers;
+using Chronicles.EventStore.Internal.Processors;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -22,7 +24,18 @@ public class EventSubscriptionBuilder
         where T : class
     {
         Services.TryAddTransient<T>();
-        Services.TryAddKeyedTransient<IEventConsumer, EventConsumer<T>>(name);
+        Services.AddKeyedTransient<IEventConsumer, EventConsumer<T>>(name);
+
+        return this;
+    }
+
+    public EventSubscriptionBuilder AddEventProjection<TState, TConsumer>()
+        where TState : class, IDocument
+        where TConsumer : class, IDocumentProjection<TState>
+    {
+        Services.TryAddTransient<TConsumer>();
+        Services.TryAddTransient<DocumentProjection<TState, TConsumer>>();
+        Services.AddKeyedTransient<IEventConsumer, EventConsumer<DocumentProjection<TState, TConsumer>>>(name);
 
         return this;
     }
