@@ -23,8 +23,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-  app.UseSwagger();
-  app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -39,7 +39,7 @@ app
 
 app
     .MapPost(
-        "/waetherforecasts",
+        "/weatherforecasts",
         ([FromBody] WeatherForecast body, IDocumentWriter<WeatherForecast> writer)
             => writer.WriteAsync(body))
     .WithName("PostWeatherForecast")
@@ -47,15 +47,15 @@ app
 
 app.Run();
 
-internal record WeatherForecast(
+public record WeatherForecast(
     [property: JsonPropertyName("id")] string Id,
     DateOnly Date,
     int TemperatureC,
     string? Summary) : IDocument
 {
-  public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 
-  public string GetDocumentId() => Id;
+    public string GetDocumentId() => Id;
 
-  public string GetPartitionKey() => Id;
+    public string GetPartitionKey() => Id;
 }

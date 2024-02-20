@@ -115,18 +115,9 @@ public class QuestProjection :
         IDocumentWriter<QuestDocument> writer,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            await writer
-                .WriteAsync(document, cancellationToken)
-                .ConfigureAwait(false);
-
-        }
-        catch (Exception ex)
-        {
-
-            throw;
-        }
+        await writer
+            .WriteAsync(document, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public async Task ResumeAsync(
