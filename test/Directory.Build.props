@@ -12,11 +12,10 @@
 
   <ItemGroup Label="Test Analyzers">
     <PackageReference Include="NSubstitute.Analyzers.CSharp" PrivateAssets="All" />
-    <PackageReference Include="GitHubActionsTestLogger" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Remove="System.IO" />
   </ItemGroup>
-  
+
 </Project>
