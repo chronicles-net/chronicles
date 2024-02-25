@@ -25,8 +25,7 @@ public sealed class FakeEventStoreClient : IEventStoreClient
 
     IAsyncEnumerable<StreamEvent> IEventStoreClient.ReadStreamAsync(
         StreamId streamId,
-        StreamVersion? fromVersion,
-        StreamReadFilter? filter,
+        StreamReadOptions? options,
         string? storeName,
         CancellationToken cancellationToken)
         => throw new NotImplementedException();
@@ -43,7 +42,6 @@ public sealed class FakeEventStoreClient : IEventStoreClient
     Task<StreamMetadata> IEventStoreClient.WriteStreamAsync(
         StreamId streamId,
         IReadOnlyCollection<object> events,
-        StreamVersion? version,
         StreamWriteOptions? options,
         string? storeName,
         CancellationToken cancellationToken)

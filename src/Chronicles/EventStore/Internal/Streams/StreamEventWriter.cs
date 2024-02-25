@@ -5,26 +5,15 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.EventStore.Internal.Streams;
 
-internal class StreamEventWriter
+internal class StreamEventWriter(
+    IDocumentWriter<StreamDocument> writer,
+    IStreamMetadataReader metadataReader,
+    EventDocumentBatchProducer batchProducer)
+    : IStreamEventWriter
 {
-    private readonly IDocumentWriter<StreamDocument> writer;
-    private readonly StreamMetadataReader metadataReader;
-    private readonly EventDocumentBatchProducer batchProducer;
-
-    public StreamEventWriter(
-        IDocumentWriter<StreamDocument> writer,
-        StreamMetadataReader metadataReader,
-        EventDocumentBatchProducer batchProducer)
-    {
-        this.writer = writer;
-        this.metadataReader = metadataReader;
-        this.batchProducer = batchProducer;
-    }
-
     public virtual async Task<StreamMetadata> WriteAsync(
         StreamId streamId,
         IReadOnlyCollection<object> events,
-        StreamVersion version,
         StreamWriteOptions? options,
         string? storeName,
         CancellationToken cancellationToken)
@@ -33,16 +22,10 @@ internal class StreamEventWriter
             .GetAsync(
                 streamId,
                 storeName: storeName,
-                cancellationToken);
+                cancellationToken)
+            .ConfigureAwait(false);
 
-        if (!metadata.Version.IsValid(version))
-        {
-            throw new StreamConflictException(
-                metadata.StreamId,
-                metadata.Version,
-                version,
-                $"Stream is not at the required version.");
-        }
+        metadata.EnsureSuccess(options);
 
         var batch = batchProducer
             .FromEvents(
@@ -66,7 +49,8 @@ internal class StreamEventWriter
         }
 
         using var result = await transaction
-            .CommitAsync(cancellationToken);
+            .CommitAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         return EnsureSuccess(
             result,
@@ -103,7 +87,9 @@ internal class StreamEventWriter
         throw new StreamConflictException(
             metadata.StreamId,
             metadata.Version,
+            metadata.State,
             expectedVersion,
-            "Optimistic concurrency conflict on writing to stream.");
+            expectedState: null,
+            "Conflict on writing to stream.");
     }
 }

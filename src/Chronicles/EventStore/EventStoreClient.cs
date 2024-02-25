@@ -1,48 +1,43 @@
+using System.Runtime.CompilerServices;
 using Chronicles.EventStore.Internal.Checkpoints;
 using Chronicles.EventStore.Internal.Streams;
 
 namespace Chronicles.EventStore;
 
-internal class EventStoreClient : IEventStoreClient
+internal class EventStoreClient(
+    IStreamEventReader streamReader,
+    IStreamEventWriter streamWriter,
+    CheckpointReader checkpointReader,
+    CheckpointWriter checkpointWriter,
+    IStreamMetadataReader metadataReader)
+    : IEventStoreClient
 {
-    private readonly StreamEventReader streamReader;
-    private readonly StreamEventWriter streamWriter;
-    private readonly CheckpointReader checkpointReader;
-    private readonly CheckpointWriter checkpointWriter;
-    private readonly StreamMetadataReader metadataReader;
-
-    public EventStoreClient(
-        StreamEventReader streamReader,
-        StreamEventWriter streamWriter,
-        CheckpointReader checkpointReader,
-        CheckpointWriter checkpointWriter,
-        StreamMetadataReader metadataReader)
-    {
-        this.streamReader = streamReader;
-        this.streamWriter = streamWriter;
-        this.checkpointReader = checkpointReader;
-        this.checkpointWriter = checkpointWriter;
-        this.metadataReader = metadataReader;
-    }
-
-    public IAsyncEnumerable<StreamEvent> ReadStreamAsync(
+    public async IAsyncEnumerable<StreamEvent> ReadStreamAsync(
         StreamId streamId,
-        StreamVersion? fromVersion = null,
-        StreamReadFilter? filter = null,
+        StreamReadOptions? options = null,
         string? storeName = null,
-        CancellationToken cancellationToken = default)
-        => streamReader
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var metadata = await metadataReader
+            .GetAsync(streamId, storeName, cancellationToken)
+            .ConfigureAwait(false);
+
+        var events = streamReader
             .ReadAsync(
                 streamId,
-                Arguments.EnsureValueRange(fromVersion ?? StreamVersion.Any, nameof(fromVersion)),
-                filter,
+                options,
+                metadata,
                 storeName: storeName,
                 cancellationToken);
+        await foreach (var evt in events)
+        {
+            yield return evt;
+        }
+    }
 
     public Task<StreamMetadata> WriteStreamAsync(
         StreamId streamId,
         IReadOnlyCollection<object> events,
-        StreamVersion? version = null,
         StreamWriteOptions? options = null,
         string? storeName = null,
         CancellationToken cancellationToken = default)
@@ -50,7 +45,6 @@ internal class EventStoreClient : IEventStoreClient
             .WriteAsync(
                 streamId,
                 Arguments.EnsureNoNullValues(events, nameof(events)),
-                version ?? StreamVersion.Any,
                 options,
                 storeName: storeName,
                 cancellationToken);

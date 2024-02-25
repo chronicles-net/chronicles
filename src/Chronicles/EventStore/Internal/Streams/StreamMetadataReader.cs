@@ -4,19 +4,11 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.EventStore.Internal.Streams;
 
-internal class StreamMetadataReader
+internal class StreamMetadataReader(
+    IDocumentReader<StreamMetadataDocument> reader,
+    IDateTimeProvider dateTimeProvider)
+    : IStreamMetadataReader
 {
-    private readonly IDocumentReader<StreamMetadataDocument> reader;
-    private readonly IDateTimeProvider dateTimeProvider;
-
-    public StreamMetadataReader(
-        IDocumentReader<StreamMetadataDocument> reader,
-        IDateTimeProvider dateTimeProvider)
-    {
-        this.reader = reader;
-        this.dateTimeProvider = dateTimeProvider;
-    }
-
     public virtual async Task<StreamMetadataDocument> GetAsync(
         StreamId streamId,
         string? storeName,

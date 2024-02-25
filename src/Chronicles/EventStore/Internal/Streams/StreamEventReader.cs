@@ -4,41 +4,17 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.EventStore.Internal.Streams;
 
-internal class StreamEventReader
+internal class StreamEventReader(
+    IDocumentReader<StreamEventDocument> streamReader) : IStreamEventReader
 {
-    private readonly IDocumentReader<StreamEventDocument> streamReader;
-    private readonly StreamMetadataReader metadataReader;
-
-    public StreamEventReader(
-        IDocumentReader<StreamEventDocument> streamReader,
-        StreamMetadataReader metadataReader)
-    {
-        this.streamReader = streamReader;
-        this.metadataReader = metadataReader;
-    }
-
     public virtual async IAsyncEnumerable<StreamEvent> ReadAsync(
         StreamId streamId,
-        StreamVersion fromVersion,
-        StreamReadFilter? filter,
+        StreamReadOptions? options,
+        StreamMetadata metadata,
         string? storeName,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var metadata = await metadataReader
-            .GetAsync(
-                streamId,
-                storeName: storeName,
-                cancellationToken);
-
-        if (filter?.RequiredVersion is { } requiredVersion
-        && !metadata.Version.IsValid(requiredVersion))
-        {
-            throw new StreamConflictException(
-                metadata.StreamId,
-                metadata.Version,
-                requiredVersion,
-                "Conflict when reading from stream.");
-        }
+        metadata.EnsureSuccess(options);
 
         // If we don't have any events in the stream, then skip reading from stream.
         if (metadata.Version.IsEmpty)
@@ -48,7 +24,7 @@ internal class StreamEventReader
 
         await foreach (var evt in streamReader
             .QueryAsync<StreamEvent>(
-                GetQueryDefinition(fromVersion, filter),
+                GetQueryDefinition(options),
                 (string)streamId,
                 options: null,
                 storeName: storeName,
@@ -64,22 +40,21 @@ internal class StreamEventReader
     }
 
     protected virtual QueryDefinition GetQueryDefinition(
-        StreamVersion fromVersion,
-        StreamReadFilter? filter)
+        StreamReadOptions? options)
         => streamReader.CreateQuery(
             query =>
             {
                 // Exclude meta data document
                 query = query.Where(e => e.Id != JsonPropertyNames.StreamMetadataId);
 
-                if (fromVersion.IsNotEmpty)
+                if (options is { FromVersion: { } fromVersion })
                 {
                     // Apply version restrictions.
                     // Cast to long is required for the linq provider to generate correct SQL.
                     query = query.Where(e => (long)e.Properties.Version <= (long)fromVersion);
                 }
 
-                if (filter?.IncludeEvents is { } events)
+                if (options?.IncludeEvents is { } events)
                 {
                     // We need to convert it to string array as the linq provider
                     // would otherwise see it as an object with a Value property.

@@ -1,6 +1,6 @@
 namespace Chronicles.EventStore;
 
-public class StreamReadFilter
+public class StreamReadOptions : StreamOptions
 {
     /// <summary>
     /// Gets or sets the type of events to read from the stream.
@@ -8,7 +8,7 @@ public class StreamReadFilter
     public IReadOnlyCollection<EventName>? IncludeEvents { get; set; }
 
     /// <summary>
-    /// Gets or sets the required version the stream must be at.
+    /// (Optional) Start reading stream from a given version.
     /// </summary>
-    public StreamVersion? RequiredVersion { get; set; }
+    public StreamVersion? FromVersion { get; set; }
 }

@@ -3,7 +3,7 @@ namespace Chronicles.EventStore;
 /// <summary>
 /// Additional options to be applied when writing events to a stream.
 /// </summary>
-public class StreamWriteOptions
+public class StreamWriteOptions : StreamOptions
 {
     /// <summary>
     /// Gets or sets correlation id used to track a request through various systems and services.

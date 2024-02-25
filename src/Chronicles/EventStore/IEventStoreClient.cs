@@ -7,22 +7,6 @@ public interface IEventStoreClient
     /// </summary>
     /// <param name="streamId">Event stream to write events too.</param>
     /// <param name="events">Collection of event objects to write.</param>
-    /// <param name="version">(Optional) Set the required version of the stream.</param>
-    /// <remarks>
-    ///   <list type="bullet">
-    ///     Set <paramref name="version"/> to the latest known version of the stream to enable optimistic currency.
-    ///   </list>
-    ///   <list type="bullet">
-    ///     When the stream is required to be empty use <see cref="StreamVersion.RequireEmpty"/>.
-    ///   </list>
-    ///   <list type="bullet">
-    ///     Use <see cref="StreamVersion.RequireNotEmptyValue"/> when the stream must contain one or more events.
-    ///   </list>
-    ///   <list type="bullet">
-    ///     To append to the end of the stream optionally specify <see cref="StreamVersion.Any"/>.
-    ///   </list>
-    /// </remarks>
-    /// <exception cref="StreamConflictException">Will be thrown when the current stream version is not at the expected <paramref name="version"/>.</exception>
     /// <param name="options">(Optional) The options for writing events.</param>
     /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
@@ -30,7 +14,6 @@ public interface IEventStoreClient
     Task<StreamMetadata> WriteStreamAsync(
         StreamId streamId,
         IReadOnlyCollection<object> events,
-        StreamVersion? version = default,
         StreamWriteOptions? options = default,
         string? storeName = null,
         CancellationToken cancellationToken = default);
@@ -39,15 +22,13 @@ public interface IEventStoreClient
     /// Read events from stream.
     /// </summary>
     /// <param name="streamId">Event stream to read from.</param>
-    /// <param name="fromVersion">(Optional) Start reading stream from a given version.</param>
-    /// <param name="filter">(Optional) Specify a filter to only include certain events, and/or ensure stream is at a given version.</param>
+    /// <param name="options">(Optional) Specify read options to only include certain events, and/or ensure stream is at a given version.</param>
     /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>List of <seealso cref="StreamEvent"/> from stream.</returns>
     IAsyncEnumerable<StreamEvent> ReadStreamAsync(
         StreamId streamId,
-        StreamVersion? fromVersion = default,
-        StreamReadFilter? filter = default,
+        StreamReadOptions? options = default,
         string? storeName = null,
         CancellationToken cancellationToken = default);
 
