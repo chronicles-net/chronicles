@@ -37,7 +37,9 @@ internal class CommandProcessor<TCommand>(
             .ConfigureAwait(false);
 
         var handler = factory.Create<TCommand>();
-        if (options is null) // Ensure we only configure options once.
+
+        // Ensure we only configure options once.
+        if (options is null)
         {
             options = new CommandOptions();
             handler.Configure(metadata, command, options);

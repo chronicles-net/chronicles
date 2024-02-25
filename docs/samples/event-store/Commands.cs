@@ -10,6 +10,7 @@ public static class StartQuest
         : ICommandHandler<Command>
     {
         public void Configure(
+            StreamMetadata metadata,
             Command command,
             CommandOptions options)
         {
@@ -55,6 +56,7 @@ public static class JoinQuest
 
         // Configure stream constrains, conflict behaviors and correlation
         public void Configure(
+            StreamMetadata metadata,
             Command command,
             CommandOptions options)
         {
