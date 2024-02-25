@@ -7,10 +7,12 @@ internal interface IEventConsumer
 
     ValueTask ConsumeAsync(
         StreamEvent evt,
+        EventConsumerStateContext context,
         CancellationToken cancellationToken);
 
     ValueTask ConsumeAsync(
         StreamId streamId,
         StreamEvent[] events,
+        EventConsumerStateContext context,
         CancellationToken cancellationToken);
 }

@@ -9,22 +9,31 @@ internal class CompositeEventConsumer(
 
     public async ValueTask ConsumeAsync(
         StreamEvent evt,
+        EventConsumerStateContext context,
         CancellationToken cancellationToken)
     {
         foreach (var consumer in consumers)
         {
-            await consumer.ConsumeAsync(evt, cancellationToken);
+            await consumer.ConsumeAsync(
+                evt,
+                new EventConsumerStateContext(consumer),
+                cancellationToken);
         }
     }
 
     public async ValueTask ConsumeAsync(
         StreamId streamId,
         StreamEvent[] events,
+        EventConsumerStateContext context,
         CancellationToken cancellationToken)
     {
         foreach (var consumer in consumers)
         {
-            await consumer.ConsumeAsync(streamId, events, cancellationToken);
+            await consumer.ConsumeAsync(
+                streamId,
+                events,
+                new EventConsumerStateContext(consumer),
+                cancellationToken);
         }
     }
 }

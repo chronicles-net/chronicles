@@ -72,7 +72,7 @@ public class EventConsumerReflector<T> : IEventConsumerReflector
 
         if (consumeEvents.TryGetValue(evt.Data.GetType(), out var method))
         {
-            var response = method.Invoke(null, new object[] { projection, evt.Data, evt.Metadata, cancellationToken });
+            var response = method.Invoke(null, [projection, evt.Data, evt.Metadata, cancellationToken]);
 
             if (response is ValueTask v)
             {
@@ -127,5 +127,27 @@ public class EventConsumerReflector<T> : IEventConsumerReflector
             await consumeAsync
                 .ConsumeAsync(evt, metadata, cancellationToken);
         }
+    }
+
+    private static async ValueTask<TState> ProjectTypedEventWithState<TEvent, TState>(
+        object projection,
+        TEvent evt,
+        TState state,
+        EventMetadata metadata,
+        CancellationToken cancellationToken)
+        where TEvent : class
+    {
+        if (projection is IConsumeEvent<TEvent, TState> consume)
+        {
+            state = consume.Consume(evt, metadata, state);
+        }
+
+        if (projection is IConsumeEventAsync<TEvent, TState> consumeAsync)
+        {
+            state = await consumeAsync
+                .ConsumeAsync(evt, metadata, state, cancellationToken);
+        }
+
+        return state;
     }
 }

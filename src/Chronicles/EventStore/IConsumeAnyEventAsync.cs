@@ -12,3 +12,13 @@ public interface IConsumeAnyEventAsync
         EventMetadata metadata,
         CancellationToken cancellationToken);
 }
+
+public interface IConsumeAnyEventAsync<TState>
+    : IConsumeEventStateProviderAsync<TState>
+{
+    Task<TState> ConsumeAsync(
+        object evt,
+        EventMetadata metadata,
+        TState state,
+        CancellationToken cancellationToken);
+}

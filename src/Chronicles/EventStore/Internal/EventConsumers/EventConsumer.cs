@@ -2,7 +2,7 @@ namespace Chronicles.EventStore.Internal.EventConsumers;
 
 public class EventConsumer<TConsumer>(
     TConsumer consumer,
-    EventConsumerReflector<TConsumer> reflector) : IEventConsumer
+    EventConsumerStateReflector<TConsumer> reflector) : IEventConsumer
     where TConsumer : class
 {
     public bool CanConsumeEvent(
@@ -11,12 +11,23 @@ public class EventConsumer<TConsumer>(
 
     public ValueTask ConsumeAsync(
         StreamEvent evt,
+        EventConsumerStateContext context,
         CancellationToken cancellationToken)
-        => reflector.ConsumeAsync(evt, consumer, cancellationToken);
+        => reflector.ConsumeAsync(
+            evt,
+            consumer,
+            new EventConsumerStateContext(consumer),
+            cancellationToken);
 
     public ValueTask ConsumeAsync(
         StreamId streamId,
         StreamEvent[] events,
+        EventConsumerStateContext context,
         CancellationToken cancellationToken)
-        => reflector.ConsumeAsync(streamId, events, consumer, cancellationToken);
+        => reflector.ConsumeAsync(
+            streamId,
+            events,
+            consumer,
+            new EventConsumerStateContext(consumer),
+            cancellationToken);
 }
