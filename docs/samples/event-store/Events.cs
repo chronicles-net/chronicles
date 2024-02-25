@@ -2,11 +2,17 @@ using Chronicles.Documents;
 
 namespace Chronicles.EventStore.Samples;
 
+public static class QuestEvents
+{
+    public record QuestStarted(
+        string Name);
+
+    public record MembersJoined(
+        IReadOnlyCollection<string> Members);
+}
+
 public record QuestStreamId(string Id)
     : StreamId("quest", Id);
-
-public record QuestStarted(
-    string Name);
 
 [ContainerName("quest")]
 public class QuestDocument : IDocument
@@ -17,7 +23,7 @@ public class QuestDocument : IDocument
 
     required public string Name { get; set; }
 
-    public IReadOnlyCollection<string> Members { get; } = Array.Empty<string>();
+    public IReadOnlyCollection<string> Members { get; } = [];
 
     public string GetDocumentId() => Id;
 

@@ -1,7 +1,6 @@
 using Chronicles.Documents;
 using Chronicles.Documents.Internal;
 using Chronicles.EventStore;
-using Chronicles.EventStore.Internal.Processors;
 using Chronicles.EventStore.Samples;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,7 +19,7 @@ using var host = Host.CreateDefaultBuilder()
                   .CreateEventStore()))
             .AddEventStore(b => b
                 .Configure(o => o
-                    .AddEvent<QuestStarted>("quest-started:v1"))
+                    .AddEvent<QuestEvents.QuestStarted>("quest-started:v1"))
                 .AddEventSubscription(
                   "quest-projection",
                   c => c
@@ -29,7 +28,7 @@ using var host = Host.CreateDefaultBuilder()
                         o.Strategy = EventPartitioningStrategy.StreamId;
                         //o.Filter = e => e.Metadata.StreamId.Category.StartsWith("firmware-update");
                     })
-                    //.AddEventConsumer<EventConsumerSample>()
+                    .AddEventConsumer<EventConsumerSample>()
                     .AddEventProjection<QuestDocument, QuestProjection>())));
       //.AddDocumentStore("Firmware", b => b
       //    .Configure(o =>
@@ -75,10 +74,10 @@ await subscriptions.StartAsync(CancellationToken.None);
 
 //await Task.Delay(2000);
 
-//var client = host.Services.GetRequiredService<IEventStoreClient>();
-//await client.WriteStreamAsync(
-//  new QuestStreamId("1"),
-//  new[] { new QuestStarted("Awesome Quest") });
+var client = host.Services.GetRequiredService<IEventStoreClient>();
+await client.WriteStreamAsync(
+  new QuestStreamId("1"),
+  new[] { new QuestEvents.QuestStarted("Awesome Quest") });
 
 await Task.Delay(10000);
 
@@ -95,7 +94,7 @@ Console.WriteLine("Completed");
 
 public class QuestProjection :
     IDocumentProjection<QuestDocument>,
-    IConsumeEvent<QuestStarted>
+    IConsumeEvent<QuestEvents.QuestStarted>
 {
     private QuestDocument document = new()
     {
@@ -105,22 +104,22 @@ public class QuestProjection :
     };
 
     public void Consume(
-        QuestStarted evt,
+        QuestEvents.QuestStarted evt,
         EventMetadata metadata)
     {
         document.Name = evt.Name;
     }
 
     public async Task CommitAsync(
+        ProjectionKind kind,
         IDocumentWriter<QuestDocument> writer,
         CancellationToken cancellationToken)
-    {
-        await writer
+        => await writer
             .WriteAsync(document, cancellationToken)
             .ConfigureAwait(false);
-    }
 
     public async Task ResumeAsync(
+        ProjectionKind kind,
         IDocumentReader<QuestDocument> reader,
         StreamId streamId,
         StreamEvent[] events,
@@ -140,16 +139,57 @@ public class QuestProjection :
 
     private static string GetPartitionKey() => "MyPartition";
 }
+/*
+ *   CreateAsync(state)
+ * else
+ *   Create(state)
+ * 
+ * ConsumeEvent(evt)
+ * ConsumeEvent(evt, state)
+ * ConsumeEventAsync(evt)
+ * ConsumeEventAsync(evt, state)
+ * 
+ * ConsumeAnyEvent(evt)
+ * ConsumeAnyEvent(evt, state)
+ * ConsumeAnyEventAsync(evt)
+ * ConsumeAnyEventAsync(evt, state)
+ *
+ * ConsumeGroupedEvents(evt)
+ * ConsumeGroupedEventsAsync(evt)
+ */
 
-public record Unknown(string Text);
-
-
-public class EventConsumerSample
-  : IConsumeEvent<QuestStarted>
+public class EventConsumerSample(
+    IDocumentReader<QuestDocument> reader) :
+    IConsumeEvent<QuestEvents.QuestStarted, QuestDocument>,
+    IConsumeEventStateProviderAsync<QuestDocument>
 {
-    public void Consume(QuestStarted evt, EventMetadata metadata)
+    public QuestDocument Create(StreamEvent evt)
+        => new()
+        {
+            Id = evt.Metadata.StreamId.Id,
+            Pk = GetPartitionKey(),
+            Name = string.Empty,
+        };
+
+    public async Task<QuestDocument> CreateAsync(
+        StreamEvent evt,
+        CancellationToken cancellationToken)
+        => await reader
+            .FindAsync(
+                documentId: evt.Metadata.StreamId.Id,
+                GetPartitionKey(),
+                cancellationToken)
+            .ConfigureAwait(false)
+        ?? Create(evt);
+
+    public QuestDocument Consume(QuestEvents.QuestStarted evt, EventMetadata metadata, QuestDocument state)
     {
         Console.WriteLine($"{metadata.Name}:{metadata.Version}");
         Console.WriteLine($"{evt}");
+
+        state.Name = evt.Name;
+        return state;
     }
+
+    private static string GetPartitionKey() => "demo";
 }
