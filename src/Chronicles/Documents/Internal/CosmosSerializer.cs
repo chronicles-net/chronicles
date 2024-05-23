@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.Azure.Cosmos;
 
@@ -79,4 +80,8 @@ public class CosmosSerializer : ICosmosSerializer
         => JsonSerializer.Deserialize<T>(
             json,
             options);
+
+    public string SerializeMemberName(MemberInfo memberInfo)
+        => options.PropertyNamingPolicy?.ConvertName(memberInfo.Name) ??
+           memberInfo.Name;
 }

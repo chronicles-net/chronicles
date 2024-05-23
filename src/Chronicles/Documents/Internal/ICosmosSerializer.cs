@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
@@ -14,4 +15,7 @@ public interface ICosmosSerializer
 
     [return: MaybeNull]
     T FromString<T>(string json);
+
+    string SerializeMemberName(
+        MemberInfo memberInfo);
 }

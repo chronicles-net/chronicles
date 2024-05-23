@@ -1,8 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Chronicles.Documents.Internal;
 
-public class CosmosSerializerAdapter : Microsoft.Azure.Cosmos.CosmosSerializer
+public class CosmosSerializerAdapter : Microsoft.Azure.Cosmos.CosmosLinqSerializer
 {
     public CosmosSerializerAdapter(ICosmosSerializer serializer)
     {
@@ -14,6 +15,9 @@ public class CosmosSerializerAdapter : Microsoft.Azure.Cosmos.CosmosSerializer
     [return: MaybeNull]
     public override T FromStream<T>(Stream stream)
         => Serializer.FromStream<T>(stream);
+
+    public override string SerializeMemberName(MemberInfo memberInfo)
+        => Serializer.SerializeMemberName(memberInfo);
 
     public override Stream ToStream<T>(T input)
         => Serializer.ToStream(input);
