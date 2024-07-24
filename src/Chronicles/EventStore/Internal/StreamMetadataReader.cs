@@ -6,7 +6,7 @@ namespace Chronicles.EventStore.Internal;
 
 internal class StreamMetadataReader(
     IDocumentReader<StreamMetadataDocument> reader,
-    IDateTimeProvider dateTimeProvider)
+    TimeProvider dateTimeProvider)
     : IStreamMetadataReader
 {
     public virtual async Task<StreamMetadataDocument> GetAsync(
@@ -29,7 +29,7 @@ internal class StreamMetadataReader(
                 streamId,
                 StreamState.New,
                 Version: 0,
-                dateTimeProvider.GetDateTime()),
+                dateTimeProvider.GetUtcNow()),
         };
 
     public virtual async IAsyncEnumerable<StreamMetadataDocument> QueryAsync(

@@ -1,7 +1,7 @@
 namespace Chronicles.EventStore.Internal;
 
 internal class EventDocumentBatchProducer(
-    IDateTimeProvider dateTimeProvider,
+    TimeProvider dateTimeProvider,
     IEventCatalogFactory eventCatalogFactory)
     : IEventDocumentBatchProducer
 {
@@ -12,7 +12,7 @@ internal class EventDocumentBatchProducer(
         StreamWriteOptions? options)
     {
         // It is important the each event and metadata have the same time stamp.
-        var timestamp = dateTimeProvider.GetDateTime();
+        var timestamp = dateTimeProvider.GetUtcNow();
         var version = metadata.Version.Value;
         var catalog = eventCatalogFactory.Get(storeName);
 

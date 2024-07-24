@@ -1,4 +1,3 @@
-using Chronicles;
 using Chronicles.EventStore;
 using Chronicles.EventStore.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -30,8 +29,9 @@ public static class EventStoreServiceCollectionExtensions
             });
         documentBuilder.Services.ConfigureOptions<EventStoreConfigureDocumentStore>();
 
+        documentBuilder.Services.AddSingleton(TimeProvider.System);
+
         documentBuilder.Services.TryAddSingleton<IEventCatalogFactory, EventCatalogFactory>();
-        documentBuilder.Services.TryAddSingleton<IDateTimeProvider, UtcDateTimeProvider>();
         documentBuilder.Services.TryAddSingleton<IEventDocumentReader, EventDocumentReader>();
         documentBuilder.Services.TryAddSingleton<IEventDocumentWriter, EventDocumentWriter>();
         documentBuilder.Services.TryAddSingleton<IEventDocumentBatchProducer, EventDocumentBatchProducer>();

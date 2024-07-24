@@ -8,7 +8,7 @@ internal class EventStreamWriter(
     ICheckpointWriter checkpointWriter)
     : IEventStreamWriter
 {
-    public async Task CloseAsync(
+    public virtual async Task CloseAsync(
         StreamId streamId,
         string? storeName = null,
         CancellationToken cancellationToken = default)
@@ -22,7 +22,7 @@ internal class EventStreamWriter(
         // TODO: Implement close stream
     }
 
-    public async Task SetCheckpointAsync(
+    public virtual async Task SetCheckpointAsync(
         string name,
         StreamId streamId,
         StreamVersion version,
@@ -41,7 +41,7 @@ internal class EventStreamWriter(
             .ConfigureAwait(false);
     }
 
-    public async Task<StreamWriteResult> WriteAsync(
+    public virtual async Task<StreamWriteResult> WriteAsync(
         StreamId streamId,
         IImmutableList<object> events,
         StreamWriteOptions? options = null,

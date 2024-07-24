@@ -4,11 +4,11 @@ namespace Chronicles.EventStore.Internal;
 
 internal class CheckpointWriter : ICheckpointWriter
 {
-    private readonly IDateTimeProvider dateTimeProvider;
+    private readonly TimeProvider dateTimeProvider;
     private readonly IDocumentWriter<CheckpointDocument<object?>> writer;
 
     public CheckpointWriter(
-        IDateTimeProvider dateTimeProvider,
+        TimeProvider dateTimeProvider,
         IDocumentWriter<CheckpointDocument<object?>> writer)
     {
         this.dateTimeProvider = dateTimeProvider;
@@ -30,7 +30,7 @@ internal class CheckpointWriter : ICheckpointWriter
                     name,
                     streamId,
                     version,
-                    dateTimeProvider.GetDateTime(),
+                    dateTimeProvider.GetUtcNow(),
                     state),
                 options: null,
                 storeName: storeName,
