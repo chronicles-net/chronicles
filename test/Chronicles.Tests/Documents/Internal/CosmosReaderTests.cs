@@ -146,7 +146,7 @@ public class CosmosReaderTests
     }
 
     [Theory, AutoNSubstituteData]
-    public void ReadAsync_Throws_Expection_When_TestDocument_IsNot_Found(
+    public void ReadAsync_Throws_Exception_When_TestDocument_IsNot_Found(
         CosmosException exception,
         string documentId,
         string partitionKey,

@@ -17,9 +17,9 @@ public class CosmosSerializer : ICosmosSerializer
         JsonSerializerOptions options)
     {
         this.options = options;
-        PropertyNamingPolicy = options.PropertyNamingPolicy == JsonNamingPolicy.CamelCase
-            ? CosmosPropertyNamingPolicy.CamelCase
-            : CosmosPropertyNamingPolicy.Default;
+
+        // This is required when using custom serializer and linq provider for cosmos.
+        PropertyNamingPolicy = CosmosPropertyNamingPolicy.Default;
     }
 
     public CosmosPropertyNamingPolicy PropertyNamingPolicy { get; }
