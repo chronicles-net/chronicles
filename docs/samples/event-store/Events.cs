@@ -12,7 +12,10 @@ public static class QuestEvents
 }
 
 public record QuestStreamId(string Id)
-    : StreamId("quest", Id);
+    : StreamId(CategoryName, Id)
+{
+    public const string CategoryName = "quest";
+}
 
 [ContainerName("quest")]
 public class QuestDocument : IDocument
@@ -21,9 +24,11 @@ public class QuestDocument : IDocument
 
     required public string Pk { get; set; }
 
-    required public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
-    public IReadOnlyCollection<string> Members { get; } = [];
+    public ICollection<string> Members { get; set; } = [];
+
+    public bool IsClosed { get; set; }
 
     public string GetDocumentId() => Id;
 

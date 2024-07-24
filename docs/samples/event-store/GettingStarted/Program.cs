@@ -14,11 +14,10 @@ using var host = Host.CreateDefaultBuilder()
                 .UseCosmosEmulator()
                 .AddInitialization(o => o
                   .CreateDatabase()
-                  .CreateContainer<QuestDocument>()
+                  .CreateContainer<QuestDocument>(p => p.PartitionKeyPath = "/pk")
                   .CreateEventStore()))
             .AddEventStore(b => b
-                .Configure(o => o
-                    .AddEvent<QuestEvents.QuestStarted>("quest-started:v1"))));
+                .MapEvent<QuestEvents.QuestStarted>("quest-started:v1")));
   })
   .Build();
 
@@ -29,14 +28,15 @@ await host
   .InitializeAsync(CancellationToken.None);
 
 // Get hold of event store client to start writing events.
-var client = host.Services.GetRequiredService<IEventStoreClient>();
-var streamId = new QuestStreamId("1");
-await client.WriteStreamAsync(
+var reader = host.Services.GetRequiredService<IEventStreamReader>();
+var writer = host.Services.GetRequiredService<IEventStreamWriter>();
+var streamId = new QuestStreamId("100");
+await writer.WriteAsync(
   streamId,
-  new[] { new QuestEvents.QuestStarted("Awesome Quest") });
+  [new QuestEvents.QuestStarted("Awesome Quest")]);
 
 // Read events from a stream
-await foreach (var streamEvent in client.ReadStreamAsync(streamId))
+await foreach (var streamEvent in reader.ReadAsync(streamId))
 {
     Console.WriteLine($"{streamEvent.Metadata.Name}");
 }

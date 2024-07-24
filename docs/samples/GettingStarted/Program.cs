@@ -1,3 +1,4 @@
+using Chronicles.Cqrs;
 using Chronicles.Documents;
 using Chronicles.Documents.Internal;
 using Chronicles.EventStore;
@@ -18,18 +19,17 @@ using var host = Host.CreateDefaultBuilder()
                   .CreateContainer<QuestDocument>(p => p.PartitionKeyPath = "/pk")
                   .CreateEventStore()))
             .AddEventStore(b => b
-                .Configure(o => o
-                    .AddEvent<QuestEvents.QuestStarted>("quest-started:v1"))
+                .MapEvent<QuestEvents.QuestStarted>("quest-started:v1")
                 .AddEventSubscription(
                   "quest-projection",
+                  o =>
+                  {
+                      o.SubscriptionOptions.BatchSize = 10;
+                  },
                   c => c
-                    .Configure(o =>
-                    {
-                        o.Strategy = EventPartitioningStrategy.StreamId;
-                        //o.Filter = e => e.Metadata.StreamId.Category.StartsWith("firmware-update");
-                    })
-                    .AddEventConsumer<EventConsumerSample>()
-                    .AddEventProjection<QuestDocument, QuestProjection>())));
+                    .MapStream("quest", stream => stream
+                        .AddDocumentProjection<QuestDocument, QuestProjection>()))));
+
       //.AddDocumentStore("Firmware", b => b
       //    .Configure(o =>
       //      {
@@ -41,25 +41,44 @@ using var host = Host.CreateDefaultBuilder()
       //    //.AddSubscription<StreamEvent, EventSubscriptionSample>("sample10", o => o.StoreName = "Firmware")
       //    );
 
-      //services.ConfigureOptions<ConfigureDocumentStoreDropMe>();
-      //.AddAllStreamSubscription(
-      //  "my",
-      //  c => c.WithFilter("deployments.*")
-      //       c.WithBatchSize(30)
-      //       c.WithProcessingStrategy(EventProcessingStrategy.Single | Parallel)
-      //       c.WithPartitioningStrategy(PartitioningStrategy.Stream | Event)
-      //       c.AddEventConsumer<EventSubscriptionSample>()
+
+      // .MapCommand<JoinQuest.Command, JoinQuest.Handler>(c => c
+      //    .Configure(o =>
+      //    { // Default command options, can be overridden when executing the command
+      //      o.RequiredState = StreamState.Active;
+      //      o.Behavior = OnConflict.RerunCommand;
+      //      o.BehaviorCount = 3;
+      //    })
+      //    .AddStateProjection<QuestDocument, QuestProjections>()
+      //    .AddSnapshotProvider<T>())
+
+
       //.AddStreamSubscription(
-      //  "my-subscription", // <- should we only allow stream filter for the subscription or is it also useful on the processors
-      //  c => c.AddEventConsumer<EventSubscriptionSample>()
-      //        .AddEventConsumer<MyProjection>()
-      //        .WithFilter("deployments.*")
-      //        .WithBatchSize(30)
-      //        .WithPartitioningByStream() // instruct the subscription to group event batch by stream id
-      //        .WithEventPartitioning(Stream | Event)
-      //        .WithParallelEventProcessing(5)
-      //        .WithSingleEventProcessing()
-      //        );
+      //  "my-subscription",
+      //  c => c
+      //    .MapStream("locations", stream => stream // every map-xx will run in parallel
+      //        .AddStateProvider<DocumentStateProvider, TDocument>(name: "quest-document")
+      //        .AddDocumentProjection<TDocument, TEventConsumer>(
+      //            name: "quest-projection",
+      //            partitionKeySelector: static streamId => "active",
+      //            idSelector: static streamId => streamId.Id)
+      //        .AddEventConsumer<MyStateProjection, MyStateProvider, TDocument>(name: "my-state") 
+      //        .AddEventConsumer<MyStateProjection2>()
+      //        .AddFailureHandler<T>((exception, event, object consumer) => {})
+      //    .MapAllStreams(s => s
+      //        .UseResumeReadModel<MyReadModelDocument>()
+      //
+      // Find or Create New Document UseDocumentProjection<>()
+      //   Project event to consumer
+      // Save document    
+      //
+      // Find or Create New Document
+      //   Project event to consumer
+      //     publish event to service bus
+      // Save document    
+      //
+      //
+      //
   })
   .Build();
 
@@ -74,10 +93,10 @@ await subscriptions.StartAsync(CancellationToken.None);
 
 //await Task.Delay(2000);
 
-var client = host.Services.GetRequiredService<IEventStoreClient>();
-await client.WriteStreamAsync(
+var writer = host.Services.GetRequiredService<IEventStreamWriter>();
+await writer.WriteAsync(
   new QuestStreamId("1"),
-  new[] { new QuestEvents.QuestStarted("Awesome Quest") });
+  [new QuestEvents.QuestStarted("Awesome Quest")]);
 
 await Task.Delay(10000);
 
@@ -90,106 +109,29 @@ await subscriptions.StopAsync(CancellationToken.None);
 
 Console.WriteLine("Completed");
 //await host.RunAsync();
-
-
-public class QuestProjection :
-    IDocumentProjection<QuestDocument>,
-    IConsumeEvent<QuestEvents.QuestStarted>
+public class QuestProjection
+    : IDocumentProjection<QuestDocument>
 {
-    private QuestDocument document = new()
-    {
-        Id = string.Empty,
-        Pk = string.Empty,
-        Name = string.Empty,
-    };
-
-    public void Consume(
-        QuestEvents.QuestStarted evt,
-        EventMetadata metadata)
-    {
-        document.Name = evt.Name;
-    }
-
-    public async Task CommitAsync(
-        ProjectionKind kind,
-        IDocumentWriter<QuestDocument> writer,
-        CancellationToken cancellationToken)
-        => await writer
-            .WriteAsync(document, cancellationToken)
-            .ConfigureAwait(false);
-
-    public async Task ResumeAsync(
-        ProjectionKind kind,
-        IDocumentReader<QuestDocument> reader,
-        StreamId streamId,
-        StreamEvent[] events,
-        CancellationToken cancellationToken)
-        => document = await reader
-            .FindAsync(
-                documentId: streamId.Id,
-                GetPartitionKey(),
-                cancellationToken)
-            .ConfigureAwait(false)
-        ?? new()
-        {
-            Id = streamId.Id,
-            Pk = GetPartitionKey(),
-            Name = string.Empty,
-        };
-
-    private static string GetPartitionKey() => "MyPartition";
-}
-/*
- *   CreateAsync(state)
- * else
- *   Create(state)
- * 
- * ConsumeEvent(evt)
- * ConsumeEvent(evt, state)
- * ConsumeEventAsync(evt)
- * ConsumeEventAsync(evt, state)
- * 
- * ConsumeAnyEvent(evt)
- * ConsumeAnyEvent(evt, state)
- * ConsumeAnyEventAsync(evt)
- * ConsumeAnyEventAsync(evt, state)
- *
- * ConsumeGroupedEvents(evt)
- * ConsumeGroupedEventsAsync(evt)
- */
-
-public class EventConsumerSample(
-    IDocumentReader<QuestDocument> reader) :
-    IConsumeEvent<QuestEvents.QuestStarted, QuestDocument>,
-    IConsumeEventStateProviderAsync<QuestDocument>
-{
-    public QuestDocument Create(StreamEvent evt)
+    public QuestDocument CreateState(StreamId streamId)
         => new()
         {
-            Id = evt.Metadata.StreamId.Id,
-            Pk = GetPartitionKey(),
+            Id = streamId.Id,
+            Pk = "MyPartition",
             Name = string.Empty,
         };
 
-    public async Task<QuestDocument> CreateAsync(
+    public QuestDocument ConsumeEvent(
         StreamEvent evt,
-        CancellationToken cancellationToken)
-        => await reader
-            .FindAsync(
-                documentId: evt.Metadata.StreamId.Id,
-                GetPartitionKey(),
-                cancellationToken)
-            .ConfigureAwait(false)
-        ?? Create(evt);
-
-    public QuestDocument Consume(QuestEvents.QuestStarted evt, EventMetadata metadata, QuestDocument state)
+        QuestDocument state)
     {
-        Console.WriteLine($"{metadata.Name}:{metadata.Version}");
+        Console.WriteLine($"{evt.Metadata.Name}:{evt.Metadata.Version}");
         Console.WriteLine($"{evt}");
 
-        state.Name = evt.Name;
+        if (evt.Data is QuestEvents.QuestStarted e)
+        {
+            state.Name = e.Name;
+        }
+
         return state;
     }
-
-    private static string GetPartitionKey() => "demo";
 }
