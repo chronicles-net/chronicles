@@ -1,59 +1,96 @@
+using Chronicles;
 using Chronicles.Documents;
 using Chronicles.Documents.Internal;
 using Chronicles.EventStore;
 using Chronicles.EventStore.DependencyInjection;
-using Chronicles.EventStore.Internal.EventConsumers;
-using Chronicles.EventStore.Internal.Processors;
+using Chronicles.EventStore.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public class EventStoreBuilder
+public class EventStoreBuilder(
+    DocumentStoreBuilder documentBuilder)
 {
-    private readonly DocumentStoreBuilder documentBuilder;
-
-    public EventStoreBuilder(
-        DocumentStoreBuilder documentBuilder)
-    {
-        this.documentBuilder = documentBuilder;
-    }
+    private readonly Dictionary<Type, (string Name, IEventDataConverter Converter)> eventNames = [];
 
     public IServiceCollection Services => documentBuilder.Services;
 
     public string StoreName => documentBuilder.StoreName;
 
-    public EventStoreBuilder Configure(
-        Action<EventStoreOptions> configure)
+    /// <summary>
+    /// Adds an event to the event catalog.
+    /// </summary>
+    /// <typeparam name="TEvent">Type of event</typeparam>
+    /// <param name="name">Name of the event</param>
+    /// <returns>The <see cref="EventStoreBuilder"/> for further configurations.</returns>
+    public EventStoreBuilder MapEvent<TEvent>(
+        string name)
+        where TEvent : class
     {
-        Services.Configure<EventStoreOptions>(
-            StoreName,
-            o =>
-            {
-                o.DocumentStoreName = StoreName;
-                configure.Invoke(o);
-            });
-        Services.ConfigureOptions<EventStoreConfigureDocumentStore>();
+        eventNames[typeof(TEvent)] = (name, new EventDataConverter(name, typeof(TEvent)));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds an event with a custom event converter.
+    /// </summary>
+    /// <typeparam name="TEvent">Type of event.</typeparam>
+    /// <param name="name">Unique name of event.</param>
+    /// <param name="customConverter">Custom converter.</param>
+    /// <returns>The <see cref="EventStoreBuilder"/> for further configurations.</returns>
+    public EventStoreBuilder MapEvent<TEvent>(
+        string name,
+        IEventDataConverter customConverter)
+        where TEvent : class
+    {
+        Arguments.EnsureNotNull(customConverter, nameof(customConverter));
+
+        eventNames[typeof(TEvent)] = (name, customConverter);
+
+        return this;
+    }
+
+    /// <summary>
+    ///   Adds a custom event catalog to use for event mapping.
+    /// </summary>
+    /// <remarks>
+    ///   When using a custom event catalog, events mapped using
+    ///   <see cref="MapEvent{TEvent}(string)"/> or <see cref="MapEvent{TEvent}(string, IEventDataConverter)"/> will not be used.
+    /// </remarks>
+    /// <typeparam name="TCatalog">Event catalog implementation type.</typeparam>
+    /// <returns>The <see cref="EventStoreBuilder"/> for further configurations.</returns>
+    public EventStoreBuilder AddEventCatalog<TCatalog>()
+        where TCatalog : class, IEventCatalog
+    {
+        Services.TryAddKeyedSingleton<IEventCatalog, TCatalog>(StoreName);
 
         return this;
     }
 
     public EventStoreBuilder AddEventSubscription(
         string name,
-        Action<EventSubscriptionBuilder> configure)
+        Action<EventSubscriptionBuilder> builder)
+        => AddEventSubscription(name, o => { }, builder);
+
+    public EventStoreBuilder AddEventSubscription(
+        string name,
+        Action<EventSubscriptionOptions> options,
+        Action<EventSubscriptionBuilder> builder)
     {
-        var builder = new EventSubscriptionBuilder(name, Services);
-        configure.Invoke(builder);
+        builder.Invoke(new EventSubscriptionBuilder(name, Services));
 
         Services.ConfigureOptions<ConfigureSubscriptionOptions>();
         Services.Configure<SubscriptionOptions>(name, o => { });
-        Services.TryAddKeyedSingleton(name, (s, n) =>
-            new EventDocumentProcessor(
-                name,
-                s.GetRequiredService<IEventConsumerFactory>(),
-                s.GetRequiredService<IOptionsMonitor<EventSubscriptionOptions>>()
-                 .Get(name)));
+        Services.Configure(name, options);
 
+        // Add default exception handler.
+        Services.TryAddKeyedSingleton<IEventSubscriptionExceptionHandler, DefaultEventSubscriptionExceptionHandler>(name);
+
+        Services.AddKeyedSingleton(name, (s, n) =>
+            new EventDocumentProcessor(
+                s.GetRequiredKeyedService<IEventSubscriptionExceptionHandler>(n),
+                s.GetKeyedServices<IEventStreamProcessor>(n)));
         Services.AddSingleton<IDocumentSubscription>(s =>
             new DocumentSubscription<StreamEvent, EventDocumentProcessor>(
                 StoreName,
@@ -62,5 +99,10 @@ public class EventStoreBuilder
                 s.GetRequiredKeyedService<EventDocumentProcessor>(name)));
 
         return this;
+    }
+
+    internal void Build()
+    {
+        Services.TryAddKeyedSingleton<IEventCatalog>(StoreName, new EventCatalog(eventNames));
     }
 }

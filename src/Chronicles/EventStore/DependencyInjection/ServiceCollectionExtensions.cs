@@ -1,10 +1,6 @@
 using Chronicles;
 using Chronicles.EventStore;
-using Chronicles.EventStore.Internal.Checkpoints;
-using Chronicles.EventStore.Internal.Commands;
-using Chronicles.EventStore.Internal.EventConsumers;
-using Chronicles.EventStore.Internal.Events;
-using Chronicles.EventStore.Internal.Streams;
+using Chronicles.EventStore.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -12,26 +8,38 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class EventStoreServiceCollectionExtensions
 {
     public static EventStoreBuilder AddEventStore(
-        this DocumentStoreBuilder builder,
-        Action<EventStoreBuilder> configure)
+        this DocumentStoreBuilder documentBuilder,
+        Action<EventStoreBuilder> builder)
+        => AddEventStore(documentBuilder, _ => { }, builder);
+
+    public static EventStoreBuilder AddEventStore(
+        this DocumentStoreBuilder documentBuilder,
+        Action<EventStoreOptions> configure,
+        Action<EventStoreBuilder> builder)
     {
-        var b = new EventStoreBuilder(builder);
-        configure.Invoke(b);
+        var b = new EventStoreBuilder(documentBuilder);
+        builder.Invoke(b);
+        b.Build();
 
-        builder.Services.TryAddSingleton<IDateTimeProvider, UtcDateTimeProvider>();
-        builder.Services.TryAddSingleton<IStreamEventReader, StreamEventReader>();
-        builder.Services.TryAddSingleton<IStreamEventWriter, StreamEventWriter>();
-        builder.Services.TryAddSingleton<CheckpointReader>();
-        builder.Services.TryAddSingleton<CheckpointWriter>();
-        builder.Services.TryAddSingleton<IStreamMetadataReader, StreamMetadataReader>();
-        builder.Services.TryAddSingleton<EventDocumentBatchProducer>();
-        builder.Services.TryAddSingleton<IEventConsumerFactory, EventConsumerFactory>();
-        builder.Services.TryAddSingleton<ICommandHandlerFactory, CommandHandlerFactory>();
-        builder.Services.TryAddSingleton(typeof(ICommandProcessor<>), typeof(CommandProcessor<>));
-        builder.Services.TryAddSingleton(typeof(EventConsumerReflector<>));
-        builder.Services.TryAddSingleton(typeof(EventConsumerStateReflector<>));
+        documentBuilder.Services.Configure<EventStoreOptions>(
+            documentBuilder.StoreName,
+            o =>
+            {
+                o.DocumentStoreName = documentBuilder.StoreName;
+                configure.Invoke(o);
+            });
+        documentBuilder.Services.ConfigureOptions<EventStoreConfigureDocumentStore>();
 
-        builder.Services.AddSingleton<IEventStoreClient, EventStoreClient>();
+        documentBuilder.Services.TryAddSingleton<IEventCatalogFactory, EventCatalogFactory>();
+        documentBuilder.Services.TryAddSingleton<IDateTimeProvider, UtcDateTimeProvider>();
+        documentBuilder.Services.TryAddSingleton<IEventDocumentReader, EventDocumentReader>();
+        documentBuilder.Services.TryAddSingleton<IEventDocumentWriter, EventDocumentWriter>();
+        documentBuilder.Services.TryAddSingleton<IEventDocumentBatchProducer, EventDocumentBatchProducer>();
+        documentBuilder.Services.TryAddSingleton<ICheckpointReader, CheckpointReader>();
+        documentBuilder.Services.TryAddSingleton<ICheckpointWriter, CheckpointWriter>();
+        documentBuilder.Services.TryAddSingleton<IStreamMetadataReader, StreamMetadataReader>();
+        documentBuilder.Services.TryAddSingleton<IEventStreamReader, EventStreamReader>();
+        documentBuilder.Services.TryAddSingleton<IEventStreamWriter, EventStreamWriter>();
 
         return b;
     }

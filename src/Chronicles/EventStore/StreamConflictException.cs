@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Chronicles.EventStore;
 
 /// <summary>
-/// The exception that is thrown when a stream is not at its expected version.
+/// The exception is thrown when a stream is not at its expected version/position.
 /// </summary>
 [SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "By Design")]
 public class StreamConflictException(

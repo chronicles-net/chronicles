@@ -1,49 +1,49 @@
-using Chronicles.Documents;
 using Chronicles.EventStore;
-using Chronicles.EventStore.Internal.EventConsumers;
-using Chronicles.EventStore.Internal.Processors;
+using Chronicles.EventStore.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public class EventSubscriptionBuilder
+public class EventSubscriptionBuilder(
+    string name,
+    IServiceCollection serviceCollection)
 {
-    private readonly string name;
+    public IServiceCollection Services { get; } = serviceCollection;
 
-    public EventSubscriptionBuilder(
-        string name,
-        IServiceCollection serviceCollection)
+    public EventSubscriptionBuilder AddExceptionHandler<TExceptionHandler>()
+        where TExceptionHandler : class, IEventSubscriptionExceptionHandler
     {
-        this.name = name;
-        Services = serviceCollection;
-    }
-
-    public IServiceCollection Services { get; }
-
-    public EventSubscriptionBuilder AddEventConsumer<T>()
-        where T : class
-    {
-        Services.TryAddTransient<T>();
-        Services.AddKeyedTransient<IEventConsumer, EventConsumer<T>>(name);
+        Services.TryAddKeyedSingleton<TExceptionHandler>(name);
 
         return this;
     }
 
-    public EventSubscriptionBuilder AddEventProjection<TState, TConsumer>()
-        where TState : class, IDocument
-        where TConsumer : class, IDocumentProjection<TState>
+    public EventSubscriptionBuilder MapStream(
+        string streamCategory,
+        Action<EventProcessorBuilder> consumerBuilder)
     {
-        Services.TryAddTransient<TConsumer>();
-        Services.TryAddTransient<DocumentProjection<TState, TConsumer>>();
-        Services.AddKeyedTransient<IEventConsumer, EventConsumer<DocumentProjection<TState, TConsumer>>>(name);
+        var key = $"{name}:{streamCategory}";
+
+        consumerBuilder.Invoke(new EventProcessorBuilder(key, Services));
+
+        Services.AddKeyedSingleton<IEventStreamProcessor>(name, (s, n) =>
+            new EventStreamProcessor(
+                streamCategory,
+                s.GetKeyedServices<IEventProcessor>(key)));
 
         return this;
     }
 
-    public EventSubscriptionBuilder Configure(
-        Action<EventSubscriptionOptions> configure)
+    public EventSubscriptionBuilder MapAllStreams(
+        Action<EventProcessorBuilder> consumerBuilder)
     {
-        Services.Configure(name, configure);
+        var key = $"{name}:__all__";
+
+        consumerBuilder.Invoke(new EventProcessorBuilder(key, Services));
+        Services.AddKeyedSingleton<IEventStreamProcessor>(name, (s, n) =>
+            new EventStreamProcessor(
+                categoryName: null,
+                s.GetKeyedServices<IEventProcessor>(key)));
 
         return this;
     }

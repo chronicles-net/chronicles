@@ -1,4 +1,4 @@
-using Chronicles.EventStore.Internal.Streams;
+using Chronicles.EventStore.Internal;
 
 namespace Chronicles.EventStore;
 
@@ -14,4 +14,4 @@ public abstract record StreamMetadata(
     StreamState State,
     StreamVersion Version,
     DateTimeOffset Timestamp)
-    : StreamDocument();
+    : EventDocumentBase();

@@ -16,4 +16,14 @@ public enum StreamState
     /// Stream is not longer accepting events as it has been closed.
     /// </summary>
     Closed,
+
+    /// <summary>
+    /// Stream has been archived and is no longer accepting events.
+    /// </summary>
+    Archived,
+
+    /// <summary>
+    /// Stream has been deleted.
+    /// </summary>
+    Deleted,
 }

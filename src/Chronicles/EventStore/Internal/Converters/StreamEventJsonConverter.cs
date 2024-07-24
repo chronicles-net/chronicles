@@ -1,21 +1,15 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Chronicles.EventStore.Internal.Events;
-using Chronicles.EventStore.Internal.Streams;
 
 namespace Chronicles.EventStore.Internal.Converters;
 
 /// <summary>
 /// Responsible for converting an event envelope to and from json without loosing underlying event type.
 /// </summary>
-internal sealed class StreamEventJsonConverter : JsonConverter<StreamEvent>
+internal sealed class StreamEventJsonConverter(
+    StreamEventConverter dataConverter)
+    : JsonConverter<StreamEvent>
 {
-    private readonly StreamEventConverter dataConverter;
-
-    public StreamEventJsonConverter(
-        StreamEventConverter dataConverter)
-        => this.dataConverter = dataConverter;
-
     public override StreamEvent Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,

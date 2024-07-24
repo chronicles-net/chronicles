@@ -1,6 +1,6 @@
 using Chronicles.Documents;
 using Chronicles.EventStore;
-using Chronicles.EventStore.Internal.Streams;
+using Chronicles.EventStore.Internal;
 using Microsoft.Azure.Cosmos;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -13,7 +13,7 @@ public static class InitializationOptionsExtensions
         ThroughputProperties? streamIndexThroughput = null)
         => options
             .CreateSubscriptionContainer()
-            .CreateContainer<StreamDocument>(
+            .CreateContainer<EventDocumentBase>(
                 p =>
                 {
                     p.IndexingPolicy = new IndexingPolicy
