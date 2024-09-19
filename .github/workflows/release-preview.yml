@@ -1,0 +1,44 @@
+name: Release Preview
+
+run-name: Preview • ${{ github.ref_name }} • ${{ github.event.head_commit.message }}
+
+on:
+  push:
+    tags:
+    - "v[0-9]+.[0-9]+.[0-9]+-preview[0-9]*"
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  packages: write
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛒 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🏷️ Set VERSION variable from tag
+        run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
+
+      - name: ⚙️ Setup dotnet 8.0.x
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: ⚙️ Setup dotnet workloads
+        run: dotnet workload restore
+
+      - name: 🧹 Clean
+        run: dotnet clean -c Release && dotnet nuget locals all --clear
+
+      - name: 🏗️ Restore dependencies
+        run: dotnet restore
+
+      - name: 🛠️ Build solution
+        run: dotnet build --no-restore -c:Release -p:SourceRevisionId=${VERSION} -p:Version=${VERSION}
+
+      - name: 📦 Upload library to GitHub Package Repository
+        run: dotnet nuget push **/Chronicles.*.nupkg -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/chronicles-net/index.json --skip-duplicate --no-symbols
