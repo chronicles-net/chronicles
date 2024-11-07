@@ -7,9 +7,7 @@ public class FakeQueryDefinition<T> : QueryDefinition
     public FakeQueryDefinition(
         Func<IQueryable<T>, IQueryable> query)
         : base($"Query{Guid.NewGuid()}")
-    {
-        LinqQuery = query;
-    }
+        => LinqQuery = query;
 
     public Func<IQueryable<T>, IQueryable> LinqQuery { get; }
 }

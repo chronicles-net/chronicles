@@ -1,0 +1,198 @@
+using System.Net;
+using System.Text.Json;
+using Microsoft.Azure.Cosmos;
+
+namespace Chronicles.Documents.Testing;
+
+/// <summary>
+/// Represents a fake <see cref="IDocumentWriter{T}"/> that can be
+/// used when unit testing client code.
+/// </summary>
+/// <typeparam name="T">
+/// The type of <see cref="IDocument"/>
+/// to be read by this reader.
+/// </typeparam>
+public class FakeDocumentWriter<T> :
+    IDocumentWriter<T>
+    where T : IDocument
+{
+    private readonly JsonSerializerOptions? serializerOptions;
+
+    public FakeDocumentWriter()
+    {
+    }
+
+    public FakeDocumentWriter(
+        JsonSerializerOptions serializerOptions)
+        => this.serializerOptions = serializerOptions;
+
+    /// <summary>
+    /// Gets or sets the list of documents to be modified by the fake writer.
+    /// </summary>
+    public IList<T> Documents { get; set; } = [];
+
+    public IDocumentTransaction<T> CreateTransaction(
+        string partitionKey,
+        string? storeName = null)
+        => new FakeDocumentTransaction<T>(this, partitionKey);
+
+    public virtual Task<T> CreateAsync(
+        T document,
+        ItemRequestOptions? options,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+    {
+        GuardNotExists(document);
+
+        var newDocument = document.DeepClone(serializerOptions);
+        Documents.Add(newDocument);
+        return Task.FromResult(newDocument);
+    }
+
+    public virtual Task<T> WriteAsync(
+        T document,
+        ItemRequestOptions? options,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+    {
+        RemoveAll(d
+            => d.GetDocumentId() == document.GetDocumentId()
+            && d.GetPartitionKey() == document.GetPartitionKey());
+
+        var newDocument = document.DeepClone(serializerOptions);
+        Documents.Add(newDocument);
+
+        return Task.FromResult(newDocument);
+    }
+
+    public virtual Task<T> ReplaceAsync(
+        T document,
+        ItemRequestOptions? options,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+    {
+        GuardExists(document);
+
+        RemoveAll(d
+            => d.GetDocumentId() == document.GetDocumentId()
+            && d.GetPartitionKey() == document.GetPartitionKey());
+
+        var newDocument = document.DeepClone(serializerOptions);
+        Documents.Add(newDocument);
+
+        return Task.FromResult(newDocument);
+    }
+
+    public virtual Task DeleteAsync(
+        string documentId,
+        string partitionKey,
+        ItemRequestOptions? options,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+    {
+        GuardExists(documentId, partitionKey);
+
+        RemoveAll(d
+            => d.GetDocumentId() == documentId
+            && d.GetPartitionKey() == partitionKey);
+
+        return Task.CompletedTask;
+    }
+
+    public virtual Task<T> UpdateAsync(
+        string documentId,
+        string partitionKey,
+        Func<T, Task> updateDocument,
+        int retries = 0,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+    {
+        var document = GuardExists(documentId, partitionKey);
+
+        var newDocument = document.DeepClone(serializerOptions);
+        updateDocument(newDocument);
+
+        Documents.Remove(document);
+        Documents.Add(newDocument);
+
+        return Task.FromResult(newDocument);
+    }
+
+    public virtual Task<T> UpdateOrCreateAsync(
+        Func<T> getDefaultDocument,
+        Func<T, Task> updateDocument,
+        int retries = 0,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+    {
+        var defaultDocument = getDefaultDocument();
+        var existingDocument = Documents.FirstOrDefault(d
+            => d.GetDocumentId() == defaultDocument.GetDocumentId()
+            && d.GetPartitionKey() == defaultDocument.GetPartitionKey());
+
+        var newDocument = (existingDocument ?? defaultDocument).DeepClone(serializerOptions);
+        updateDocument(newDocument);
+
+        if (existingDocument is not null)
+        {
+            Documents.Remove(existingDocument);
+        }
+
+        Documents.Add(newDocument);
+
+        return Task.FromResult(newDocument);
+    }
+
+    protected void GuardNotExists(
+        IDocument document)
+    {
+        var existingDocument = Documents.FirstOrDefault(d
+            => d.GetDocumentId() == document.GetDocumentId()
+            && d.GetPartitionKey() == document.GetPartitionKey());
+
+        if (existingDocument is not null)
+        {
+            throw new CosmosException(
+                $"Document already exists.",
+                HttpStatusCode.Conflict,
+                0,
+                string.Empty,
+                0);
+        }
+    }
+
+    protected T GuardExists(IDocument document)
+        => GuardExists(document.GetDocumentId(), document.GetPartitionKey());
+
+    protected T GuardExists(
+        string documentId,
+        string partitionKey)
+    {
+        var item = Documents.FirstOrDefault(d
+            => d.GetDocumentId() == documentId
+            && d.GetPartitionKey() == partitionKey);
+
+        if (item is null)
+        {
+            throw new CosmosException(
+                $"Document not found. " +
+                $"Id: {documentId}. " +
+                $"PartitionKey: {partitionKey}",
+                HttpStatusCode.NotFound,
+                0,
+                string.Empty,
+                0);
+        }
+
+        return item;
+    }
+
+    private void RemoveAll(Func<T, bool> predicate)
+    {
+        var items = Documents.Where(predicate).ToArray();
+        foreach (var item in items)
+        {
+            Documents.Remove(item);
+        }
+    }
+}

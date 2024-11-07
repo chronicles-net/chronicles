@@ -2,15 +2,15 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Testing;
 
-public class FakeCosmosTransaction<T> : IDocumentTransaction<T>
+public class FakeDocumentTransaction<T> : IDocumentTransaction<T>
     where T : IDocument
 {
-    private readonly FakeCosmosWriter<T> writer;
+    private readonly FakeDocumentWriter<T> writer;
     private readonly string partitionKey;
-    private readonly List<Func<FakeCosmosWriter<T>, Task<T?>>> operations = new();
+    private readonly List<Func<FakeDocumentWriter<T>, Task<T?>>> operations = new();
 
-    public FakeCosmosTransaction(
-        FakeCosmosWriter<T> writer,
+    public FakeDocumentTransaction(
+        FakeDocumentWriter<T> writer,
         string partitionKey)
     {
         this.writer = writer;
