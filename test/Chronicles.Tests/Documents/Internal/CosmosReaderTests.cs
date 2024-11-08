@@ -9,7 +9,6 @@ namespace Chronicles.Tests.Documents.Internal;
 
 public class CosmosReaderTests
 {
-    private readonly ICosmosSerializer serializer;
     private readonly IQueryable<TestDocument> queryable;
     private readonly QueryDefinition query;
     private readonly ItemResponse<TestDocument> itemResponse;
@@ -57,15 +56,10 @@ public class CosmosReaderTests
             .GetItemLinqQueryable<TestDocument>(default, default, default, default)
             .ReturnsForAnyArgs(c => queryable);
 
-        serializer = Substitute.For<ICosmosSerializer>();
-
         containerProvider = Substitute.For<ICosmosContainerProvider>();
         containerProvider
             .GetContainer<TestDocument>(default)
             .ReturnsForAnyArgs(container);
-        containerProvider
-            .GetSerializer(default)
-            .ReturnsForAnyArgs(serializer);
 
         linqQuery = Substitute.For<ICosmosLinqQuery>();
         linqQuery

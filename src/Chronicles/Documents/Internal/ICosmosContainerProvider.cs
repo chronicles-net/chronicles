@@ -42,12 +42,4 @@ public interface ICosmosContainerProvider
     /// <returns>A cosmos <see cref="Container"/>.</returns>
     Container GetSubscriptionContainer(
         string? storeName = null);
-
-    /// <summary>
-    /// Get the container with a specified name.
-    /// </summary>
-    /// <param name="storeName">(Optional) Name of the configured document store.</param>
-    /// <returns>A cosmos <see cref="ICosmosSerializer"/>.</returns>
-    ICosmosSerializer GetSerializer(
-        string? storeName = null);
 }

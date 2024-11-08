@@ -23,54 +23,51 @@ public class CosmosWriter<T> : IDocumentWriter<T>
                 .CreateTransactionalBatch(
                     new PartitionKey(partitionKey)));
 
-    public Task<T> CreateAsync(
-        T document,
+    public Task<TIn> CreateAsync<TIn>(
+        TIn document,
         ItemRequestOptions? options,
         string? storeName = null,
         CancellationToken cancellationToken = default)
+        where TIn : T
         => containers
             .GetContainer<T>(storeName)
-            .CreateItemAsync<object>(
+            .CreateItemAsync(
                 document,
                 new PartitionKey(document.GetPartitionKey()),
                 options,
                 cancellationToken)
-            .GetItemOrDefaultAsync(
-                containers.GetSerializer(storeName),
-                document);
+            .GetItemOrDefaultAsync(document);
 
-    public Task<T> WriteAsync(
-        T document,
+    public Task<TIn> WriteAsync<TIn>(
+        TIn document,
         ItemRequestOptions? options,
         string? storeName = null,
         CancellationToken cancellationToken = default)
+        where TIn : T
         => containers
             .GetContainer<T>(storeName)
-            .UpsertItemAsync<object>(
+            .UpsertItemAsync(
                 document,
                 new PartitionKey(document.GetPartitionKey()),
                 options,
                 cancellationToken)
-            .GetItemOrDefaultAsync(
-                containers.GetSerializer(storeName),
-                document);
+            .GetItemOrDefaultAsync(document);
 
-    public Task<T> ReplaceAsync(
-        T document,
+    public Task<TIn> ReplaceAsync<TIn>(
+        TIn document,
         ItemRequestOptions? options,
         string? storeName = null,
         CancellationToken cancellationToken = default)
+        where TIn : T
         => containers
             .GetContainer<T>(storeName)
-            .ReplaceItemAsync<object>(
+            .ReplaceItemAsync(
                 document,
                 document.GetDocumentId(),
                 new PartitionKey(document.GetPartitionKey()),
                 options,
                 cancellationToken)
-            .GetItemOrDefaultAsync(
-                containers.GetSerializer(storeName),
-                document);
+            .GetItemOrDefaultAsync(document);
 
     public Task DeleteAsync(
         string documentId,
@@ -80,7 +77,7 @@ public class CosmosWriter<T> : IDocumentWriter<T>
         CancellationToken cancellationToken = default)
         => containers
             .GetContainer<T>(storeName)
-            .DeleteItemAsync<object>(
+            .DeleteItemAsync<T>(
                 documentId,
                 new PartitionKey(partitionKey),
                 options,

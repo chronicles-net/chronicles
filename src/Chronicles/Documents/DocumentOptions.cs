@@ -53,18 +53,20 @@ public class DocumentOptions
     /// <summary>
     /// Gets or sets the options for controlling the json serializer.
     /// </summary>
-    public JsonSerializerOptions SerializerOptions { get; set; }
-        = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Converters = { new JsonStringEnumConverter() },
-        };
+    public JsonSerializerOptions SerializerOptions => CosmosClient.UseSystemTextJsonSerializerWithOptions;
 
     public string DatabaseName { get; set; } = "Chronicles";
 
     public string SubscriptionContainerName { get; set; } = "subscriptions";
 
-    public CosmosClientOptions CosmosClient { get; } = new();
+    public CosmosClientOptions CosmosClient { get; } = new()
+    {
+        UseSystemTextJsonSerializerWithOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            Converters = { new JsonStringEnumConverter() },
+        },
+    };
 
     public InitializationOptions Initialization { get; } = new();
 

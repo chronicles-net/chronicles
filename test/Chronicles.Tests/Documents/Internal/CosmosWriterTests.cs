@@ -14,7 +14,6 @@ public class CosmosWriterTests
     private readonly TestDocument document;
     private readonly Container container;
     private readonly ICosmosContainerProvider containerProvider;
-    private readonly ICosmosSerializer serializer;
     private readonly CosmosWriter<TestDocument> sut;
 
     public CosmosWriterTests()
@@ -24,18 +23,10 @@ public class CosmosWriterTests
 
         container = Substitute.For<Container>();
 
-        serializer = Substitute.For<ICosmosSerializer>();
-        serializer
-            .FromString<TestDocument>(default)
-            .ReturnsForAnyArgs(new Fixture().Create<TestDocument>());
-
         containerProvider = Substitute.For<ICosmosContainerProvider>();
         containerProvider
             .GetContainer<TestDocument>(default)
             .ReturnsForAnyArgs(container);
-        containerProvider
-            .GetSerializer(default)
-            .ReturnsForAnyArgs(serializer);
 
         var response = Substitute.For<ItemResponse<object>>();
         response.Resource.Returns(fixture.Create<string>());
@@ -100,7 +91,7 @@ public class CosmosWriterTests
             .GetContainer<TestDocument>(storeName);
         await container
             .Received(1)
-            .UpsertItemAsync<object>(
+            .UpsertItemAsync(
                 document,
                 new PartitionKey(document.Pk),
                 options,
@@ -120,7 +111,7 @@ public class CosmosWriterTests
             .GetContainer<TestDocument>(storeName);
         _ = container
             .Received(1)
-            .ReplaceItemAsync<object>(
+            .ReplaceItemAsync(
                 document,
                 document.Id,
                 new PartitionKey(document.Pk),
@@ -141,7 +132,7 @@ public class CosmosWriterTests
             .GetContainer<TestDocument>(storeName);
         _ = container
             .Received(1)
-            .DeleteItemAsync<object>(
+            .DeleteItemAsync<TestDocument>(
                 document.Id,
                 new PartitionKey(document.Pk),
                 options,
@@ -244,7 +235,7 @@ public class CosmosWriterTests
             .GetContainer<TestDocument>(storeName);
         _ = container
             .Received(1)
-            .ReplaceItemAsync<object>(
+            .ReplaceItemAsync(
                 document,
                 document.Id,
                 new PartitionKey(document.Pk),
@@ -343,7 +334,7 @@ public class CosmosWriterTests
             .GetContainer<TestDocument>(storeName);
         _ = container
             .Received(1)
-            .ReplaceItemAsync<object>(
+            .ReplaceItemAsync(
                 document,
                 document.Id,
                 new PartitionKey(document.Pk),
@@ -376,7 +367,7 @@ public class CosmosWriterTests
             .GetContainer<TestDocument>(storeName);
         _ = container
             .Received(1)
-            .CreateItemAsync<object>(
+            .CreateItemAsync(
                 defaultDocument,
                 new PartitionKey(defaultDocument.Pk),
                 Arg.Any<ItemRequestOptions>(),

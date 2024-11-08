@@ -105,8 +105,8 @@ public sealed class FakeDocumentStore<T> :
                 storeName,
                 cancellationToken);
 
-    Task<T> IDocumentWriter<T>.CreateAsync(
-        T document,
+    Task<TIn> IDocumentWriter<T>.CreateAsync<TIn>(
+        TIn document,
         ItemRequestOptions? options,
         string? storeName,
         CancellationToken cancellationToken)
@@ -117,8 +117,8 @@ public sealed class FakeDocumentStore<T> :
                 storeName,
                 cancellationToken);
 
-    Task<T> IDocumentWriter<T>.WriteAsync(
-        T document,
+    Task<TIn> IDocumentWriter<T>.WriteAsync<TIn>(
+        TIn document,
         ItemRequestOptions? options,
         string? storeName,
         CancellationToken cancellationToken)
@@ -129,8 +129,8 @@ public sealed class FakeDocumentStore<T> :
                 storeName,
                 cancellationToken);
 
-    Task<T> IDocumentWriter<T>.ReplaceAsync(
-        T document,
+    Task<TIn> IDocumentWriter<T>.ReplaceAsync<TIn>(
+        TIn document,
         ItemRequestOptions? options,
         string? storeName,
         CancellationToken cancellationToken)

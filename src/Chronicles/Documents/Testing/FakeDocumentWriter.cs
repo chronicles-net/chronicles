@@ -36,11 +36,12 @@ public class FakeDocumentWriter<T> :
         string? storeName = null)
         => new FakeDocumentTransaction<T>(this, partitionKey);
 
-    public virtual Task<T> CreateAsync(
-        T document,
+    public virtual Task<TIn> CreateAsync<TIn>(
+        TIn document,
         ItemRequestOptions? options,
         string? storeName = null,
         CancellationToken cancellationToken = default)
+        where TIn : T
     {
         GuardNotExists(document);
 
@@ -49,11 +50,12 @@ public class FakeDocumentWriter<T> :
         return Task.FromResult(newDocument);
     }
 
-    public virtual Task<T> WriteAsync(
-        T document,
+    public virtual Task<TIn> WriteAsync<TIn>(
+        TIn document,
         ItemRequestOptions? options,
         string? storeName = null,
         CancellationToken cancellationToken = default)
+        where TIn : T
     {
         RemoveAll(d
             => d.GetDocumentId() == document.GetDocumentId()
@@ -65,11 +67,12 @@ public class FakeDocumentWriter<T> :
         return Task.FromResult(newDocument);
     }
 
-    public virtual Task<T> ReplaceAsync(
-        T document,
+    public virtual Task<TIn> ReplaceAsync<TIn>(
+        TIn document,
         ItemRequestOptions? options,
         string? storeName = null,
         CancellationToken cancellationToken = default)
+        where TIn : T
     {
         GuardExists(document);
 

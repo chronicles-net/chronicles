@@ -31,16 +31,18 @@ public interface IDocumentWriter<T>
     /// When <see cref="ItemRequestOptions.EnableContentResponseOnWrite"/> is set to <c>false</c>,
     /// the document returned is <paramref name="document"/>.
     /// </remarks>
+    /// <typeparam name="TIn">The type of document to be created.</typeparam>
     /// <param name="document">The document to be created.</param>
     /// <param name="options">Options for the item request.</param>
     /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> containing the created <typeparamref name="T"/> document.</returns>
-    Task<T> CreateAsync(
-        T document,
+    Task<TIn> CreateAsync<TIn>(
+        TIn document,
         ItemRequestOptions? options,
         string? storeName = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default)
+        where TIn : T;
 
     /// <summary>
     /// Writes a <typeparamref name="T"/> document to Cosmos, using upsert behavior.
@@ -49,16 +51,18 @@ public interface IDocumentWriter<T>
     /// When <see cref="ItemRequestOptions.EnableContentResponseOnWrite"/> is set to <c>false</c>,
     /// the document returned is <paramref name="document"/>.
     /// </remarks>
+    /// <typeparam name="TIn">The type of document to be written.</typeparam>
     /// <param name="document">The document to be written.</param>
     /// <param name="options">Options for the item request.</param>
     /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> containing the written <typeparamref name="T"/> document.</returns>
-    Task<T> WriteAsync(
-        T document,
+    Task<TIn> WriteAsync<TIn>(
+        TIn document,
         ItemRequestOptions? options,
         string? storeName = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default)
+        where TIn : T;
 
     /// <summary>
     /// Replaces a <typeparamref name="T"/> document in Cosmos.
@@ -79,16 +83,18 @@ public interface IDocumentWriter<T>
     /// the document returned is <paramref name="document"/>.
     /// </para>
     /// </remarks>
+    /// <typeparam name="TIn">The type of document to be replaced.</typeparam>
     /// <param name="document">The document to be created.</param>
     /// <param name="options">Options for the item request.</param>
     /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
-    Task<T> ReplaceAsync(
-        T document,
+    Task<TIn> ReplaceAsync<TIn>(
+        TIn document,
         ItemRequestOptions? options,
         string? storeName = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default)
+        where TIn : T;
 
     /// <summary>
     /// Deletes the specified <typeparamref name="T"/> document from Cosmos.

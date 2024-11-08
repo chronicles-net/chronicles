@@ -14,11 +14,4 @@ public interface ICosmosClientProvider
     /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <returns>A <see cref="CosmosClient"/> instance.</returns>
     CosmosClient GetClient(string? storeName = null);
-
-    /// <summary>
-    /// Get the default <see cref="ICosmosSerializer"/> instance.
-    /// </summary>
-    /// <param name="storeName">(Optional) Name of the configured document store.</param>
-    /// <returns>A <see cref="ICosmosSerializer"/> instance.</returns>
-    ICosmosSerializer GetSerializer(string? storeName = null);
 }

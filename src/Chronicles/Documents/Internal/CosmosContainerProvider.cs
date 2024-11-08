@@ -56,8 +56,4 @@ public class CosmosContainerProvider : ICosmosContainerProvider
         => GetContainer(
             options.Get(storeName).SubscriptionContainerName,
             storeName);
-
-    public ICosmosSerializer GetSerializer(
-        string? storeName = default)
-        => clientProvider.GetSerializer(storeName);
 }

@@ -7,7 +7,6 @@ namespace Chronicles.Documents.Internal;
 public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
 {
     private readonly ConcurrentDictionary<string, CosmosClient> clients = new();
-    private readonly ConcurrentDictionary<string, CosmosSerializer> serializers = new();
     private readonly IOptionsMonitor<DocumentOptions> documentOptions;
 
     public CosmosClientProvider(
@@ -21,10 +20,6 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
                 storeName ?? Options.DefaultName,
                 _ => CreateClient(storeName));
 
-    public ICosmosSerializer GetSerializer(
-        string? storeName = null)
-        => GetSerializer(storeName, null);
-
     public void Dispose()
     {
         foreach (var client in clients.Values)
@@ -37,9 +32,6 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
         string? storeName = null)
     {
         var options = GetOptions(storeName);
-        options.CosmosClient.Serializer = new CosmosSerializerAdapter(
-            GetSerializer(storeName, options));
-
         if (options.AllowAnyServerCertificate)
         {
             options.CosmosClient.ServerCertificateCustomValidationCallback = (_, _, _) => true;
@@ -55,15 +47,6 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
                 $"AccountKey={options.AccountKey}",
                 options.CosmosClient);
     }
-
-    private CosmosSerializer GetSerializer(
-        string? storeName,
-        DocumentOptions? options)
-        => serializers
-            .GetOrAdd(
-                storeName ?? Options.DefaultName,
-                _ => new CosmosSerializer(
-                    (options ?? GetOptions(storeName)).SerializerOptions));
 
     private DocumentOptions GetOptions(string? storeName)
     {

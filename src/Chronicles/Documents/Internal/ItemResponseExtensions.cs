@@ -12,26 +12,15 @@ public static class ItemResponseExtensions
     }
 
     public static T GetItemOrDefault<T>(
-        this ItemResponse<object> response,
-        ICosmosSerializer serializer,
+        this ItemResponse<T> response,
         T defaultValue)
         where T : IDocument
-    {
-        if (response.Resource?.ToString() is { } json
-            && serializer.FromString<T>(json) is { } obj)
-        {
-            return obj;
-        }
-
-        return defaultValue;
-    }
+        => response.Resource ?? defaultValue;
 
     public static async Task<T> GetItemOrDefaultAsync<T>(
-        this Task<ItemResponse<object>> responseTask,
-        ICosmosSerializer serializer,
+        this Task<ItemResponse<T>> responseTask,
         T defaultValue)
         where T : IDocument
         => (await responseTask.ConfigureAwait(false)).GetItemOrDefault(
-            serializer,
             defaultValue);
 }

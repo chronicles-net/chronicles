@@ -22,13 +22,7 @@ public class CosmosReader<T> : IDocumentReader<T>
             query.Invoke(
                 containers
                     .GetContainer<T>(storeName)
-                    .GetItemLinqQueryable<T>(
-                        linqSerializerOptions: new()
-                        {
-                            PropertyNamingPolicy = containers
-                                .GetSerializer(storeName)
-                                .PropertyNamingPolicy,
-                        })));
+                    .GetItemLinqQueryable<T>()));
 
     public async Task<TResult> ReadAsync<TResult>(
         string documentId,
