@@ -40,6 +40,11 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
         options.CosmosClient.Serializer = new CosmosSerializerAdapter(
             GetSerializer(storeName, options));
 
+        if (options.AllowAnyServerCertificate)
+        {
+            options.CosmosClient.ServerCertificateCustomValidationCallback = (_, _, _) => true;
+        }
+
         return options.Credential is not null
             ? new CosmosClient(
                 options.AccountEndpoint,

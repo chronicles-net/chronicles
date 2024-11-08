@@ -8,9 +8,9 @@ public static class ServiceCollectionExtensions
 {
     public static ChroniclesBuilder AddChronicles(
         this IServiceCollection services,
-        Action<DocumentStoreBuilder> builder)
+        Action<DocumentStoreBuilder>? builder = null)
     {
-        builder.Invoke(new(DocumentOptions.DefaultStoreName, services));
+        builder?.Invoke(new(DocumentOptions.DefaultStoreName, services));
         services.AddSingleton<IDocumentStore>(s => new DocumentStore(
             DocumentOptions.DefaultStoreName,
             s.GetRequiredService<IOptionsMonitor<DocumentOptions>>()));

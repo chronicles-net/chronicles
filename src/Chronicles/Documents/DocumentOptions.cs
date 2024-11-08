@@ -120,6 +120,8 @@ public class DocumentOptions
         AccountEndpoint = endpoint;
         AccountKey = EmulatorAuthKey;
         AllowAnyServerCertificate = allowAnyServerCertificate;
+        CosmosClient.ConnectionMode = ConnectionMode.Gateway;
+        CosmosClient.LimitToEndpoint = true;
 
         return this;
     }

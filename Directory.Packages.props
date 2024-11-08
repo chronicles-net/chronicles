@@ -6,10 +6,10 @@
     <PackageVersion Include="AsyncEnumerator" Version="4.0.2" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.41.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.45.0" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     <PackageVersion Include="Atc.Test" Version="1.0.89" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" PrivateAssets="All" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
