@@ -79,7 +79,7 @@ jobs:
           reports: "**/coverage.cobertura.xml"
           targetdir: CoverageReports
           historydir: CoverageHistory
-          reporttypes: MarkdownSummaryGithub;MarkdownDeltaSummary;HtmlInline
+          reporttypes: MarkdownSummaryGithub;MarkdownDeltaSummary
           filefilters: -*.g.cs
           tag: '${{ github.run_number }}_${{ github.run_id }}'
 
@@ -92,12 +92,6 @@ jobs:
         with:
           name: CoverageReports
           path: CoverageReports
-
-      - name: 📬 Upload coverage history
-        uses: actions/upload-artifact@v4
-        with:
-          name: CoverageHistory
-          path: CoverageHistory
 
       - name: 🛠️ Upload library to GitHub Package Repository
         run: dotnet nuget push **/Chronicles.*.nupkg -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/chronicles-net/index.json --skip-duplicate --no-symbols
