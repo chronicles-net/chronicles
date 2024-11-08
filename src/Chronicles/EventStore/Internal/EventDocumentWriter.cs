@@ -10,59 +10,6 @@ internal class EventDocumentWriter(
     IEventDocumentBatchProducer batchProducer)
     : IEventDocumentWriter
 {
-    ////public async Task<StreamWriteResult> WriteStreamAsync(
-    ////    StreamId streamId,
-    ////    IImmutableList<object> events,
-    ////    StreamWriteOptions? options = default,
-    ////    string? storeName = null,
-    ////    CancellationToken cancellationToken = default)
-    ////{
-    ////    // if stream metadata is not provided, get it from the store
-    ////    var metadata = options?.Metadata
-    ////                ?? await metadataReader
-    ////                    .GetAsync(streamId, storeName, cancellationToken)
-    ////                    .ConfigureAwait(false);
-
-    ////    metadata.EnsureSuccess(options);
-
-    ////    var retries = (options?.RequiredVersion ?? StreamVersion.Any) == StreamVersion.Any
-    ////        ? 5
-    ////        : 1;
-    ////    do
-    ////    {
-    ////        try
-    ////        {
-    ////            return await
-    ////                WriteAsync(
-    ////                    metadata,
-    ////                    events,
-    ////                    options,
-    ////                    storeName: storeName,
-    ////                    cancellationToken)
-    ////                .ConfigureAwait(false);
-    ////        }
-    ////        catch (StreamConflictException)
-    ////        {
-    ////            retries--;
-    ////            if (retries <= 0)
-    ////            {
-    ////                throw;
-    ////            }
-
-    ////            // Get the latest metadata and retry.
-    ////            // The current stream position (version) is important
-    ////            // to avoid insert conflict in stream.
-    ////            metadata = await metadataReader
-    ////                .GetAsync(streamId, storeName, cancellationToken)
-    ////                .ConfigureAwait(false);
-
-    ////            // Ensure we are honoring any write constrains we might have.
-    ////            metadata.EnsureSuccess(options);
-    ////        }
-    ////    }
-    ////    while (true);
-    ////}
-
     public async Task<StreamWriteResult> WriteStreamAsync(
         StreamMetadata metadata,
         IImmutableList<object> events,

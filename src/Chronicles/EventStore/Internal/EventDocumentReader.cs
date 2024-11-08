@@ -8,7 +8,7 @@ internal class EventDocumentReader(
     IDocumentReader<EventDocument> streamReader)
     : IEventDocumentReader
 {
-    public virtual async IAsyncEnumerable<StreamEvent> ReadAsync(
+    public async IAsyncEnumerable<StreamEvent> ReadAsync(
         StreamMetadata metadata,
         StreamReadOptions? options,
         string? storeName,
@@ -37,7 +37,7 @@ internal class EventDocumentReader(
         }
     }
 
-    protected virtual QueryDefinition GetQueryDefinition(
+    protected QueryDefinition GetQueryDefinition(
         StreamReadOptions? options)
         => streamReader.CreateQuery(
             query =>
@@ -54,11 +54,10 @@ internal class EventDocumentReader(
 
                 if (options?.IncludeEvents is { } events)
                 {
-                    // We need to convert it to string array as the linq provider
-                    // would otherwise see it as an object with a Value property.
-                    var stringEvents = events.Select(e => e.Value).ToArray();
-
-                    query = query.Where(e => stringEvents.Contains(e.Properties.Name));
+                    if (events.Count > 0)
+                    {
+                        query = query.Where(e => events.Contains(e.Properties.Name));
+                    }
                 }
 
                 return query.OrderBy(e => e.Properties.Version);

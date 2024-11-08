@@ -2,19 +2,11 @@ using Chronicles.Documents;
 
 namespace Chronicles.EventStore.Internal;
 
-internal class CheckpointWriter : ICheckpointWriter
+internal class CheckpointWriter(
+    TimeProvider dateTimeProvider,
+    IDocumentWriter<CheckpointDocument<object?>> writer)
+    : ICheckpointWriter
 {
-    private readonly TimeProvider dateTimeProvider;
-    private readonly IDocumentWriter<CheckpointDocument<object?>> writer;
-
-    public CheckpointWriter(
-        TimeProvider dateTimeProvider,
-        IDocumentWriter<CheckpointDocument<object?>> writer)
-    {
-        this.dateTimeProvider = dateTimeProvider;
-        this.writer = writer;
-    }
-
     public async Task WriteAsync(
         string name,
         StreamId streamId,

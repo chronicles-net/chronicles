@@ -7,10 +7,6 @@
     <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Cqrs\Testing\" />
-  </ItemGroup>
-
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>

@@ -3,9 +3,6 @@ namespace Chronicles.EventStore.Internal;
 internal class StreamEventConverter(
     IEventCatalog eventCatalog)
 {
-    public virtual EventName GetName(Type type)
-        => eventCatalog.GetEventName(type);
-
     public virtual StreamEvent Convert(
         EventConverterContext context)
     {

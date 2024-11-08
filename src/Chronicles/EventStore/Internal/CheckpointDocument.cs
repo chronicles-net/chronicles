@@ -12,9 +12,7 @@ internal record CheckpointDocument<TState>(
     TState State)
     : Checkpoint<TState>(Name, StreamId, StreamVersion, Timestamp, State), IDocument
 {
-    string IDocument.GetDocumentId()
-        => Name;
+    string IDocument.GetDocumentId() => Id;
 
-    string IDocument.GetPartitionKey()
-        => (string)StreamId;
+    string IDocument.GetPartitionKey() => Pk;
 }
