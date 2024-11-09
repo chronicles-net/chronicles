@@ -26,7 +26,7 @@ internal class EventStreamProcessor(
                 var count = group.Count();
                 foreach (var evt in group)
                 {
-                    await processor.ConsumeAsync(evt, context, count-- > 1, cancellationToken);
+                    await processor.ConsumeAsync(evt, context, --count == 0, cancellationToken);
                 }
             }
         }
