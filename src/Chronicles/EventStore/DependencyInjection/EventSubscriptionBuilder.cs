@@ -1,8 +1,8 @@
-using Chronicles.EventStore;
 using Chronicles.EventStore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Chronicles.EventStore.DependencyInjection;
 
 public class EventSubscriptionBuilder(
     string name,

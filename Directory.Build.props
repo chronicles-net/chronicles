@@ -2,35 +2,39 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- Solution wide properties -->
-  <PropertyGroup Label="Assembly Naming">
+   <PropertyGroup Label="Assembly Naming">
     <Company>Chronicles</Company>
     <Authors>Chronicles</Authors>
     <NeutralLanguage>en</NeutralLanguage>
     <DefaultLanguage>en-US</DefaultLanguage>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Compile settings">
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>1573,1591,1712,CA1014</NoWarn>
-
-    <!-- Used by code coverage -->
-    <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
+    <NoWarn>NU1605;NU5104</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Label="Analyzer settings">
-    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-		<EnableNETAnalyzers>true</EnableNETAnalyzers>
-		<AnalysisLevel>latest</AnalysisLevel>
-		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisMode>all</AnalysisMode>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <!-- Treat warnings as errors are always on when building in release -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!--
+  By default builds are non-deterministic, meaning there is no guarantee that building the same code twice(on the same or different machines)
+  will produce exactly the same binary output. Deterministic builds are important as they enable verification that the resulting
+  binary was built from the specified source and provides traceability.
+
+  To enable deterministic builds a property should be set to through: ContinuousIntegrationBuild.
+
+  Important: This property should not be enabled during local development as the debugger won't be able to find the local source files.
+  -->
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
 </Project>

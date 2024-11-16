@@ -5,7 +5,7 @@ namespace Chronicles.Cqrs;
 public enum CommandConsistency
 {
     /// <summary>
-    /// Command events are committed to the end of the stream.
+    /// Command events are appended to the end of the stream.
     /// </summary>
     Write,
 

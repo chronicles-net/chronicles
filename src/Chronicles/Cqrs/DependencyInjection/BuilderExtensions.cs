@@ -1,16 +1,17 @@
 using Chronicles.Cqrs.Internal;
+using Chronicles.EventStore.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Chronicles.Cqrs.DependencyInjection;
 
 public static class BuilderExtensions
 {
-    public static EventStoreBuilder UseCommands(
+    public static EventStoreBuilder WithCqrs(
         this EventStoreBuilder eventStoreBuilder,
-        Action<CommandBuilder> builder)
+        Action<CqrsBuilder> builder)
     {
         builder.Invoke(
-            new CommandBuilder(
+            new CqrsBuilder(
                 eventStoreBuilder.StoreName,
                 eventStoreBuilder.Services));
 

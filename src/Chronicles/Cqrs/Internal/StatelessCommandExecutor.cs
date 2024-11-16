@@ -9,9 +9,8 @@ internal class StatelessCommandExecutor<TCommand, THandler>(
     where THandler : IStatelessCommandHandler<TCommand>
 {
     public async ValueTask ExecuteAsync(
-        TCommand command,
         IAsyncEnumerable<StreamEvent> events,
         ICommandContext<TCommand> context,
         CancellationToken cancellationToken)
-        => await handler.ExecuteAsync(command, context, cancellationToken);
+        => await handler.ExecuteAsync(context, cancellationToken);
 }

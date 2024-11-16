@@ -22,7 +22,7 @@
  
   <PropertyGroup Label="Build instructions">
     <OutputType>Library</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <!-- Creates a regular package and a symbols package -->
     <IncludeSymbols>true</IncludeSymbols>
     <!-- Creates symbol package in the new .snupkg format -->
@@ -40,23 +40,19 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
-  <!--
-  By default builds are non-deterministic, meaning there is no guarantee that building the same code twice(on the same or different machines)
-  will produce exactly the same binary output. Deterministic builds are important as they enable verification that the resulting
-  binary was built from the specified source and provides traceability.
-
-  To enable deterministic builds a property should be set to through: ContinuousIntegrationBuild.
-
-  Important: This property should not be enabled during local development as the debugger won't be able to find the local source files.
-  -->
-  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  <!-- <PropertyGroup Label="configurations">
+    <Configurations>Debug;Release</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
-    <PackageReference Include="SecurityCodeScan.VS2019" PrivateAssets="All" />
-    <PackageReference Include="StyleCop.Analyzers" PrivateAssets="All" />
-  </ItemGroup>
-
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DefineConstants>TRACE;AOT;</DefineConstants>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>TRACE;AOT;</DefineConstants>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+   -->
 </Project>

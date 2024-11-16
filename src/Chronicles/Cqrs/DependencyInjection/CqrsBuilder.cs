@@ -1,16 +1,16 @@
-using Chronicles.Cqrs;
 using Chronicles.Cqrs.Internal;
 using Chronicles.EventStore;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Chronicles.Cqrs.DependencyInjection;
 
-public class CommandBuilder(
+public class CqrsBuilder(
     string storeName,
     IServiceCollection serviceCollection)
 {
     public IServiceCollection Services { get; } = serviceCollection;
 
-    public CommandBuilder MapCommand<TCommand, THandler>(
+    public CqrsBuilder AddCommand<TCommand, THandler>(
         CommandOptions? options = null)
         where TCommand : class
         where THandler : class, IStatelessCommandHandler<TCommand>
@@ -29,7 +29,7 @@ public class CommandBuilder(
         return this;
     }
 
-    public CommandBuilder MapCommand<TCommand, THandler, TState>(
+    public CqrsBuilder AddCommand<TCommand, THandler, TState>(
         CommandOptions? options = null)
         where TCommand : class
         where TState : class

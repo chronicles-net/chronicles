@@ -31,7 +31,7 @@ public interface ICommandContext<TCommand>
     ICommandContext<TCommand> AddEvent(object evt);
 
     /// <summary>
-    /// Occurs after the events added by <see cref="AddEvent(object)"/> has been committed to the stream.
+    /// Triggered after the events added by <see cref="AddEvent(object)"/> have been committed to the stream.
     /// </summary>
 #pragma warning disable CA1003 // Use generic event handler instances
     event CommandCompletedAsync<TCommand>? Completed;

@@ -1,6 +1,6 @@
-﻿using Chronicles.EventStore;
+﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Chronicles.EventStore.DependencyInjection;
 
 public class EventProcessorBuilder(
     string name,

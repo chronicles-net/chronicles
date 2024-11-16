@@ -5,7 +5,7 @@ namespace Chronicles.Documents;
 
 public class InitializationOptions
 {
-    private readonly List<IContainerInitializer> initializers = new();
+    private readonly List<IContainerInitializer> initializers = [];
 
     public ThroughputProperties? Database { get; private set; }
 

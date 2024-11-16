@@ -15,6 +15,7 @@ public class CommandOptions
     /// <summary>
     /// Behavior when a stream conflict occurs.
     /// </summary>
+    /// <remarks>Default conflict behavior is <seealso cref="CommandConflictBehavior.Fail"/>.</remarks>
     public CommandConflictBehavior ConflictBehavior { get; set; } = CommandConflictBehavior.Fail;
 
     /// <summary>

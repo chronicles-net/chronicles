@@ -1,17 +1,18 @@
-using Chronicles.EventStore;
+using Chronicles.Documents.DependencyInjection;
 using Chronicles.EventStore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Chronicles.EventStore.DependencyInjection;
 
 public static class EventStoreServiceCollectionExtensions
 {
-    public static EventStoreBuilder AddEventStore(
+    public static EventStoreBuilder WithEventStore(
         this DocumentStoreBuilder documentBuilder,
         Action<EventStoreBuilder> builder)
-        => AddEventStore(documentBuilder, _ => { }, builder);
+        => documentBuilder.WithEventStore(_ => { }, builder);
 
-    public static EventStoreBuilder AddEventStore(
+    public static EventStoreBuilder WithEventStore(
         this DocumentStoreBuilder documentBuilder,
         Action<EventStoreOptions> configure,
         Action<EventStoreBuilder> builder)

@@ -108,7 +108,6 @@ internal class CommandProcessor<TCommand>(
 
         await executor
             .ExecuteAsync(
-                command,
                 eventReader,
                 context,
                 cancellationToken)

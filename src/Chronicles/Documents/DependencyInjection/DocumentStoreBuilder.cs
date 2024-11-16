@@ -1,7 +1,7 @@
-using Chronicles.Documents;
 using Chronicles.Documents.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Chronicles.Documents.DependencyInjection;
 
 public class DocumentStoreBuilder
 {

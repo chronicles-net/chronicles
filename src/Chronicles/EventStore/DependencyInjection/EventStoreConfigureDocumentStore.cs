@@ -1,10 +1,9 @@
 using Chronicles.Documents;
-using Chronicles.EventStore;
 using Chronicles.EventStore.Internal;
 using Chronicles.EventStore.Internal.Converters;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Chronicles.EventStore.DependencyInjection;
 
 /// <summary>
 /// Responsible for configuring the underlying <see cref="DocumentOptions"/> with
@@ -39,12 +38,12 @@ internal class EventStoreConfigureDocumentStore
             return;
         }
 
-        options.AddDocumentType(typeof(Checkpoint), eventStore.StreamIndexContainer);
+        options.AddDocumentType<Checkpoint>(eventStore.StreamIndexContainer);
         options.AddDocumentType(typeof(CheckpointDocument<>), eventStore.StreamIndexContainer);
-        options.AddDocumentType(typeof(EventDocument), eventStore.EventStoreContainer);
-        options.AddDocumentType(typeof(EventDocumentBase), eventStore.EventStoreContainer);
-        options.AddDocumentType(typeof(StreamMetadataDocument), eventStore.EventStoreContainer);
-        options.AddDocumentType(typeof(StreamEvent), eventStore.EventStoreContainer);
+        options.AddDocumentType<EventDocument>(eventStore.EventStoreContainer);
+        options.AddDocumentType<EventDocumentBase>(eventStore.EventStoreContainer);
+        options.AddDocumentType<StreamMetadataDocument>(eventStore.EventStoreContainer);
+        options.AddDocumentType<StreamEvent>(eventStore.EventStoreContainer);
 
         options.SerializerOptions.Converters.Add(new StreamVersionJsonConverter());
         options.SerializerOptions.Converters.Add(new StreamIdJsonConverter());

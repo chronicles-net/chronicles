@@ -1,9 +1,8 @@
 using Chronicles.Documents;
-using Chronicles.EventStore;
 using Chronicles.EventStore.Internal;
 using Microsoft.Azure.Cosmos;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Chronicles.EventStore.DependencyInjection;
 
 public static class InitializationOptionsExtensions
 {
@@ -24,12 +23,11 @@ public static class InitializationOptionsExtensions
                     p.PartitionKeyPath = "/pk";
                     p.IndexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/*" });
                     p.IndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/data/*" });
-                    p.IndexingPolicy.CompositeIndexes.Add(new(
-                        new[]
+                    p.IndexingPolicy.CompositeIndexes.Add([.. new[]
                         {
                           new CompositePath { Path = "/pk", Order = CompositePathSortOrder.Ascending },
                           new CompositePath { Path = "/properties/version", Order = CompositePathSortOrder.Ascending },
-                        }.ToList()));
+                        }.ToList()]);
                 },
                 eventStoreThroughput)
             .CreateContainer<Checkpoint>(

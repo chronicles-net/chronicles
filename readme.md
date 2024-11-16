@@ -1,2 +1,3 @@
-- Should we strong sign our packages?
-- 
+[![Branch Coverage](.github/coveragereport/badge_branchcoverage.svg?raw=true)](https://github.com/chronicles-net/chronicles/actions/workflows/ci.yml)
+[![Line Coverage](.github/coveragereport/badge_linecoverage.svg?raw=true)](https://github.com/chronicles-net/chronicles/actions/workflows/ci.yml)
+[![Method Coverage](.github/coveragereport/badge_methodcoverage.svg?raw=true)](https://github.com/chronicles-net/chronicles/actions/workflows/ci.yml)

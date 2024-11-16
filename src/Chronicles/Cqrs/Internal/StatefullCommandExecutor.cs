@@ -10,7 +10,6 @@ internal class StatefulCommandExecutor<TCommand, THandler, TState>(
     where TState : class
 {
     public async ValueTask ExecuteAsync(
-        TCommand command,
         IAsyncEnumerable<StreamEvent> events,
         ICommandContext<TCommand> context,
         CancellationToken cancellationToken)

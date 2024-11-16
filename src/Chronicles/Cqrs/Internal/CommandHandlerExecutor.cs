@@ -9,7 +9,6 @@ internal class CommandHandlerExecutor<TCommand, THandler>(
     where THandler : ICommandHandler<TCommand>
 {
     public async ValueTask ExecuteAsync(
-        TCommand command,
         IAsyncEnumerable<StreamEvent> events,
         ICommandContext<TCommand> context,
         CancellationToken cancellationToken)
@@ -18,7 +17,7 @@ internal class CommandHandlerExecutor<TCommand, THandler>(
         {
             handler.ConsumeEvent(
                 evt,
-                command,
+                context.Command,
                 context.State);
         }
 

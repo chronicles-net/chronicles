@@ -1,21 +1,45 @@
-using Chronicles;
 using Chronicles.Documents;
+using Chronicles.Documents.DependencyInjection;
 using Chronicles.Documents.Internal;
-using Chronicles.EventStore;
-using Chronicles.EventStore.DependencyInjection;
 using Chronicles.EventStore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Chronicles.EventStore.DependencyInjection;
 
 public class EventStoreBuilder(
     DocumentStoreBuilder documentBuilder)
 {
     private readonly Dictionary<Type, (string Name, IEventDataConverter Converter)> eventNames = [];
+    private readonly EventStoreOptions options = new();
 
     public IServiceCollection Services => documentBuilder.Services;
 
     public string StoreName => documentBuilder.StoreName;
+
+    /// <summary>
+    ///  Configures the event store to use a specific container name.
+    /// </summary>
+    /// <param name="containerName">Name of the cosmos container.</param>
+    /// <returns>The <see cref="EventStoreBuilder"/> for further configurations.</returns>
+    public EventStoreBuilder WithEventStoreContainerName(
+        string containerName)
+    {
+        options.EventStoreContainer = containerName;
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the event store to use a specific container name for stream indexes and checkpoints.
+    /// </summary>
+    /// <param name="containerName">Name of the container.</param>
+    /// <returns>The <see cref="EventStoreBuilder"/> for further configurations.</returns>
+    public EventStoreBuilder WithStreamIndexContainerName(
+        string containerName)
+    {
+        options.StreamIndexContainer = containerName;
+        return this;
+    }
 
     /// <summary>
     /// Adds an event to the event catalog.
@@ -23,7 +47,7 @@ public class EventStoreBuilder(
     /// <typeparam name="TEvent">Type of event</typeparam>
     /// <param name="name">Name of the event</param>
     /// <returns>The <see cref="EventStoreBuilder"/> for further configurations.</returns>
-    public EventStoreBuilder MapEvent<TEvent>(
+    public EventStoreBuilder AddEvent<TEvent>(
         string name)
         where TEvent : class
     {
@@ -39,7 +63,7 @@ public class EventStoreBuilder(
     /// <param name="name">Unique name of event.</param>
     /// <param name="customConverter">Custom converter.</param>
     /// <returns>The <see cref="EventStoreBuilder"/> for further configurations.</returns>
-    public EventStoreBuilder MapEvent<TEvent>(
+    public EventStoreBuilder AddEvent<TEvent>(
         string name,
         IEventDataConverter customConverter)
         where TEvent : class
@@ -56,7 +80,7 @@ public class EventStoreBuilder(
     /// </summary>
     /// <remarks>
     ///   When using a custom event catalog, events mapped using
-    ///   <see cref="MapEvent{TEvent}(string)"/> or <see cref="MapEvent{TEvent}(string, IEventDataConverter)"/> will not be used.
+    ///   <see cref="AddEvent{TEvent}(string)"/> or <see cref="AddEvent{TEvent}(string, IEventDataConverter)"/> will not be used.
     /// </remarks>
     /// <typeparam name="TCatalog">Event catalog implementation type.</typeparam>
     /// <returns>The <see cref="EventStoreBuilder"/> for further configurations.</returns>
@@ -104,5 +128,11 @@ public class EventStoreBuilder(
     internal void Build()
     {
         Services.TryAddKeyedSingleton<IEventCatalog>(StoreName, new EventCatalog(eventNames));
+        Services.Configure<EventStoreOptions>(StoreName, o =>
+        {
+            o.DocumentStoreName = StoreName;
+            o.EventStoreContainer = options.EventStoreContainer;
+            o.StreamIndexContainer = options.StreamIndexContainer;
+        });
     }
 }

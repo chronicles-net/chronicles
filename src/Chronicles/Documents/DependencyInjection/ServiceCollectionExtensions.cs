@@ -1,8 +1,11 @@
 using Chronicles.Documents;
+using Chronicles.Documents.DependencyInjection;
 using Chronicles.Documents.Internal;
 using Microsoft.Extensions.Options;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public static class ServiceCollectionExtensions
 {

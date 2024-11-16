@@ -7,7 +7,7 @@ public class FakeDocumentTransaction<T> : IDocumentTransaction<T>
 {
     private readonly FakeDocumentWriter<T> writer;
     private readonly string partitionKey;
-    private readonly List<Func<FakeDocumentWriter<T>, Task<T?>>> operations = new();
+    private readonly List<Func<FakeDocumentWriter<T>, Task<T?>>> operations = [];
 
     public FakeDocumentTransaction(
         FakeDocumentWriter<T> writer,

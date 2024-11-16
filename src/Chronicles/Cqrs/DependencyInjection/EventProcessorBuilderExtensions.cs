@@ -1,9 +1,10 @@
-using Chronicles.Cqrs;
 using Chronicles.Cqrs.Internal.EventProcessors;
 using Chronicles.Documents;
 using Chronicles.EventStore;
+using Chronicles.EventStore.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Chronicles.Cqrs.DependencyInjection;
 
 public static class EventProcessorBuilderExtensions
 {

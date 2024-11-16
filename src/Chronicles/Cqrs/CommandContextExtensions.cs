@@ -40,19 +40,19 @@ public static class CommandContextExtensions
     /// <typeparam name="TCommand">Command type.</typeparam>
     /// <typeparam name="TState">State type.</typeparam>
     /// <param name="context">Command context.</param>
-    /// <param name="state">State object.</param>
-    /// <param name="condition">Delegate determining if an event should be added.</param>
-    /// <param name="addEvent">Delegate for adding an event to the <paramref name="context"/> when <paramref name="condition"/> is <c>true</c>.</param>
+    /// <param name="given">State object.</param>
+    /// <param name="when">Delegate determining if an event should be added.</param>
+    /// <param name="then">Delegate for adding an event to the <paramref name="context"/> when <paramref name="when"/> is <c>true</c>.</param>
     /// <returns>A <see cref="ICommandContext{TCommand}"/> that can be used for further command processing.</returns>
     public static ICommandContext<TCommand> AddEventWhen<TCommand, TState>(
         this ICommandContext<TCommand> context,
-        TState state,
-        Func<ICommandContext<TCommand>, TState, bool> condition,
-        Func<ICommandContext<TCommand>, TState, object> addEvent)
+        TState given,
+        Func<ICommandContext<TCommand>, TState, bool> when,
+        Func<ICommandContext<TCommand>, TState, object> then)
         where TCommand : class
         where TState : class
-        => condition(context, state)
-         ? context.AddEvent(addEvent(context, state))
+        => when(context, given)
+         ? context.AddEvent(then(context, given))
          : context;
 
     /// <summary>
@@ -90,26 +90,26 @@ public static class CommandContextExtensions
     /// <typeparam name="TState">State type.</typeparam>
     /// <typeparam name="TResponse">Type of response.</typeparam>
     /// <param name="context">Command context.</param>
-    /// <param name="state">State object.</param>
-    /// <param name="condition">Delegate determining if an event should be added.</param>
-    /// <param name="addEvent">Delegate for adding an event to the <paramref name="context"/> when <paramref name="condition"/> is <c>true</c>.</param>
+    /// <param name="given">State object.</param>
+    /// <param name="when">Delegate determining if an event should be added.</param>
+    /// <param name="then">Delegate for adding an event to the <paramref name="context"/> when <paramref name="when"/> is <c>true</c>.</param>
     /// <param name="respondWith">Delegate for providing a <seealso cref="ICommandContext{TCommand}.Response"/>.</param>
     /// <returns>A <see cref="ICommandContext{TCommand}"/> that can be used for further command processing.</returns>
     public static ICommandContext<TCommand> AddEventWhen<TCommand, TState, TResponse>(
         this ICommandContext<TCommand> context,
-        TState state,
-        Func<ICommandContext<TCommand>, TState, bool> condition,
-        Func<ICommandContext<TCommand>, TState, object> addEvent,
+        TState given,
+        Func<ICommandContext<TCommand>, TState, bool> when,
+        Func<ICommandContext<TCommand>, TState, object> then,
         Func<ICommandContext<TCommand>, TState, object, TResponse> respondWith)
         where TCommand : class
         where TState : class
         where TResponse : class
     {
-        if (condition(context, state))
+        if (when(context, given))
         {
-            var evt = addEvent(context, state);
-            context.AddEvent(addEvent(context, state));
-            context.Response = respondWith(context, state, evt);
+            var evt = then(context, given);
+            context.AddEvent(then(context, given));
+            context.Response = respondWith(context, given, evt);
         }
 
         return context;
