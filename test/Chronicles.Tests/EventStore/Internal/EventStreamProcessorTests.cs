@@ -53,16 +53,28 @@ public class EventStreamProcessorTests
             count++;
             await processor1
                 .Received(1)
-                .ConsumeAsync(evt, Arg.Any<IStateContext>(), count == events.Length, cancellationToken);
+                .ConsumeAsync(evt, Arg.Any<IStateContext>(), count < events.Length, cancellationToken);
 
             await processor2
                 .Received(1)
-                .ConsumeAsync(evt, Arg.Any<IStateContext>(), count == events.Length, cancellationToken);
+                .ConsumeAsync(evt, Arg.Any<IStateContext>(), count < events.Length, cancellationToken);
 
             await processor3
                 .Received(1)
-                .ConsumeAsync(evt, Arg.Any<IStateContext>(), count == events.Length, cancellationToken);
+                .ConsumeAsync(evt, Arg.Any<IStateContext>(), count < events.Length, cancellationToken);
         }
+
+        await processor1
+            .Received(1)
+            .ConsumeAsync(Arg.Any<StreamEvent>(), Arg.Any<IStateContext>(), hasMore: false, cancellationToken);
+
+        await processor2
+            .Received(1)
+            .ConsumeAsync(Arg.Any<StreamEvent>(), Arg.Any<IStateContext>(), hasMore: false, cancellationToken);
+
+        await processor3
+            .Received(1)
+            .ConsumeAsync(Arg.Any<StreamEvent>(), Arg.Any<IStateContext>(), hasMore: false, cancellationToken);
     }
 
     [Theory, AutoNSubstituteData]
@@ -97,7 +109,7 @@ public class EventStreamProcessorTests
                     _ = processor.ConsumeAsync(
                         evt,
                         Arg.Any<IStateContext>(),
-                        count == events.Length,
+                        hasMore: count < events.Length,
                         cancellationToken);
 #pragma warning restore CA2012 // Use ValueTasks correctly
                 }

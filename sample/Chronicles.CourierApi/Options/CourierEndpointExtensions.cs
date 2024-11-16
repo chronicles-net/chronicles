@@ -1,5 +1,6 @@
 ﻿using Chronicles.CourierApi.Couriers;
 using Chronicles.Cqrs;
+using Chronicles.Documents;
 
 namespace Chronicles.CourierApi.Options;
 
@@ -27,7 +28,29 @@ public static partial class CourierEndpointExtensions
                     { } => Results.Ok(),
                     _ => Results.InternalServerError(),
                 })
-            .WithSummary(nameof(RegisterCourier));
+            .WithSummary("Register courier");
+
+        group
+            .MapGet("/{courierId}", static async (string courierId, IDocumentReader<CourierDocument> reader, CancellationToken cancellationToken)
+            => await reader.FindAsync(
+                courierId,
+                courierId,
+                cancellationToken) switch
+            {
+                { } doc => Results.Ok(doc),
+                _ => Results.NotFound(),
+            })
+            .WithSummary("Get courier");
+
+        group
+            .MapGet("/", static async (IDocumentReader<CourierDocument> reader, CancellationToken cancellationToken)
+            => await reader
+                .PagedQueryAsync(d => d, partitionKey: null, maxItemCount: 100, cancellationToken: cancellationToken) switch
+            {
+                { } doc => Results.Ok(doc),
+                _ => Results.NotFound(),
+            })
+            .WithSummary("Get courier");
 
         return app;
     }

@@ -19,8 +19,10 @@ builder.Services.AddChronicles(b => b
         .AddEventSubscription("courier-projections", s => s
             .MapStream(CourierStreamId.CategoryName, cb => cb
                 .AddDocumentProjection<CourierDocument, CourierProjection>())
+            /*
             .MapStream(ShipmentStreamId.CategoryName, cb => cb
-                .AddDocumentProjection<ShipmentDocument, ShipmentProjection>()))
+                .AddDocumentProjection<ShipmentDocument, ShipmentProjection>())
+            */)
         .WithCqrs(cqrs => cqrs
             .AddCourierCommands()
             .AddShipmentCommands())));

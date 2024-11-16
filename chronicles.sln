@@ -27,6 +27,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{C3BEEC4B-8125-4C4D-B2FF-EA58E1F172A6}"
+	ProjectSection(SolutionItems) = preProject
+		sample\readme.md = sample\readme.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chronicles.AppHost", "sample\Chronicles.AppHost\Chronicles.AppHost.csproj", "{B12579C9-9C1C-4E3E-BCB3-77B82377E854}"
 EndProject

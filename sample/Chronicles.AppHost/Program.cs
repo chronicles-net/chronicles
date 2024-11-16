@@ -8,6 +8,7 @@ var cosmos = builder
     .RunAsEmulator(c => c
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
+        .WithPartitionCount(5)
         .WithDefaultEndpoints());
 
 var courier = builder
