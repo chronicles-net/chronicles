@@ -50,7 +50,7 @@ public static partial class CourierEndpointExtensions
                 { } doc => Results.Ok(doc),
                 _ => Results.NotFound(),
             })
-            .WithSummary("Get courier");
+            .WithSummary("List all couriers");
 
         return app;
     }

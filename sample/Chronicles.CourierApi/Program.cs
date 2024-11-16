@@ -16,13 +16,15 @@ builder.Services.AddChronicles(b => b
     .WithEventStore(evtStore => evtStore
         .AddShipmentEvents()
         .AddCourierEvents()
-        .AddEventSubscription("courier-projections", s => s
-            .MapStream(CourierStreamId.CategoryName, cb => cb
-                .AddDocumentProjection<CourierDocument, CourierProjection>())
-            /*
-            .MapStream(ShipmentStreamId.CategoryName, cb => cb
-                .AddDocumentProjection<ShipmentDocument, ShipmentProjection>())
-            */)
+        .AddEventSubscription(
+            "courier-projections",
+            s => s
+                .MapStream(CourierStreamId.CategoryName, cb => cb
+                    .AddDocumentProjection<CourierDocument, CourierProjection>())
+                /*
+                .MapStream(ShipmentStreamId.CategoryName, cb => cb
+                    .AddDocumentProjection<ShipmentDocument, ShipmentProjection>())
+                */)
         .WithCqrs(cqrs => cqrs
             .AddCourierCommands()
             .AddShipmentCommands())));
