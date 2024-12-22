@@ -83,6 +83,18 @@ public class CosmosWriter<T> : IDocumentWriter<T>
                 options,
                 cancellationToken: cancellationToken);
 
+    public Task DeletePartitionAsync(
+        string partitionKey,
+        ItemRequestOptions? options,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+        => containers
+            .GetContainer<T>(storeName)
+            .DeleteAllItemsByPartitionKeyStreamAsync(
+                new PartitionKey(partitionKey),
+                options,
+                cancellationToken: cancellationToken);
+
     public async Task<T> UpdateAsync(
         string documentId,
         string partitionKey,

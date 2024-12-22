@@ -102,6 +102,17 @@ public class FakeDocumentWriter<T> :
         return Task.CompletedTask;
     }
 
+    public virtual Task DeletePartitionAsync(
+        string partitionKey,
+        ItemRequestOptions? options,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+    {
+        RemoveAll(d => d.GetPartitionKey() == partitionKey);
+
+        return Task.CompletedTask;
+    }
+
     public virtual Task<T> UpdateAsync(
         string documentId,
         string partitionKey,

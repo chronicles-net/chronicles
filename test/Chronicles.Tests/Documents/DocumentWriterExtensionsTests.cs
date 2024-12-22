@@ -118,7 +118,7 @@ public class DocumentWriterExtensionsTests
     }
 
     [Theory, AutoNSubstituteData]
-    public async Task TryDelete_Should_Return_False_Of_Document_Does_Not_Exist(
+    public async Task TryDelete_Should_Return_False_If_Document_Does_Not_Exist(
         IDocumentWriter<TestDocument> writer,
         string documentId,
         string partitionKey,

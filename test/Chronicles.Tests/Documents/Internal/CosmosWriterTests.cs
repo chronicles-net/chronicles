@@ -140,6 +140,25 @@ public class CosmosWriterTests
     }
 
     [Theory, AutoNSubstituteData]
+    public async Task DeletePartitionAsync_Calls_DeleteAllItemsByPartitionKeyStreamAsync_On_Container(
+        ItemRequestOptions options,
+        string storeName,
+        CancellationToken cancellationToken)
+    {
+        await sut.DeletePartitionAsync(document.Pk, options, storeName, cancellationToken);
+
+        containerProvider
+            .Received(1)
+            .GetContainer<TestDocument>(storeName);
+        _ = container
+            .Received(1)
+            .DeleteAllItemsByPartitionKeyStreamAsync(
+                new PartitionKey(document.Pk),
+                options,
+                cancellationToken: cancellationToken);
+    }
+
+    [Theory, AutoNSubstituteData]
     public void Multiple_Operations_Uses_Same_Container(
         ItemRequestOptions options,
         string storeName,

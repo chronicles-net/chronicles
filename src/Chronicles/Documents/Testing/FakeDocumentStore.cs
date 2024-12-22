@@ -155,6 +155,18 @@ public sealed class FakeDocumentStore<T> :
                 storeName,
                 cancellationToken);
 
+    Task IDocumentWriter<T>.DeletePartitionAsync(
+        string partitionKey,
+        ItemRequestOptions? options,
+        string? storeName,
+        CancellationToken cancellationToken)
+        => ((IDocumentWriter<T>)Writer)
+            .DeletePartitionAsync(
+                partitionKey,
+                options,
+                storeName,
+                cancellationToken);
+
     Task<T> IDocumentWriter<T>.UpdateAsync(
         string documentId,
         string partitionKey,

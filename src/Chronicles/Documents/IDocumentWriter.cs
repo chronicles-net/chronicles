@@ -118,6 +118,20 @@ public interface IDocumentWriter<T>
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Deletes all documents within a partition from Cosmos.
+    /// </summary>
+    /// <param name="partitionKey">Partition key of the documents to delete.</param>
+    /// <param name="options">Options for the item request.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public Task DeletePartitionAsync(
+        string partitionKey,
+        ItemRequestOptions? options,
+        string? storeName = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Updates a <typeparamref name="T"/> document that is read from the configured
     /// Cosmos collection.
     /// </summary>
