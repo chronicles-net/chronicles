@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Chronicles.Documents;
 using Chronicles.EventStore;
 using Chronicles.EventStore.Internal;
 using NSubstitute;
@@ -278,5 +279,27 @@ public class EventStreamWriterTests
                 Arg.Any<object>(),
                 Arg.Any<string>(),
                 Arg.Any<CancellationToken>());
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task DeleteStreamAsync_Should_Call_DeletePartitionAsync(
+        [Frozen] IDocumentWriter<EventDocumentBase> documentWriter,
+        StreamId streamId,
+        string storeName,
+        EventStreamWriter sut,
+        CancellationToken cancellationToken)
+    {
+        await sut.DeleteStreamAsync(
+            streamId,
+            storeName,
+            cancellationToken);
+
+        _ = documentWriter
+            .Received(1)
+            .DeletePartitionAsync(
+                partitionKey: (string)streamId,
+                options: null,
+                storeName: storeName,
+                cancellationToken);
     }
 }

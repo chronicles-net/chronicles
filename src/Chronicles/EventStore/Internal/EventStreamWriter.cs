@@ -1,8 +1,10 @@
 using System.Collections.Immutable;
+using Chronicles.Documents;
 
 namespace Chronicles.EventStore.Internal;
 
 internal class EventStreamWriter(
+    IDocumentWriter<EventDocumentBase> documentWriter,
     IEventDocumentWriter eventWriter,
     IStreamMetadataReader metadataReader,
     ICheckpointWriter checkpointWriter)
@@ -21,6 +23,17 @@ internal class EventStreamWriter(
 
         // TODO: Implement close stream
     }
+
+    public Task DeleteStreamAsync(
+        StreamId streamId,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+        => documentWriter
+            .DeletePartitionAsync(
+                partitionKey: (string)streamId,
+                options: null,
+                storeName: storeName,
+                cancellationToken: cancellationToken);
 
     public virtual async Task SetCheckpointAsync(
         string name,

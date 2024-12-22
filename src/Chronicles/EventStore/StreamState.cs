@@ -21,9 +21,4 @@ public enum StreamState
     /// Stream has been archived and is no longer accepting events.
     /// </summary>
     Archived,
-
-    /// <summary>
-    /// Stream has been deleted.
-    /// </summary>
-    Deleted,
 }

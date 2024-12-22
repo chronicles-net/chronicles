@@ -39,9 +39,18 @@ public interface IEventStreamWriter
         string? storeName = null,
         CancellationToken cancellationToken = default);
 
-    ////Task DeleteStreamAsync(
-    ////    StreamId streamId,
-    ////    CancellationToken cancellationToken = default);
+    /// <summary>
+    ///  Deletes a stream and all its events.
+    /// </summary>
+    /// <remarks>Data will no longer be retrievable after a deletion.</remarks>
+    /// <param name="streamId">Event stream to delete.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
+    /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
+    /// <returns></returns>
+    Task DeleteStreamAsync(
+        StreamId streamId,
+        string? storeName = null,
+        CancellationToken cancellationToken = default);
 
     ////Task ArchiveStreamAsync(
     ////    StreamId streamId,
