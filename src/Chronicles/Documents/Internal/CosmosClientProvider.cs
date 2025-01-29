@@ -37,15 +37,28 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
             options.CosmosClient.ServerCertificateCustomValidationCallback = (_, _, _) => true;
         }
 
-        return options.Credential is not null
-            ? new CosmosClient(
-                options.AccountEndpoint,
-                options.Credential,
-                options.CosmosClient)
-            : new CosmosClient(
-                $"AccountEndpoint={options.AccountEndpoint};" +
-                $"AccountKey={options.AccountKey}",
-                options.CosmosClient);
+        return options switch
+        {
+            { AccountEndpoint: { } ep, Credential: { } cred }
+                => new CosmosClient(
+                    ep,
+                    cred,
+                    options.CosmosClient),
+
+            { AccountEndpoint: { } ep, AccountKey: { } key }
+               => new CosmosClient(
+                    ep,
+                    key,
+                    options.CosmosClient),
+
+            { ConnectionString: { } cs }
+                => new CosmosClient(cs, options.CosmosClient),
+
+            _ => throw new InvalidOperationException(
+                storeName != null
+                ? $"Missing configuration for Cosmos connection ({storeName})"
+                : $"Missing configuration for Cosmos connection")
+        };
     }
 
     private DocumentOptions GetOptions(string? storeName)

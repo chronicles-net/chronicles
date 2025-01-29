@@ -23,7 +23,7 @@ public class DocumentOptions
     /// Navigate to your Azure Cosmos account.
     /// Open the Overview pane and copy the URI value.
     /// </remarks>
-    public string AccountEndpoint { get; private set; } = default!;
+    public string? AccountEndpoint { get; private set; }
 
     /// <summary>
     /// Gets the Cosmos account key.
@@ -35,7 +35,12 @@ public class DocumentOptions
     /// "Password" or PRIMARY KEY value.
     /// The <see cref="AccountKey"/> is required if <see cref="Credential"/> is not specified.
     /// </remarks>
-    public string? AccountKey { get; private set; } = default!;
+    public string? AccountKey { get; private set; }
+
+    /// <summary>
+    /// Gets the Cosmos ConnectionString
+    /// </summary>
+    public string? ConnectionString { get; private set; }
 
     /// <summary>
     /// Gets the TokenCredential to use instead of <see cref="AccountKey"/>.
@@ -83,6 +88,7 @@ public class DocumentOptions
         string endpoint,
         TokenCredential credentials)
     {
+        ConnectionString = null;
         Credential = credentials ?? throw new ArgumentNullException(nameof(credentials));
         AccountEndpoint = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
         AccountKey = null;
@@ -102,6 +108,7 @@ public class DocumentOptions
         string authKey)
     {
         Credential = null;
+        ConnectionString = null;
         AccountEndpoint = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
         AccountKey = authKey ?? throw new ArgumentNullException(nameof(authKey));
 
@@ -118,12 +125,29 @@ public class DocumentOptions
         string endpoint = EmulatorEndpoint,
         bool allowAnyServerCertificate = false)
     {
+        ConnectionString = null;
         Credential = null;
         AccountEndpoint = endpoint;
         AccountKey = EmulatorAuthKey;
         AllowAnyServerCertificate = allowAnyServerCertificate;
         CosmosClient.ConnectionMode = ConnectionMode.Gateway;
         CosmosClient.LimitToEndpoint = true;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configure event store to use a connections string when connecting to cosmos db.
+    /// </summary>
+    /// <param name="connectionString">Cosmos connection string.</param>
+    /// <exception cref="ArgumentNullException">Throws when the <paramref name="connectionString"/> is null.</exception>
+    /// <returns>The updated <see cref="DocumentOptions"/>.</returns>
+    public DocumentOptions UseConnectionString(string connectionString)
+    {
+        Credential = null;
+        AccountEndpoint = null;
+        AccountKey = null;
+        ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
 
         return this;
     }
