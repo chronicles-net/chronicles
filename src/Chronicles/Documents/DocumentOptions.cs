@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure.Core;
@@ -148,6 +149,11 @@ public class DocumentOptions
         AccountEndpoint = null;
         AccountKey = null;
         ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+        if (IsEmulatorConnectionString(connectionString))
+        {
+            CosmosClient.LimitToEndpoint = true;
+            CosmosClient.ConnectionMode = ConnectionMode.Gateway;
+        }
 
         return this;
     }
@@ -177,5 +183,26 @@ public class DocumentOptions
     {
         SubscriptionContainerName = containerName;
         return this;
+    }
+
+    private static bool IsEmulatorConnectionString(string? connectionString)
+    {
+        if (connectionString == null)
+        {
+            return false;
+        }
+
+        var builder = new DbConnectionStringBuilder
+        {
+            ConnectionString = connectionString
+        };
+
+        if (!builder.TryGetValue("AccountKey", out var v))
+        {
+            return false;
+        }
+
+        var accountKeyFromConnectionString = v.ToString();
+        return accountKeyFromConnectionString == EmulatorAuthKey;
     }
 }
