@@ -75,8 +75,12 @@ public sealed class CosmosClientProvider : IDisposable, ICosmosClientProvider
     }
 
     private static bool IsValid(DocumentOptions? options)
-        => options is not null
-        && !string.IsNullOrEmpty(options.AccountEndpoint)
-        && (!string.IsNullOrEmpty(options.AccountKey) || options.Credential is not null)
-        && !string.IsNullOrEmpty(options.DatabaseName);
+        => options switch
+        {
+            { DatabaseName: null } => false,
+            { AccountEndpoint.Length: > 0, Credential: { } } => true,
+            { AccountEndpoint.Length: > 0, AccountKey.Length: > 0 } => true,
+            { ConnectionString.Length: > 0 } => true,
+            _ => false,
+        };
 }
