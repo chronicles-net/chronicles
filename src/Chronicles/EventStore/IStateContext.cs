@@ -12,8 +12,10 @@ public interface IStateContext
     /// Gets the state of the specified type.
     /// </summary>
     /// <typeparam name="TState">Type of state data.</typeparam>
+    /// <param name="name">Optional name of state</param>
     /// <returns>The state found, otherwise <c>null</c> is returned.</returns>
-    TState? GetState<TState>()
+    TState? GetState<TState>(
+        string? name = null)
         where TState : class;
 
     /// <summary>
@@ -21,7 +23,9 @@ public interface IStateContext
     /// </summary>
     /// <typeparam name="TState">Type of state to store.</typeparam>
     /// <param name="state">State to store.</param>
+    /// <param name="name">Optional name of state</param>
     void SetState<TState>(
-        TState state)
+        TState state,
+        string? name = null)
         where TState : class;
 }
