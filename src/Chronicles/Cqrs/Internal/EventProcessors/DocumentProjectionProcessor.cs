@@ -11,6 +11,7 @@ internal class DocumentProjectionProcessor<TConsumer, TDocument>(
     where TDocument : class, IDocument
     where TConsumer : class, IDocumentProjection<TDocument>
 {
+    private readonly TConsumer consumer = consumer;
     private readonly IDocumentReader<TDocument> reader = reader;
     private readonly IDocumentWriter<TDocument> writer = writer;
 
@@ -40,9 +41,29 @@ internal class DocumentProjectionProcessor<TConsumer, TDocument>(
     }
 
     protected override async Task CommitAsync(
-        TDocument state,
+        TDocument? document,
+        IStateContext state,
         CancellationToken cancellationToken)
-        => await writer
-            .WriteAsync(state, cancellationToken)
-            .ConfigureAwait(false);
+    {
+        if (document != null)
+        {
+            switch (await consumer.OnCommitAsync(document, cancellationToken))
+            {
+                case DocumentCommitAction.Update:
+                    await writer
+                        .WriteAsync(document, cancellationToken)
+                        .ConfigureAwait(false);
+                    break;
+
+                case DocumentCommitAction.Delete:
+                    await writer
+                        .DeleteAsync(
+                            document.GetDocumentId(),
+                            document.GetPartitionKey(),
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                    break;
+            }
+        }
+    }
 }
