@@ -40,9 +40,29 @@ internal class DocumentProjectionProcessor<TConsumer, TDocument>(
     }
 
     protected override async Task CommitAsync(
-        TDocument state,
+        TDocument? document,
+        IStateContext state,
         CancellationToken cancellationToken)
-        => await writer
-            .WriteAsync(state, cancellationToken)
-            .ConfigureAwait(false);
+    {
+        if (document != null)
+        {
+            switch (await consumer.OnCommitAsync(document, cancellationToken))
+            {
+                case DocumentCommitAction.Update:
+                    await writer
+                        .WriteAsync(document, cancellationToken)
+                        .ConfigureAwait(false);
+                    break;
+
+                case DocumentCommitAction.Delete:
+                    await writer
+                        .DeleteAsync(
+                            document.GetDocumentId(),
+                            document.GetPartitionKey(),
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                    break;
+            }
+        }
+    }
 }

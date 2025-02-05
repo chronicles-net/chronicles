@@ -19,16 +19,25 @@ internal class StateProjectionProcessor<TConsumer, TState>(
             state,
             cancellationToken);
 
-        document = consumer.ConsumeEvent(evt, document);
+        var newState = consumer.ConsumeEvent(evt, document);
+        if (newState != null)
+        {
+            state.SetState(newState);
+            state.SetState(newState, "state-mutated");
+        }
 
         if (!hasMore)
         {
-            await CommitAsync(document, cancellationToken);
+            await CommitAsync(
+                state.GetState<TState>("state-mutated"),
+                state,
+                cancellationToken);
         }
     }
 
     protected virtual Task CommitAsync(
-        TState state,
+        TState? document,
+        IStateContext state,
         CancellationToken cancellationToken)
         => Task.CompletedTask;
 

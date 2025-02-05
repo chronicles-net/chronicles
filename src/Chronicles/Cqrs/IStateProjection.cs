@@ -17,8 +17,8 @@ public interface IStateProjection<TState>
     /// </summary>
     /// <param name="evt">Event to consume.</param>
     /// <param name="state">State to update.</param>
-    /// <returns>State after applying event.</returns>
-    TState ConsumeEvent(
+    /// <returns>State after applying event or <c>null</c> if state has not changed.</returns>
+    TState? ConsumeEvent(
         StreamEvent evt,
         TState state);
 }
