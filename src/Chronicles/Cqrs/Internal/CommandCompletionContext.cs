@@ -4,11 +4,11 @@ using Chronicles.EventStore;
 namespace Chronicles.Cqrs.Internal;
 
 internal class CommandCompletionContext<TCommand>(
+    ICommandContext<TCommand> innerContext,
     TCommand command,
     StreamMetadata metadata,
     IImmutableList<StreamEvent> events,
-    IStateContext stateContext,
-    object? response)
+    IStateContext stateContext)
     : ICommandCompletionContext<TCommand>
     where TCommand : class
 {
@@ -16,7 +16,11 @@ internal class CommandCompletionContext<TCommand>(
 
     public StreamMetadata Metadata { get; set; } = metadata;
 
-    public object? Response { get; set; } = response;
+    public object? Response
+    {
+        get => innerContext.Response;
+        set => innerContext.Response = value;
+    }
 
     public IStateContext State { get; } = stateContext;
 

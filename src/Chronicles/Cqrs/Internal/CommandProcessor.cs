@@ -130,11 +130,23 @@ internal class CommandProcessor<TCommand>(
             context.Metadata = result.Metadata;
 
             var completionContext = new CommandCompletionContext<TCommand>(
+                context,
                 command,
                 result.Metadata,
                 result.Events,
-                state,
-                context.Response);
+                state);
+            await context.OnCompleteAsync(
+                completionContext,
+                cancellationToken);
+        }
+        else
+        {
+            var completionContext = new CommandCompletionContext<TCommand>(
+                context,
+                command,
+                context.Metadata,
+                [],
+                state);
             await context.OnCompleteAsync(
                 completionContext,
                 cancellationToken);
