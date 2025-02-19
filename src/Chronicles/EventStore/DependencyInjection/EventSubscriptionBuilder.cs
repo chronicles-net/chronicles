@@ -13,7 +13,7 @@ public class EventSubscriptionBuilder(
     public EventSubscriptionBuilder AddExceptionHandler<TExceptionHandler>()
         where TExceptionHandler : class, IEventSubscriptionExceptionHandler
     {
-        Services.TryAddKeyedSingleton<TExceptionHandler>(name);
+        Services.TryAddKeyedSingleton<IEventSubscriptionExceptionHandler, TExceptionHandler>(name);
 
         return this;
     }
