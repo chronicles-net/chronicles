@@ -48,4 +48,22 @@ public static class EventProcessorBuilderExtensions
 
         return builder;
     }
+
+    public static EventProcessorBuilder AddPublishingDocumentProjection<TDocument, TConsumer, TPublisher>(
+        this EventProcessorBuilder builder)
+        where TDocument : class, IDocument
+        where TConsumer : class, IDocumentProjection<TDocument>
+        where TPublisher : class, IDocumentPublisher<TDocument>
+    {
+        builder.Services.AddKeyedSingleton<TConsumer>(builder.Name);
+        builder.Services.AddKeyedSingleton<TPublisher>(builder.Name);
+        builder.Services.AddKeyedSingleton<IEventProcessor>(builder.Name, (s, n) =>
+            new PublishDocumentProjectionProcessor<TConsumer, TDocument, TPublisher>(
+                s.GetRequiredKeyedService<TConsumer>(n),
+                s.GetRequiredService<IDocumentReader<TDocument>>(),
+                s.GetRequiredService<IDocumentWriter<TDocument>>(),
+                s.GetRequiredKeyedService<TPublisher>(n)));
+
+        return builder;
+    }
 }

@@ -41,29 +41,42 @@ internal class DocumentProjectionProcessor<TConsumer, TDocument>(
     }
 
     protected override async Task CommitAsync(
-        TDocument? document,
+        TDocument document,
+        bool isChanged,
         IStateContext state,
         CancellationToken cancellationToken)
     {
-        if (document != null)
+        if (!isChanged)
         {
-            switch (await consumer.OnCommitAsync(document, cancellationToken))
-            {
-                case DocumentCommitAction.Update:
-                    await writer
-                        .WriteAsync(document, cancellationToken)
-                        .ConfigureAwait(false);
-                    break;
-
-                case DocumentCommitAction.Delete:
-                    await writer
-                        .DeleteAsync(
-                            document.GetDocumentId(),
-                            document.GetPartitionKey(),
-                            cancellationToken)
-                        .ConfigureAwait(false);
-                    break;
-            }
+            return;
         }
+
+        var action = await consumer.OnCommitAsync(document, cancellationToken);
+        switch (action)
+        {
+            case DocumentCommitAction.Update:
+                await writer
+                    .WriteAsync(document, cancellationToken)
+                    .ConfigureAwait(false);
+                break;
+
+            case DocumentCommitAction.Delete:
+                await writer
+                    .DeleteAsync(
+                        document.GetDocumentId(),
+                        document.GetPartitionKey(),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                break;
+        }
+
+        await OnDocumentCommittedAsync(action, document, state, cancellationToken);
     }
+
+    protected virtual Task OnDocumentCommittedAsync(
+        DocumentCommitAction commitAction,
+        TDocument document,
+        IStateContext state,
+        CancellationToken cancellationToken)
+        => Task.CompletedTask;
 }

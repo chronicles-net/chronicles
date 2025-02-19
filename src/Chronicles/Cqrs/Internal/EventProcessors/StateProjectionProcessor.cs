@@ -23,20 +23,23 @@ internal class StateProjectionProcessor<TConsumer, TState>(
         if (mutatedState != null)
         {
             state.SetState(mutatedState);
-            state.SetState(mutatedState, "state-mutated");
+            state.SetState(mutatedState, "state-changed");
         }
 
         if (!hasMore)
         {
+            var isChanged = state.GetState<TState>("state-changed") != null;
             await CommitAsync(
-                state.GetState<TState>("state-mutated"),
+                mutatedState ?? document,
+                isChanged,
                 state,
                 cancellationToken);
         }
     }
 
     protected virtual Task CommitAsync(
-        TState? document,
+        TState document,
+        bool isChanged,
         IStateContext state,
         CancellationToken cancellationToken)
         => Task.CompletedTask;
