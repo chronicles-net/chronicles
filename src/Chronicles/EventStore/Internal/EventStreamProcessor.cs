@@ -18,12 +18,12 @@ internal class EventStreamProcessor(
                      || e.Metadata.StreamId.Category.Equals(categoryName, StringComparison.OrdinalIgnoreCase))
             .GroupBy(e => e.Metadata.StreamId);
 
-        var context = new StateContext();
         foreach (var processor in processors)
         {
             foreach (var group in groups)
             {
                 var count = group.Count();
+                var context = new StateContext();
                 foreach (var evt in group)
                 {
                     await processor.ConsumeAsync(
