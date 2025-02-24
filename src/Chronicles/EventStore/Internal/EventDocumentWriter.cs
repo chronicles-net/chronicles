@@ -30,7 +30,7 @@ internal class EventDocumentWriter(
 
         transaction.Write(
             batch.Metadata,
-            new TransactionalBatchItemRequestOptions { EnableContentResponseOnWrite = true });
+            new TransactionalBatchItemRequestOptions { EnableContentResponseOnWrite = false });
 
         foreach (var document in batch.Events)
         {
@@ -46,7 +46,7 @@ internal class EventDocumentWriter(
         var newMetadata = EnsureSuccess(
             result,
             batch.Metadata.Version,
-            GetMetadataFromResponse(result));
+            batch.Metadata);
 
         return new StreamWriteResult(
             newMetadata,
@@ -54,12 +54,6 @@ internal class EventDocumentWriter(
                 .Select(evt => new StreamEvent(evt.Data, evt.Properties))
                 .ToImmutableArray());
     }
-
-    private static StreamMetadataDocument GetMetadataFromResponse(
-        TransactionalBatchResponse response)
-        => response
-            .GetOperationResultAtIndex<StreamMetadataDocument>(0)
-            .Resource;
 
     private static StreamMetadata EnsureSuccess(
         TransactionalBatchResponse response,
@@ -87,6 +81,6 @@ internal class EventDocumentWriter(
             metadata.State,
             expectedVersion,
             expectedState: null,
-            "Conflict on writing to stream.");
+            $"Conflict on writing to stream. Status Code: {response.StatusCode}.");
     }
 }

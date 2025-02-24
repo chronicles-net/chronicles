@@ -185,7 +185,7 @@ public class EventDocumentWriterTests
             .Received(1)
             .Write(
                 document: batch.Metadata,
-                options: Arg.Is<TransactionalBatchItemRequestOptions?>(o => o!.EnableContentResponseOnWrite == true));
+                options: Arg.Is<TransactionalBatchItemRequestOptions?>(o => o!.EnableContentResponseOnWrite == false));
     }
 
     [Theory, AutoNSubstituteData]
