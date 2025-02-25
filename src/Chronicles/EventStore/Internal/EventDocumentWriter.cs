@@ -65,22 +65,22 @@ internal class EventDocumentWriter(
             return metadata;
         }
 
-        if (response.StatusCode == HttpStatusCode.TooManyRequests)
+        if (response.StatusCode == HttpStatusCode.Conflict)
         {
-            throw new CosmosException(
-                response.ErrorMessage,
-                response.StatusCode,
-                subStatusCode: 0,
-                response.ActivityId,
-                response.RequestCharge);
+            throw new StreamConflictException(
+                metadata.StreamId,
+                metadata.Version,
+                metadata.State,
+                expectedVersion,
+                expectedState: null,
+                $"Conflict on writing to stream. Status Code: {response.StatusCode}.");
         }
 
-        throw new StreamConflictException(
-            metadata.StreamId,
-            metadata.Version,
-            metadata.State,
-            expectedVersion,
-            expectedState: null,
-            $"Conflict on writing to stream. Status Code: {response.StatusCode}.");
+        throw new CosmosException(
+            response.ErrorMessage,
+            response.StatusCode,
+            subStatusCode: 0,
+            response.ActivityId,
+            response.RequestCharge);
     }
 }
