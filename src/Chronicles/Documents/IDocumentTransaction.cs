@@ -20,9 +20,10 @@ public interface IDocumentTransaction<T>
     /// <param name="document">The document to be written.</param>
     /// <param name="options">(Optional) The options for the item request.</param>
     /// <returns>The transaction instance with the operation added.</returns>
-    IDocumentTransaction<T> Write(
-        T document,
-        TransactionalBatchItemRequestOptions? options = null);
+    IDocumentTransaction<T> Write<TIn>(
+        TIn document,
+        TransactionalBatchItemRequestOptions? options = null)
+        where TIn : T;
 
     /// <summary>
     /// Adds an operation to create a new document into the batch.
@@ -30,9 +31,10 @@ public interface IDocumentTransaction<T>
     /// <param name="document">The document to be created.</param>
     /// <param name="options">(Optional) The options for the item request.</param>
     /// <returns>The transaction instance with the operation added.</returns>
-    IDocumentTransaction<T> Create(
-        T document,
-        TransactionalBatchItemRequestOptions? options = null);
+    IDocumentTransaction<T> Create<TIn>(
+        TIn document,
+        TransactionalBatchItemRequestOptions? options = null)
+        where TIn : T;
 
     /// <summary>
     /// Adds an operation to replace a document item into the batch.
@@ -40,9 +42,10 @@ public interface IDocumentTransaction<T>
     /// <param name="document">The document to be created.</param>
     /// <param name="options">(Optional) The options for the item request.</param>
     /// <returns>The transaction instance with the operation added.</returns>
-    IDocumentTransaction<T> Replace(
-        T document,
-        TransactionalBatchItemRequestOptions? options = null);
+    IDocumentTransaction<T> Replace<TIn>(
+        TIn document,
+        TransactionalBatchItemRequestOptions? options = null)
+        where TIn : T;
 
     /// <summary>
     /// Adds an operation to delete a document into the batch.

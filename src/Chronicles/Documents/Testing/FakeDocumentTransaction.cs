@@ -17,9 +17,10 @@ public class FakeDocumentTransaction<T> : IDocumentTransaction<T>
         this.partitionKey = partitionKey;
     }
 
-    public virtual IDocumentTransaction<T> Create(
-        T document,
+    public virtual IDocumentTransaction<T> Create<TIn>(
+        TIn document,
         TransactionalBatchItemRequestOptions? options = null)
+        where TIn : T
     {
         operations.Add(async w => await w.CreateAsync(document, null));
         return this;
@@ -37,17 +38,19 @@ public class FakeDocumentTransaction<T> : IDocumentTransaction<T>
         return this;
     }
 
-    public virtual IDocumentTransaction<T> Replace(
-        T document,
+    public virtual IDocumentTransaction<T> Replace<TIn>(
+        TIn document,
         TransactionalBatchItemRequestOptions? options = null)
+        where TIn : T
     {
         operations.Add(async w => await w.ReplaceAsync(document, null));
         return this;
     }
 
-    public virtual IDocumentTransaction<T> Write(
-        T document,
+    public virtual IDocumentTransaction<T> Write<TIn>(
+        TIn document,
         TransactionalBatchItemRequestOptions? options = null)
+        where TIn : T
     {
         operations.Add(async w => await w.WriteAsync(document, null));
         return this;

@@ -13,27 +13,30 @@ public class CosmosTransaction<T> : IDocumentTransaction<T>
         this.transaction = transaction;
     }
 
-    public IDocumentTransaction<T> Write(
-        T document,
+    public IDocumentTransaction<T> Write<TIn>(
+        TIn document,
         TransactionalBatchItemRequestOptions? options = null)
+        where TIn : T
     {
-        transaction.UpsertItem<object>(document, options);
+        transaction.UpsertItem(document, options);
         return this;
     }
 
-    public IDocumentTransaction<T> Create(
-        T document,
+    public IDocumentTransaction<T> Create<TIn>(
+        TIn document,
         TransactionalBatchItemRequestOptions? options = null)
+        where TIn : T
     {
-        transaction.CreateItem<object>(document, options);
+        transaction.CreateItem(document, options);
         return this;
     }
 
-    public IDocumentTransaction<T> Replace(
-        T document,
+    public IDocumentTransaction<T> Replace<TIn>(
+        TIn document,
         TransactionalBatchItemRequestOptions? options = null)
+        where TIn : T
     {
-        transaction.ReplaceItem<object>(document.GetDocumentId(), document, options);
+        transaction.ReplaceItem(document.GetDocumentId(), document, options);
         return this;
     }
 
