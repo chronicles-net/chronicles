@@ -18,11 +18,7 @@ internal class StatefulCommandExecutor<TCommand, THandler, TState>(
 
         await foreach (var evt in events)
         {
-            var mutatedState = handler.ConsumeEvent(evt, state);
-            if (mutatedState != null)
-            {
-                state = mutatedState;
-            }
+            state = handler.ConsumeEvent(evt, state) ?? state;
         }
 
         context.State.SetState(state);

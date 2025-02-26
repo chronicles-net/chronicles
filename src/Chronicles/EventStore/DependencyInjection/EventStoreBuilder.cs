@@ -102,7 +102,7 @@ public class EventStoreBuilder(
         Action<EventSubscriptionOptions> options,
         Action<EventSubscriptionBuilder> builder)
     {
-        builder.Invoke(new EventSubscriptionBuilder(name, Services));
+        builder.Invoke(new EventSubscriptionBuilder(name, StoreName, Services));
 
         Services.ConfigureOptions<ConfigureSubscriptionOptions>();
         Services.Configure<SubscriptionOptions>(name, o => { });

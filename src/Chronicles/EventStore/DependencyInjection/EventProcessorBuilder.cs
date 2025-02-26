@@ -4,8 +4,11 @@ namespace Chronicles.EventStore.DependencyInjection;
 
 public class EventProcessorBuilder(
     string name,
+    string? storeName,
     IServiceCollection serviceCollection)
 {
+    public string? StoreName { get; } = storeName;
+
     public string Name { get; } = name;
 
     public IServiceCollection Services { get; } = serviceCollection;

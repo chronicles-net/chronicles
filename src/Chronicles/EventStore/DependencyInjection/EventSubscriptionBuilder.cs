@@ -6,6 +6,7 @@ namespace Chronicles.EventStore.DependencyInjection;
 
 public class EventSubscriptionBuilder(
     string name,
+    string? storeName,
     IServiceCollection serviceCollection)
 {
     public IServiceCollection Services { get; } = serviceCollection;
@@ -24,7 +25,7 @@ public class EventSubscriptionBuilder(
     {
         var key = $"{name}:{streamCategory}";
 
-        consumerBuilder.Invoke(new EventProcessorBuilder(key, Services));
+        consumerBuilder.Invoke(new EventProcessorBuilder(key, storeName, Services));
 
         Services.AddKeyedSingleton<IEventStreamProcessor>(name, (s, n) =>
             new EventStreamProcessor(
@@ -39,7 +40,7 @@ public class EventSubscriptionBuilder(
     {
         var key = $"{name}:__all__";
 
-        consumerBuilder.Invoke(new EventProcessorBuilder(key, Services));
+        consumerBuilder.Invoke(new EventProcessorBuilder(key, storeName, Services));
         Services.AddKeyedSingleton<IEventStreamProcessor>(name, (s, n) =>
             new EventStreamProcessor(
                 categoryName: null,
