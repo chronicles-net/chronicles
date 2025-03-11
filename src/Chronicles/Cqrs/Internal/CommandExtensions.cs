@@ -6,11 +6,13 @@ internal static class CommandExtensions
 {
     public static StreamReadOptions GetStreamReadOptions(
         this CommandRequestOptions options,
-        StreamMetadata metadata)
+        StreamMetadata metadata,
+        CommandOptions commandOptions)
         => new()
         {
             RequiredVersion = options.RequiredVersion,
             Metadata = metadata,
+            RequiredState = commandOptions.RequiredState,
         };
 
     public static StreamWriteOptions GetStreamWriteOptions(

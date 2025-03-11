@@ -60,7 +60,7 @@ internal class CommandProcessor<TCommand>(
         StateContext state,
         CancellationToken cancellationToken)
     {
-        var readOptions = requestOptions.GetStreamReadOptions(metadata);
+        var readOptions = requestOptions.GetStreamReadOptions(metadata, commandOptions);
         metadata.EnsureSuccess(readOptions);
 
         return ValueTask.FromResult(readOptions);
