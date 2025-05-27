@@ -98,7 +98,7 @@ public class CosmosWriter<T> : IDocumentWriter<T>
     public async Task<T> UpdateAsync(
         string documentId,
         string partitionKey,
-        Func<T, Task> updateDocument,
+        Func<T, Task<T>> updateDocument,
         int retries = 0,
         string? storeName = null,
         CancellationToken cancellationToken = default)
@@ -119,7 +119,7 @@ public class CosmosWriter<T> : IDocumentWriter<T>
                 var etag = response.ETag;
                 var document = response.Resource;
 
-                await updateDocument(document)
+                document = await updateDocument(document)
                     .ConfigureAwait(false);
 
                 return await
@@ -146,7 +146,7 @@ public class CosmosWriter<T> : IDocumentWriter<T>
 
     public async Task<T> UpdateOrCreateAsync(
         Func<T> getDefaultDocument,
-        Func<T, Task> updateDocument,
+        Func<T, Task<T>> updateDocument,
         int retries = 0,
         string? storeName = null,
         CancellationToken cancellationToken = default)
@@ -187,7 +187,7 @@ public class CosmosWriter<T> : IDocumentWriter<T>
                 documentExists = false;
             }
 
-            await updateDocument(document)
+            document = await updateDocument(document)
                 .ConfigureAwait(false);
 
             try

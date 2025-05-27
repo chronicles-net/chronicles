@@ -177,7 +177,7 @@ public class DocumentWriterExtensionsTests
     public async Task UpdateAsync_Has_Overload_With_Action(
         IDocumentWriter<TestDocument> writer,
         TestDocument document,
-        [Substitute] Action<TestDocument> updateDocument,
+        [Substitute] Func<TestDocument, TestDocument> updateDocument,
         int retries,
         string storeName,
         CancellationToken cancellationToken)
@@ -195,7 +195,7 @@ public class DocumentWriterExtensionsTests
             .UpdateAsync(
                 document.Id,
                 document.Pk,
-                Arg.Any<Func<TestDocument, Task>>(),
+                Arg.Any<Func<TestDocument, Task<TestDocument>>>(),
                 retries,
                 storeName,
                 cancellationToken);
@@ -212,7 +212,7 @@ public class DocumentWriterExtensionsTests
     public async Task UpdateOrCreateAsync_Has_Overload_With_Action(
         IDocumentWriter<TestDocument> writer,
         TestDocument document,
-        [Substitute] Action<TestDocument> updateDocument,
+        [Substitute] Func<TestDocument, TestDocument> updateDocument,
         int retries,
         string storeName,
         CancellationToken cancellationToken)
@@ -229,7 +229,7 @@ public class DocumentWriterExtensionsTests
             .Received(1)
             .UpdateOrCreateAsync(
                 getDefaultDocument,
-                Arg.Any<Func<TestDocument, Task>>(),
+                Arg.Any<Func<TestDocument, Task<TestDocument>>>(),
                 retries,
                 storeName,
                 cancellationToken);

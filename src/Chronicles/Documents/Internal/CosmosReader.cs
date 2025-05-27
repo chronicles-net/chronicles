@@ -24,6 +24,21 @@ public class CosmosReader<T> : IDocumentReader<T>
                     .GetContainer<T>(storeName)
                     .GetItemLinqQueryable<T>()));
 
+    public async Task<bool> ExistsAsync(
+        string documentId,
+        string partitionKey,
+        ItemRequestOptions? options,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+        => (await containers
+            .GetContainer<T>(storeName)
+            .ReadItemStreamAsync(
+                documentId,
+                new PartitionKey(partitionKey),
+                options,
+                cancellationToken: cancellationToken))
+            .IsSuccessStatusCode;
+
     public async Task<TResult> ReadAsync<TResult>(
         string documentId,
         string partitionKey,

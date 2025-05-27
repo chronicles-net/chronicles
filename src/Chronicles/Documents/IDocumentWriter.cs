@@ -158,7 +158,7 @@ public interface IDocumentWriter<T>
     Task<T> UpdateAsync(
         string documentId,
         string partitionKey,
-        Func<T, Task> updateDocument,
+        Func<T, Task<T>> updateDocument,
         int retries = 0,
         string? storeName = null,
         CancellationToken cancellationToken = default);
@@ -181,7 +181,7 @@ public interface IDocumentWriter<T>
     /// <returns>A <see cref="Task"/> containing the updated <typeparamref name="T"/> document.</returns>
     Task<T> UpdateOrCreateAsync(
         Func<T> getDefaultDocument,
-        Func<T, Task> updateDocument,
+        Func<T, Task<T>> updateDocument,
         int retries = 0,
         string? storeName = null,
         CancellationToken cancellationToken = default);
