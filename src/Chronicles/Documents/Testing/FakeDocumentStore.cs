@@ -170,7 +170,7 @@ public sealed class FakeDocumentStore<T> :
     Task<T> IDocumentWriter<T>.UpdateAsync(
         string documentId,
         string partitionKey,
-        Func<T, Task> updateDocument,
+        Func<T, Task<T>> updateDocument,
         int retries,
         string? storeName,
         CancellationToken cancellationToken)
@@ -185,7 +185,7 @@ public sealed class FakeDocumentStore<T> :
 
     Task<T> IDocumentWriter<T>.UpdateOrCreateAsync(
         Func<T> getDefaultDocument,
-        Func<T, Task> updateDocument,
+        Func<T, Task<T>> updateDocument,
         int retries,
         string? storeName,
         CancellationToken cancellationToken)

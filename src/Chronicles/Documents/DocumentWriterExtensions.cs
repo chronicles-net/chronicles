@@ -204,7 +204,7 @@ public static class DocumentWriterExtensions
         this IDocumentWriter<T> writer,
         string documentId,
         string partitionKey,
-        Action<T> updateDocument,
+        Func<T, T> updateDocument,
         int retries = 0,
         string? storeName = null,
         CancellationToken cancellationToken = default)
@@ -212,11 +212,7 @@ public static class DocumentWriterExtensions
         => writer.UpdateAsync(
             documentId,
             partitionKey,
-            d =>
-            {
-                updateDocument(d);
-                return Task.CompletedTask;
-            },
+            d => Task.FromResult(updateDocument(d)),
             retries,
             storeName,
             cancellationToken);
@@ -242,18 +238,14 @@ public static class DocumentWriterExtensions
     public static Task<T> UpdateOrCreateAsync<T>(
         this IDocumentWriter<T> writer,
         Func<T> getDefaultDocument,
-        Action<T> updateDocument,
+        Func<T, T> updateDocument,
         int retries = 0,
         string? storeName = null,
         CancellationToken cancellationToken = default)
         where T : IDocument
         => writer.UpdateOrCreateAsync(
             getDefaultDocument,
-            d =>
-            {
-                updateDocument(d);
-                return Task.CompletedTask;
-            },
+            d => Task.FromResult(updateDocument(d)),
             retries,
             storeName,
             cancellationToken);

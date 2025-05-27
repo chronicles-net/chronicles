@@ -113,10 +113,10 @@ public class FakeDocumentWriter<T> :
         return Task.CompletedTask;
     }
 
-    public virtual Task<T> UpdateAsync(
+    public virtual async Task<T> UpdateAsync(
         string documentId,
         string partitionKey,
-        Func<T, Task> updateDocument,
+        Func<T, Task<T>> updateDocument,
         int retries = 0,
         string? storeName = null,
         CancellationToken cancellationToken = default)
@@ -124,17 +124,17 @@ public class FakeDocumentWriter<T> :
         var document = GuardExists(documentId, partitionKey);
 
         var newDocument = document.DeepClone(serializerOptions);
-        updateDocument(newDocument);
+        newDocument = await updateDocument(newDocument);
 
         Documents.Remove(document);
         Documents.Add(newDocument);
 
-        return Task.FromResult(newDocument);
+        return newDocument;
     }
 
-    public virtual Task<T> UpdateOrCreateAsync(
+    public virtual async Task<T> UpdateOrCreateAsync(
         Func<T> getDefaultDocument,
-        Func<T, Task> updateDocument,
+        Func<T, Task<T>> updateDocument,
         int retries = 0,
         string? storeName = null,
         CancellationToken cancellationToken = default)
@@ -145,7 +145,7 @@ public class FakeDocumentWriter<T> :
             && d.GetPartitionKey() == defaultDocument.GetPartitionKey());
 
         var newDocument = (existingDocument ?? defaultDocument).DeepClone(serializerOptions);
-        updateDocument(newDocument);
+        newDocument = await updateDocument(newDocument);
 
         if (existingDocument is not null)
         {
@@ -154,7 +154,7 @@ public class FakeDocumentWriter<T> :
 
         Documents.Add(newDocument);
 
-        return Task.FromResult(newDocument);
+        return newDocument;
     }
 
     protected void GuardNotExists(

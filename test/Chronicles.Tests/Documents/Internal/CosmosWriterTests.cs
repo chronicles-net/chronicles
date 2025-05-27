@@ -186,11 +186,15 @@ public class CosmosWriterTests
     public async Task UpdateAsync_Reads_The_Document(
         string documentId,
         string partitionKey,
-        Func<TestDocument, Task> updateDocument,
+        Func<TestDocument, Task<TestDocument>> updateDocument,
         int retries,
         string storeName,
         CancellationToken cancellationToken)
     {
+        updateDocument
+            .Invoke(document)
+            .ReturnsForAnyArgs(document);
+
         await sut.UpdateAsync(
             documentId,
             partitionKey,
@@ -214,11 +218,15 @@ public class CosmosWriterTests
     public async Task UpdateAsync_Calls_UpdateDocument_With_Read_Document(
         string documentId,
         string partitionKey,
-        [Substitute] Func<TestDocument, Task> updateDocument,
+        [Substitute] Func<TestDocument, Task<TestDocument>> updateDocument,
         int retries,
         string storeName,
         CancellationToken cancellationToken)
     {
+        updateDocument
+            .Invoke(document)
+            .ReturnsForAnyArgs(document);
+
         await sut.UpdateAsync(
             documentId,
             partitionKey,
@@ -236,11 +244,15 @@ public class CosmosWriterTests
     public async Task UpdateAsync_Calls_ReplaceItem_With_Updated_Document(
         string documentId,
         string partitionKey,
-        [Substitute] Func<TestDocument, Task> updateDocument,
+        [Substitute] Func<TestDocument, Task<TestDocument>> updateDocument,
         int retries,
         string storeName,
         CancellationToken cancellationToken)
     {
+        updateDocument
+            .Invoke(document)
+            .ReturnsForAnyArgs(document);
+
         await sut.UpdateAsync(
             documentId,
             partitionKey,
@@ -264,12 +276,16 @@ public class CosmosWriterTests
 
     [Theory, AutoNSubstituteData]
     public async Task UpdateOrCreateAsync_Reads_The_Document(
-       Func<TestDocument, Task> updateDocument,
+       Func<TestDocument, Task<TestDocument>> updateDocument,
        int retries,
        string storeName,
        TestDocument defaultDocument,
        CancellationToken cancellationToken)
     {
+        updateDocument
+            .Invoke(document)
+            .ReturnsForAnyArgs(document);
+
         await sut.UpdateOrCreateAsync(
             () => defaultDocument,
             updateDocument,
@@ -290,12 +306,16 @@ public class CosmosWriterTests
 
     [Theory, AutoNSubstituteData]
     public async Task UpdateAsync_Calls_UpdateDocument_With_Found_Document(
-        [Substitute] Action<TestDocument> updateDocument,
+        [Substitute] Func<TestDocument, TestDocument> updateDocument,
         int retries,
         string storeName,
         TestDocument defaultDocument,
         CancellationToken cancellationToken)
     {
+        updateDocument
+            .Invoke(document)
+            .ReturnsForAnyArgs(document);
+
         await sut.UpdateOrCreateAsync(
             () => defaultDocument,
             updateDocument,
@@ -310,12 +330,15 @@ public class CosmosWriterTests
 
     [Theory, AutoNSubstituteData]
     public async Task UpdateAsync_Calls_UpdateDocument_With_Default_Document_If_Not_Found(
-        [Substitute] Func<TestDocument, Task> updateDocument,
+        [Substitute] Func<TestDocument, Task<TestDocument>> updateDocument,
         int retries,
         string storeName,
         TestDocument defaultDocument,
         CancellationToken cancellationToken)
     {
+        updateDocument
+            .Invoke(document)
+            .ReturnsForAnyArgs(document);
         _ = container
             .ReadItemAsync<TestDocument>(defaultDocument.Id, default, default, default)
             .ReturnsForAnyArgs<ItemResponse<TestDocument>>(c
@@ -335,12 +358,16 @@ public class CosmosWriterTests
 
     [Theory, AutoNSubstituteData]
     public async Task UpdateOrCreateAsync_Calls_ReplaceItem_If_Document_Was_Found(
-        [Substitute] Action<TestDocument> updateDocument,
+        [Substitute] Func<TestDocument, TestDocument> updateDocument,
         int retries,
         string storeName,
         TestDocument defaultDocument,
         CancellationToken cancellationToken)
     {
+        updateDocument
+            .Invoke(document)
+            .ReturnsForAnyArgs(document);
+
         await sut.UpdateOrCreateAsync(
             () => defaultDocument,
             updateDocument,
@@ -363,12 +390,15 @@ public class CosmosWriterTests
 
     [Theory, AutoNSubstituteData]
     public async Task UpdateOrCreateAsync_Calls_CreateItem_If_Document_Was_Not_Found(
-        [Substitute] Action<TestDocument> updateDocument,
+        [Substitute] Func<TestDocument, TestDocument> updateDocument,
         int retries,
         string storeName,
         TestDocument defaultDocument,
         CancellationToken cancellationToken)
     {
+        updateDocument
+            .Invoke(defaultDocument)
+            .ReturnsForAnyArgs(defaultDocument);
         _ = container
             .ReadItemAsync<TestDocument>(defaultDocument.Id, default, default, default)
             .ReturnsForAnyArgs<ItemResponse<TestDocument>>(c
