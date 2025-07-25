@@ -1,7 +1,6 @@
 ﻿using Chronicles.CourierApi.Couriers;
 using Chronicles.Cqrs;
 using Chronicles.Documents;
-using Chronicles.Documents.Testing;
 
 namespace Chronicles.CourierApi.Options;
 
@@ -16,7 +15,7 @@ public static partial class CourierEndpointExtensions
             .AllowAnonymous();
 
         group
-            .MapPost("/", static async (RegisterCourier.Command request, ICommandProcessor<RegisterCourier.Command> processor, IFakeDocumentStoreProvider storeProvider, CancellationToken cancellationToken)
+            .MapPost("/", static async (RegisterCourier.Command request, ICommandProcessor<RegisterCourier.Command> processor, CancellationToken cancellationToken)
             => await processor.ExecuteAsync(
                     CourierStreamId.Create(),
                     request,

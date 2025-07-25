@@ -12,7 +12,7 @@ builder.Services.AddOpenApi();
 builder.AddOpenApi("Courier API", "v1", "https://localhost:7084");
 
 builder.Services.ConfigureOptions<ConfigureDocumentOptions>();
-builder.Services.AddFakeChronicles(b => b
+builder.Services.AddChronicles(b => b
     .WithEventStore(evtStore => evtStore
         .AddShipmentEvents()
         .AddCourierEvents()
