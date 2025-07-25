@@ -23,6 +23,16 @@ public static class FakeDocumentExtensions
                 options)
         ?? throw new InvalidOperationException($"Unable to convert {typeof(T).Name} to {typeof(TResult).Name}");
 
+    public static TResult DeepCloneObject<TResult>(
+        this object resource,
+        JsonSerializerOptions? options = null)
+        => JsonSerializer
+            .Deserialize<TResult>(
+                JsonSerializer
+                    .Serialize(resource, resource.GetType(), options),
+                options)
+        ?? throw new InvalidOperationException($"Unable to convert {resource.GetType().Name} to {typeof(TResult).Name}");
+
     public static IEnumerable<T> DeepClone<T>(
         this IEnumerable<T> resources,
         JsonSerializerOptions? options = null)

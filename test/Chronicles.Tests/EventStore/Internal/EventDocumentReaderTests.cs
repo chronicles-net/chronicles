@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Text.Json;
 using Chronicles.Documents;
 using Chronicles.Documents.Testing;
@@ -42,18 +43,22 @@ public class EventDocumentReaderTests
     {
         var streamId = new StreamId("stream", "1");
 
-        var reader = new FakeDocumentReader<EventDocument>(options)
-        {
-            Documents = documents.Select((d, idx) => d with
+        var store = FakeDocumentStoreProvider.FromOptions(options);
+        var reader = new FakeDocumentReader<EventDocument>(store);
+
+        await store.GetStore(null)
+            .GetContainer<EventDocument>()
+            .GetOrCreatePartition((string)metadata.StreamId)
+            .UpsertDocuments(documents.Select((d, idx) => d with
             {
                 Pk = (string)metadata.StreamId,
                 Properties = d.Properties with
                 {
                     Name = EventName,
+                    Version = idx + 1,
                 },
                 Data = sampleEvents[idx],
-            }).ToList()
-        };
+            }).ToImmutableList());
 
         var sut = new EventDocumentReader(reader);
         var events = sut.ReadAsync(
@@ -75,10 +80,13 @@ public class EventDocumentReaderTests
         CancellationToken cancellationToken)
     {
         var streamId = new StreamId("stream", "1");
+        var store = FakeDocumentStoreProvider.FromOptions(options);
+        var reader = new FakeDocumentReader<EventDocument>(store);
 
-        var reader = new FakeDocumentReader<EventDocument>(options)
-        {
-            Documents = documents.Select((d, idx) => d with
+        await store.GetStore(null)
+            .GetContainer<EventDocument>()
+            .GetOrCreatePartition((string)metadata.StreamId)
+            .UpsertDocuments(documents.Select((d, idx) => d with
             {
                 Pk = (string)metadata.StreamId,
                 Properties = d.Properties with
@@ -87,8 +95,7 @@ public class EventDocumentReaderTests
                     Version = idx + 1,
                 },
                 Data = sampleEvents[idx],
-            }).ToList()
-        };
+            }).ToImmutableList());
 
         var sut = new EventDocumentReader(reader);
         var events = sut.ReadAsync(

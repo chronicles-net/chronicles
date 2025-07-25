@@ -16,102 +16,139 @@ public class FakeDocumentWriter<T> :
     IDocumentWriter<T>
     where T : IDocument
 {
-    private readonly JsonSerializerOptions? serializerOptions;
-
-    public FakeDocumentWriter()
-    {
-    }
+    private readonly IFakeDocumentStoreProvider storeProvider;
 
     public FakeDocumentWriter(
-        JsonSerializerOptions serializerOptions)
-        => this.serializerOptions = serializerOptions;
+        IFakeDocumentStoreProvider storeProvider)
+        => this.storeProvider = storeProvider;
 
-    /// <summary>
-    /// Gets or sets the list of documents to be modified by the fake writer.
-    /// </summary>
-    public IList<T> Documents { get; set; } = [];
+    ///// <summary>
+    ///// Gets or sets the list of documents to be modified by the fake writer.
+    ///// </summary>
+    //public IList<T> Documents { get; set; } = [];
 
     public IDocumentTransaction<T> CreateTransaction(
         string partitionKey,
         string? storeName = null)
-        => new FakeDocumentTransaction<T>(this, partitionKey);
+        => new FakeDocumentTransaction<T>(
+            storeProvider
+                .GetStore(storeName)
+                .GetContainer<T>()
+                .GetOrCreatePartition(partitionKey));
 
-    public virtual Task<TIn> CreateAsync<TIn>(
+    public virtual async Task<TIn> CreateAsync<TIn>(
         TIn document,
         ItemRequestOptions? options,
         string? storeName = null,
         CancellationToken cancellationToken = default)
         where TIn : T
     {
-        GuardNotExists(document);
+        var newDocument = document.DeepClone(GetSerializerOptions(storeName));
+        var success = await storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .GetOrCreatePartition(newDocument.GetPartitionKey())
+            .CreateDocument(
+                newDocument.GetDocumentId(),
+                newDocument);
+        if (!success)
+        {
+            throw new CosmosException(
+                $"Document already exists.",
+                HttpStatusCode.Conflict,
+                0,
+                string.Empty,
+                0);
+        }
 
-        var newDocument = document.DeepClone(serializerOptions);
-        Documents.Add(newDocument);
-        return Task.FromResult(newDocument);
+        return newDocument;
     }
 
-    public virtual Task<TIn> WriteAsync<TIn>(
+    public virtual async Task<TIn> WriteAsync<TIn>(
         TIn document,
         ItemRequestOptions? options,
         string? storeName = null,
         CancellationToken cancellationToken = default)
         where TIn : T
     {
-        RemoveAll(d
-            => d.GetDocumentId() == document.GetDocumentId()
-            && d.GetPartitionKey() == document.GetPartitionKey());
+        var newDocument = document.DeepClone(GetSerializerOptions(storeName));
 
-        var newDocument = document.DeepClone(serializerOptions);
-        Documents.Add(newDocument);
+        await storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .GetOrCreatePartition(newDocument.GetPartitionKey())
+            .UpsertDocument(
+                newDocument.GetDocumentId(),
+                newDocument);
 
-        return Task.FromResult(newDocument);
+        return newDocument;
     }
 
-    public virtual Task<TIn> ReplaceAsync<TIn>(
+    public virtual async Task<TIn> ReplaceAsync<TIn>(
         TIn document,
         ItemRequestOptions? options,
         string? storeName = null,
         CancellationToken cancellationToken = default)
         where TIn : T
     {
-        GuardExists(document);
+        var newDocument = document.DeepClone(GetSerializerOptions(storeName));
 
-        RemoveAll(d
-            => d.GetDocumentId() == document.GetDocumentId()
-            && d.GetPartitionKey() == document.GetPartitionKey());
+        var success = await storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .GetOrCreatePartition(newDocument.GetPartitionKey())
+            .ReplaceDocument(
+                newDocument.GetDocumentId(),
+                newDocument);
+        if (!success)
+        {
+            throw new CosmosException(
+                $"Document not found. " +
+                $"Id: {newDocument.GetDocumentId()}. " +
+                $"PartitionKey: {newDocument.GetPartitionKey()}",
+                HttpStatusCode.NotFound,
+                0,
+                string.Empty,
+                0);
+        }
 
-        var newDocument = document.DeepClone(serializerOptions);
-        Documents.Add(newDocument);
-
-        return Task.FromResult(newDocument);
+        return newDocument;
     }
 
-    public virtual Task DeleteAsync(
+    public virtual async Task DeleteAsync(
         string documentId,
         string partitionKey,
         ItemRequestOptions? options,
         string? storeName = null,
         CancellationToken cancellationToken = default)
     {
-        GuardExists(documentId, partitionKey);
-
-        RemoveAll(d
-            => d.GetDocumentId() == documentId
-            && d.GetPartitionKey() == partitionKey);
-
-        return Task.CompletedTask;
+        var success = await storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .GetPartition(partitionKey)
+            .DeleteDocument(documentId);
+        if (!success)
+        {
+            throw new CosmosException(
+                $"Document not found. " +
+                $"Id: {documentId}. " +
+                $"PartitionKey: {partitionKey}",
+                HttpStatusCode.NotFound,
+                0,
+                string.Empty,
+                0);
+        }
     }
 
-    public virtual Task DeletePartitionAsync(
+    public virtual async Task DeletePartitionAsync(
         string partitionKey,
         ItemRequestOptions? options,
         string? storeName = null,
         CancellationToken cancellationToken = default)
-    {
-        RemoveAll(d => d.GetPartitionKey() == partitionKey);
-
-        return Task.CompletedTask;
-    }
+        => await storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .DeletePartition(partitionKey);
 
     public virtual async Task<T> UpdateAsync(
         string documentId,
@@ -121,13 +158,33 @@ public class FakeDocumentWriter<T> :
         string? storeName = null,
         CancellationToken cancellationToken = default)
     {
-        var document = GuardExists(documentId, partitionKey);
+        var document = storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .GetPartition(partitionKey)
+            .GetDocument(documentId);
+        if (document is not T { } doc)
+        {
+            throw new CosmosException(
+                $"Document not found. " +
+                $"Id: {documentId}. " +
+                $"PartitionKey: {partitionKey}",
+                HttpStatusCode.NotFound,
+                0,
+                string.Empty,
+                0);
+        }
 
-        var newDocument = document.DeepClone(serializerOptions);
+        var newDocument = doc.DeepClone(GetSerializerOptions(storeName));
         newDocument = await updateDocument(newDocument);
 
-        Documents.Remove(document);
-        Documents.Add(newDocument);
+        await storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .GetPartition(partitionKey)
+            .ReplaceDocument(
+                newDocument.GetDocumentId(),
+                newDocument);
 
         return newDocument;
     }
@@ -140,73 +197,31 @@ public class FakeDocumentWriter<T> :
         CancellationToken cancellationToken = default)
     {
         var defaultDocument = getDefaultDocument();
-        var existingDocument = Documents.FirstOrDefault(d
-            => d.GetDocumentId() == defaultDocument.GetDocumentId()
-            && d.GetPartitionKey() == defaultDocument.GetPartitionKey());
-
-        var newDocument = (existingDocument ?? defaultDocument).DeepClone(serializerOptions);
-        newDocument = await updateDocument(newDocument);
-
-        if (existingDocument is not null)
+        var document = storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .GetPartition(defaultDocument.GetPartitionKey())
+            .GetDocument(defaultDocument.GetDocumentId()) switch
         {
-            Documents.Remove(existingDocument);
-        }
+            T { } doc => doc.DeepClone(GetSerializerOptions(storeName)),
+            _ => defaultDocument.DeepClone(GetSerializerOptions(storeName)),
+        };
 
-        Documents.Add(newDocument);
+        var newDocument = await updateDocument(document);
+        await storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .GetPartition(defaultDocument.GetPartitionKey())
+            .ReplaceDocument(
+                newDocument.GetDocumentId(),
+                newDocument);
 
         return newDocument;
     }
 
-    protected void GuardNotExists(
-        IDocument document)
-    {
-        var existingDocument = Documents.FirstOrDefault(d
-            => d.GetDocumentId() == document.GetDocumentId()
-            && d.GetPartitionKey() == document.GetPartitionKey());
-
-        if (existingDocument is not null)
-        {
-            throw new CosmosException(
-                $"Document already exists.",
-                HttpStatusCode.Conflict,
-                0,
-                string.Empty,
-                0);
-        }
-    }
-
-    protected T GuardExists(IDocument document)
-        => GuardExists(document.GetDocumentId(), document.GetPartitionKey());
-
-    protected T GuardExists(
-        string documentId,
-        string partitionKey)
-    {
-        var item = Documents.FirstOrDefault(d
-            => d.GetDocumentId() == documentId
-            && d.GetPartitionKey() == partitionKey);
-
-        if (item is null)
-        {
-            throw new CosmosException(
-                $"Document not found. " +
-                $"Id: {documentId}. " +
-                $"PartitionKey: {partitionKey}",
-                HttpStatusCode.NotFound,
-                0,
-                string.Empty,
-                0);
-        }
-
-        return item;
-    }
-
-    private void RemoveAll(Func<T, bool> predicate)
-    {
-        var items = Documents.Where(predicate).ToArray();
-        foreach (var item in items)
-        {
-            Documents.Remove(item);
-        }
-    }
+    private JsonSerializerOptions GetSerializerOptions(
+        string? storeName)
+        => storeProvider
+            .GetStore(storeName)
+            .SerializerOptions;
 }

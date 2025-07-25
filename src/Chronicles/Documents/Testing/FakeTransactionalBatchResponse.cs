@@ -3,18 +3,17 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Testing;
 
-public class FakeTransactionalBatchResponse<T> : TransactionalBatchResponse
+public class FakeTransactionalBatchResponse : TransactionalBatchResponse
 {
-    private readonly IList<T?> results;
     private readonly bool isSuccess;
     private readonly HttpStatusCode statusCode;
 
     public FakeTransactionalBatchResponse(
-        IList<T?> results,
+        List<FakeTransactionalBatchOperationResult<IDocument>> results,
         bool isSuccess = true,
         HttpStatusCode statusCode = HttpStatusCode.OK)
     {
-        this.results = results;
+        Results = results;
         this.isSuccess = isSuccess;
         this.statusCode = statusCode;
     }
@@ -23,10 +22,9 @@ public class FakeTransactionalBatchResponse<T> : TransactionalBatchResponse
 
     public override HttpStatusCode StatusCode => statusCode;
 
+    public List<FakeTransactionalBatchOperationResult<IDocument>> Results { get; }
+
     public override TransactionalBatchOperationResult<TResult> GetOperationResultAtIndex<TResult>(
         int index)
-        => new FakeTransactionalBatchOperationResult<TResult>(
-            results[index] is TResult r ? r : default,
-            isSuccess: true,
-            statusCode: HttpStatusCode.OK);
+        => Results[index].AsType<TResult>();
 }

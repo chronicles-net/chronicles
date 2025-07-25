@@ -5,16 +5,14 @@ namespace Chronicles.Documents.Testing;
 public class FakeDocumentTransaction<T> : IDocumentTransaction<T>
     where T : IDocument
 {
-    private readonly FakeDocumentWriter<T> writer;
-    private readonly string partitionKey;
-    private readonly List<Func<FakeDocumentWriter<T>, Task<T?>>> operations = [];
+    private readonly FakePartition partition;
+    private readonly FakePartitionTransaction transaction;
 
     public FakeDocumentTransaction(
-        FakeDocumentWriter<T> writer,
-        string partitionKey)
+        FakePartition partition)
     {
-        this.writer = writer;
-        this.partitionKey = partitionKey;
+        this.partition = partition;
+        transaction = partition.CreateTransaction();
     }
 
     public virtual IDocumentTransaction<T> Create<TIn>(
@@ -22,7 +20,8 @@ public class FakeDocumentTransaction<T> : IDocumentTransaction<T>
         TransactionalBatchItemRequestOptions? options = null)
         where TIn : T
     {
-        operations.Add(async w => await w.CreateAsync(document, null));
+        transaction.CreateDocument(document.GetDocumentId(), document);
+
         return this;
     }
 
@@ -30,11 +29,8 @@ public class FakeDocumentTransaction<T> : IDocumentTransaction<T>
         string id,
         TransactionalBatchItemRequestOptions? options = null)
     {
-        operations.Add(async w =>
-        {
-            await w.DeleteAsync(id, partitionKey, null);
-            return default;
-        });
+        transaction.DeleteDocument(id);
+
         return this;
     }
 
@@ -43,7 +39,8 @@ public class FakeDocumentTransaction<T> : IDocumentTransaction<T>
         TransactionalBatchItemRequestOptions? options = null)
         where TIn : T
     {
-        operations.Add(async w => await w.ReplaceAsync(document, null));
+        transaction.ReplaceDocument(document.GetDocumentId(), document);
+
         return this;
     }
 
@@ -52,22 +49,23 @@ public class FakeDocumentTransaction<T> : IDocumentTransaction<T>
         TransactionalBatchItemRequestOptions? options = null)
         where TIn : T
     {
-        operations.Add(async w => await w.WriteAsync(document, null));
+        transaction.UpsertDocument(document.GetDocumentId(), document);
+
         return this;
     }
 
-    public virtual Task<TransactionalBatchResponse> CommitAsync(TransactionalBatchRequestOptions options, CancellationToken cancellationToken)
+    public virtual Task<TransactionalBatchResponse> CommitAsync(
+        TransactionalBatchRequestOptions options,
+        CancellationToken cancellationToken)
         => CommitAsync(cancellationToken);
 
-    public virtual async Task<TransactionalBatchResponse> CommitAsync(CancellationToken cancellationToken)
+    public virtual async Task<TransactionalBatchResponse> CommitAsync(
+        CancellationToken cancellationToken)
     {
-        var results = new List<T?>();
-        foreach (var operation in operations)
-        {
-            var result = await operation.Invoke(writer);
-            results.Add(result);
-        }
+        var result = transaction.Commit();
 
-        return new FakeTransactionalBatchResponse<T>(results);
+        await partition.CommitAsync(result);
+
+        return result;
     }
 }

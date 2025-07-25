@@ -4,6 +4,7 @@ namespace Chronicles.Documents.Internal;
 
 public class DocumentSubscription<TDocument, TProcessor> : IDocumentSubscription
     where TProcessor : IDocumentProcessor<TDocument>
+    where TDocument : class
 {
     private readonly ChangeFeedProcessor changeFeed;
 

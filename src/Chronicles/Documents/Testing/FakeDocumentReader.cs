@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Net;
 using System.Text.Json;
@@ -17,22 +18,19 @@ namespace Chronicles.Documents.Testing;
 /// </typeparam>
 public class FakeDocumentReader<T> :
     IDocumentReader<T>
-    where T : IDocument
 {
-    private readonly JsonSerializerOptions? serializerOptions;
-
-    public FakeDocumentReader()
-    {
-    }
+    private readonly IFakeDocumentStoreProvider storeProvider;
 
     public FakeDocumentReader(
-        JsonSerializerOptions serializerOptions)
-        => this.serializerOptions = serializerOptions;
+        IFakeDocumentStoreProvider storeProvider)
+    {
+        this.storeProvider = storeProvider;
+    }
 
-    /// <summary>
-    /// Gets or sets the list of documents to return by the fake reader.
-    /// </summary>
-    public IList<T> Documents { get; set; } = [];
+    ///// <summary>
+    ///// Gets or sets the list of documents to return by the fake reader.
+    ///// </summary>
+    //public IList<T> Documents { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the list of custom results to be returned by the
@@ -53,13 +51,13 @@ public class FakeDocumentReader<T> :
         CancellationToken cancellationToken = default)
         where TResult : T
     {
-        var item = Documents
-            .OfType<TResult>()
-            .FirstOrDefault(d
-               => d.GetDocumentId() == documentId
-               && d.GetPartitionKey() == partitionKey);
+        var item = storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .GetPartition(partitionKey)
+            .GetDocument(documentId);
 
-        if (item is null)
+        if (item is not TResult { } result)
         {
             throw new CosmosException(
                 $"Document not found. " +
@@ -71,7 +69,9 @@ public class FakeDocumentReader<T> :
                 0);
         }
 
-        return Task.FromResult(item.DeepClone(serializerOptions));
+        return Task.FromResult(
+            result.DeepClone(
+                GetSerializerOptions(storeName)));
     }
 
     public virtual IAsyncEnumerable<TResult> QueryAsync<TResult>(
@@ -81,7 +81,7 @@ public class FakeDocumentReader<T> :
         string? storeName = null,
         CancellationToken cancellationToken = default)
         => GetAsyncEnumerator(
-            QueryItems<TResult>(query, partitionKey));
+            QueryItems<TResult>(query, partitionKey, storeName));
 
     public virtual Task<PagedResult<TResult>> PagedQueryAsync<TResult>(
         QueryDefinition query,
@@ -94,10 +94,10 @@ public class FakeDocumentReader<T> :
     {
         var startIndex = GetStartIndex(continuationToken);
 
-        var items = QueryItems<TResult>(query, partitionKey)
+        var items = QueryItems<TResult>(query, partitionKey, storeName)
             .Skip(startIndex)
             .Take(maxItemCount ?? 3)
-            .Select(o => o.DeepClone(serializerOptions))
+            .Select(o => o.DeepClone(GetSerializerOptions(storeName)))
             .ToList();
 
         return Task.FromResult(new PagedResult<TResult>
@@ -137,20 +137,40 @@ public class FakeDocumentReader<T> :
 
     protected IEnumerable<TResult> QueryItems<TResult>(
         QueryDefinition query,
-        string? partitionKey)
+        string? partitionKey,
+        string? storeName)
     {
         if (query is FakeQueryDefinition<T> { LinqQuery: { } linqQuery })
         {
             return linqQuery
-                .Invoke(Documents
-                    .Where(d => partitionKey == null || d.GetPartitionKey() == partitionKey)
-                    .AsQueryable())
+                .Invoke(GetDocuments(partitionKey, storeName).AsQueryable())
                 .OfType<T>()
-                .DeepClone<T, TResult>(serializerOptions);
+                .DeepClone<T, TResult>(GetSerializerOptions(storeName));
         }
 
         return QueryResults
             .OfType<TResult>()
-            .DeepClone(serializerOptions);
+            .DeepClone(GetSerializerOptions(storeName));
     }
+
+    private JsonSerializerOptions GetSerializerOptions(
+        string? storeName)
+        => storeProvider
+            .GetStore(storeName)
+            .SerializerOptions;
+
+    private ImmutableList<T> GetDocuments(
+        string? partitionKey,
+        string? storeName)
+        => partitionKey is null
+         ? [.. storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .FromAllPartitions()
+            .SelectMany(p => p.GetDocuments<T>())]
+         : storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .GetOrCreatePartition(partitionKey)
+            .GetDocuments<T>();
 }
