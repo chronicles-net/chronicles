@@ -56,13 +56,4 @@ public static partial class CourierEndpointExtensions
 
         return app;
     }
-
-    private static async Task Debug(IFakeDocumentStoreProvider storeProvider, CancellationToken cancellationToken)
-    {
-        // Debugging method to inspect the store provider
-        var store = storeProvider.GetStore(null);
-        foreach (var container in store.Containers)
-        {
-        }
-    }
 }
