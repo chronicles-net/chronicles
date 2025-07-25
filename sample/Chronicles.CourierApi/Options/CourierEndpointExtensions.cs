@@ -1,6 +1,7 @@
 ﻿using Chronicles.CourierApi.Couriers;
 using Chronicles.Cqrs;
 using Chronicles.Documents;
+using Chronicles.Documents.Testing;
 
 namespace Chronicles.CourierApi.Options;
 
@@ -15,7 +16,7 @@ public static partial class CourierEndpointExtensions
             .AllowAnonymous();
 
         group
-            .MapPost("/", static async (RegisterCourier.Command request, ICommandProcessor<RegisterCourier.Command> processor, CancellationToken cancellationToken)
+            .MapPost("/", static async (RegisterCourier.Command request, ICommandProcessor<RegisterCourier.Command> processor, IFakeDocumentStoreProvider storeProvider, CancellationToken cancellationToken)
             => await processor.ExecuteAsync(
                     CourierStreamId.Create(),
                     request,
@@ -25,7 +26,8 @@ public static partial class CourierEndpointExtensions
                     { Result: EventStore.ResultType.NotModified } => Results.StatusCode(StatusCodes.Status304NotModified),
                     { Result: EventStore.ResultType.Conflict } => Results.Conflict(),
                     { Response: { } response } => Results.Ok(response),
-                    { } => Results.Ok(),
+                    { Result: EventStore.ResultType.Changed } d => Results.Ok(),
+                    { } d => Results.Ok(),
                     _ => Results.InternalServerError(),
                 })
             .WithSummary("Register courier");
@@ -53,5 +55,14 @@ public static partial class CourierEndpointExtensions
             .WithSummary("List all couriers");
 
         return app;
+    }
+
+    private static async Task Debug(IFakeDocumentStoreProvider storeProvider, CancellationToken cancellationToken)
+    {
+        // Debugging method to inspect the store provider
+        var store = storeProvider.GetStore(null);
+        foreach (var container in store.Containers)
+        {
+        }
     }
 }
