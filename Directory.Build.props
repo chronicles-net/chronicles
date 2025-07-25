@@ -2,14 +2,16 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- Solution wide properties -->
-   <PropertyGroup Label="Assembly Naming">
+  <PropertyGroup Label="Assembly Naming">
     <Company>Chronicles</Company>
     <Authors>Chronicles</Authors>
+    <Description></Description>
     <NeutralLanguage>en</NeutralLanguage>
     <DefaultLanguage>en-US</DefaultLanguage>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>embedded</DebugType>
     <NoWarn>NU1605;NU5104</NoWarn>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <PropertyGroup Label="Analyzer settings">

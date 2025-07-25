@@ -67,7 +67,7 @@ public static class ServiceCollectionExtensions
         app.MapOpenApi();
         app.MapScalarApiReference(o =>
         {
-            o.HideDownloadButton = true;
+            o.DocumentDownloadType = DocumentDownloadType.None;
             o.HideModels = true;
             o.EnabledTargets = [ScalarTarget.Shell];
             o.EnabledClients = [ScalarClient.Curl];

@@ -21,6 +21,7 @@ public class ChangeFeedFactory : IChangeFeedFactory
         string subscriptionName,
         Container.ChangesHandler<T> onChanges,
         Container.ChangeFeedMonitorErrorDelegate? onError = null)
+        where T : class
     {
         var options = subscriptionOptions.Get(subscriptionName);
         var container = containerProvider.GetContainer<T>(storeName);

@@ -25,7 +25,8 @@ public static partial class CourierEndpointExtensions
                     { Result: EventStore.ResultType.NotModified } => Results.StatusCode(StatusCodes.Status304NotModified),
                     { Result: EventStore.ResultType.Conflict } => Results.Conflict(),
                     { Response: { } response } => Results.Ok(response),
-                    { } => Results.Ok(),
+                    { Result: EventStore.ResultType.Changed } d => Results.Ok(),
+                    { } d => Results.Ok(),
                     _ => Results.InternalServerError(),
                 })
             .WithSummary("Register courier");

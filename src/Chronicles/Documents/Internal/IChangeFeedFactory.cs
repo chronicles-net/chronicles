@@ -21,5 +21,6 @@ public interface IChangeFeedFactory
         string? storeName,
         string subscriptionName,
         Container.ChangesHandler<T> onChanges,
-        Container.ChangeFeedMonitorErrorDelegate? onError = null);
+        Container.ChangeFeedMonitorErrorDelegate? onError = null)
+        where T : class;
 }

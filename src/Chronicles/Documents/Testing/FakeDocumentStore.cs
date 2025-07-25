@@ -1,205 +1,70 @@
+using System.Collections.Immutable;
 using System.Text.Json;
-using Microsoft.Azure.Cosmos;
+using Chronicles.Documents.Internal;
 
 namespace Chronicles.Documents.Testing;
 
-public sealed class FakeDocumentStore<T> :
-    IDocumentReader<T>,
-    IDocumentWriter<T>
-    where T : IDocument
+public class FakeDocumentStore
 {
-    public FakeDocumentStore()
-        : this(
-            new FakeDocumentReader<T>(),
-            new FakeDocumentWriter<T>())
-    {
-    }
-
-    public FakeDocumentStore(JsonSerializerOptions options)
-        : this(
-            new FakeDocumentReader<T>(options),
-            new FakeDocumentWriter<T>(options))
-    {
-    }
+    private readonly ImmutableDictionary<string, FakeContainer> containers;
+    private readonly IContainerNameRegistry registry;
 
     public FakeDocumentStore(
-        FakeDocumentReader<T> reader,
-        FakeDocumentWriter<T> writer)
+        IContainerNameRegistry registry,
+        IDocumentStore store)
     {
-        Reader = reader;
-        Writer = writer;
-        writer.Documents = reader.Documents;
+        containers = store.Options
+            .Initialization
+            .Containers
+            .OfType<DocumentInitializer>()
+            .Select(initializer => new FakeContainer(
+                registry.GetContainerName(
+                    initializer.DocumentType,
+                    store.Name)))
+            .ToImmutableDictionary(
+                container => container.Name,
+                container => container);
+        this.registry = registry;
+        Name = store.Name;
+        SerializerOptions = store.Options.SerializerOptions;
     }
 
-    public IList<T> Documents
+    protected FakeDocumentStore(
+        IContainerNameRegistry registry,
+        string storeName,
+        string containerName,
+        JsonSerializerOptions serializerOptions)
     {
-        get => Reader.Documents;
-        set
-        {
-            Reader.Documents = value;
-            Writer.Documents = value;
-        }
+        this.registry = registry;
+        this.containers = new[] { new FakeContainer(containerName) }
+            .ToImmutableDictionary(
+                container => container.Name,
+                container => container);
+        Name = storeName;
+        SerializerOptions = serializerOptions;
     }
 
-    public IList<object> QueryResults
-    {
-        get => Reader.QueryResults;
-        set
-        {
-            Reader.QueryResults = value;
-        }
-    }
+    public ImmutableList<FakeContainer> Containers => [.. containers.Values];
 
-    public FakeDocumentReader<T> Reader { get; }
+    public string Name { get; }
 
-    public FakeDocumentWriter<T> Writer { get; }
+    public JsonSerializerOptions SerializerOptions { get; }
 
-    QueryDefinition IDocumentReader<T>.CreateQuery<TResult>(
-        QueryExpression<T, TResult> query,
-        string? storeName)
-        => ((IDocumentReader<T>)Reader).CreateQuery(query, storeName);
+    public FakeContainer GetContainer<T>()
+        => containers.TryGetValue(
+            registry.GetContainerName<T>(Name),
+            out var container)
+         ? container
+         : throw new KeyNotFoundException(
+             $"Container for type '{typeof(T).Name}' not found in store '{Name}'.");
 
-    Task<TResult> IDocumentReader<T>.ReadAsync<TResult>(
-        string documentId,
-        string partitionKey,
-        ItemRequestOptions? options,
-        string? storeName,
-        CancellationToken cancellationToken)
-        => ((IDocumentReader<T>)Reader)
-            .ReadAsync<TResult>(
-                documentId,
-                partitionKey,
-                options,
-                storeName,
-                cancellationToken);
-
-    IAsyncEnumerable<TResult> IDocumentReader<T>.QueryAsync<TResult>(
-        QueryDefinition query,
-        string? partitionKey,
-        QueryRequestOptions? options,
-        string? storeName,
-        CancellationToken cancellationToken)
-        => ((IDocumentReader<T>)Reader)
-            .QueryAsync<TResult>(
-                query,
-                partitionKey,
-                options,
-                storeName,
-                cancellationToken);
-
-    Task<PagedResult<TResult>> IDocumentReader<T>.PagedQueryAsync<TResult>(
-        QueryDefinition query,
-        string? partitionKey,
-        int? maxItemCount,
-        string? continuationToken,
-        QueryRequestOptions? options,
-        string? storeName,
-        CancellationToken cancellationToken)
-        => ((IDocumentReader<T>)Reader)
-            .PagedQueryAsync<TResult>(
-                query,
-                partitionKey,
-                maxItemCount,
-                continuationToken,
-                options,
-                storeName,
-                cancellationToken);
-
-    Task<TIn> IDocumentWriter<T>.CreateAsync<TIn>(
-        TIn document,
-        ItemRequestOptions? options,
-        string? storeName,
-        CancellationToken cancellationToken)
-        => ((IDocumentWriter<T>)Writer)
-            .CreateAsync(
-                document,
-                options,
-                storeName,
-                cancellationToken);
-
-    Task<TIn> IDocumentWriter<T>.WriteAsync<TIn>(
-        TIn document,
-        ItemRequestOptions? options,
-        string? storeName,
-        CancellationToken cancellationToken)
-        => ((IDocumentWriter<T>)Writer)
-            .WriteAsync(
-                document,
-                options,
-                storeName,
-                cancellationToken);
-
-    Task<TIn> IDocumentWriter<T>.ReplaceAsync<TIn>(
-        TIn document,
-        ItemRequestOptions? options,
-        string? storeName,
-        CancellationToken cancellationToken)
-        => ((IDocumentWriter<T>)Writer)
-            .ReplaceAsync(
-                document,
-                options,
-                storeName,
-                cancellationToken);
-
-    Task IDocumentWriter<T>.DeleteAsync(
-        string documentId,
-        string partitionKey,
-        ItemRequestOptions? options,
-        string? storeName,
-        CancellationToken cancellationToken)
-        => ((IDocumentWriter<T>)Writer)
-            .DeleteAsync(
-                documentId,
-                partitionKey,
-                options,
-                storeName,
-                cancellationToken);
-
-    Task IDocumentWriter<T>.DeletePartitionAsync(
-        string partitionKey,
-        ItemRequestOptions? options,
-        string? storeName,
-        CancellationToken cancellationToken)
-        => ((IDocumentWriter<T>)Writer)
-            .DeletePartitionAsync(
-                partitionKey,
-                options,
-                storeName,
-                cancellationToken);
-
-    Task<T> IDocumentWriter<T>.UpdateAsync(
-        string documentId,
-        string partitionKey,
-        Func<T, Task<T>> updateDocument,
-        int retries,
-        string? storeName,
-        CancellationToken cancellationToken)
-        => ((IDocumentWriter<T>)Writer)
-            .UpdateAsync(
-                documentId,
-                partitionKey,
-                updateDocument,
-                retries,
-                storeName,
-                cancellationToken);
-
-    Task<T> IDocumentWriter<T>.UpdateOrCreateAsync(
-        Func<T> getDefaultDocument,
-        Func<T, Task<T>> updateDocument,
-        int retries,
-        string? storeName,
-        CancellationToken cancellationToken)
-        => ((IDocumentWriter<T>)Writer)
-            .UpdateOrCreateAsync(
-                getDefaultDocument,
-                updateDocument,
-                retries,
-                storeName,
-                cancellationToken);
-
-    IDocumentTransaction<T> IDocumentWriter<T>.CreateTransaction(
-        string partitionKey,
-        string? storeName)
-        => ((IDocumentWriter<T>)Writer)
-            .CreateTransaction(partitionKey);
+    public static FakeDocumentStore FromOptions(
+        string storeName,
+        string containerName,
+        JsonSerializerOptions serializerOptions)
+        => new FakeDocumentStore(
+            new FakeContainerNameRegistry(containerName),
+            storeName,
+            containerName,
+            serializerOptions);
 }

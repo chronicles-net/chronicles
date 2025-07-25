@@ -4,7 +4,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var cosmos = builder
     .AddAzureCosmosDB("cosmosdb")
-    .AddDatabase("CourierDB")
+    //.AddCosmosDatabase("CourierDB")
     .RunAsEmulator(c => c
         .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
