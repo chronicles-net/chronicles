@@ -10,16 +10,21 @@
   <PropertyGroup Label="Global Nuget Package metadata">
     <RepositoryUrl>https://github.com/chronicles-net/chronicles</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <EnablePackageValidation>true</EnablePackageValidation>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/chronicles-net/chronicles</PackageProjectUrl>
     <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\docs\images\icon.png" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\docs\images\icon.png" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
   </ItemGroup>
- 
+  
   <PropertyGroup Label="Build instructions">
     <OutputType>Library</OutputType>
     <TargetFramework>net9.0</TargetFramework>
