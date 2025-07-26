@@ -1,8 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Threading.Tasks.Dataflow;
+using Chronicles.Documents;
 
-namespace Chronicles.Documents.Testing;
+namespace Chronicles.Testing;
 
 public class FakePartition(
     IFakePartitionChangeTracking changeTracking,

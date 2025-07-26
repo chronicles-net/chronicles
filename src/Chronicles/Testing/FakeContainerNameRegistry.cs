@@ -1,6 +1,6 @@
 using Chronicles.Documents.Internal;
 
-namespace Chronicles.Documents.Testing;
+namespace Chronicles.Testing;
 
 public class FakeContainerNameRegistry(
     string containerName)

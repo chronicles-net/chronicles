@@ -1,6 +1,7 @@
+using Chronicles.Documents;
 using Microsoft.Azure.Cosmos;
 
-namespace Chronicles.Documents.Testing;
+namespace Chronicles.Testing;
 
 public class FakeDocumentTransaction<T> : IDocumentTransaction<T>
     where T : IDocument

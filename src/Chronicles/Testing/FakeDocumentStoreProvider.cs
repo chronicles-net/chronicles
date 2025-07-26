@@ -1,8 +1,9 @@
 ﻿using System.Collections.Immutable;
 using System.Text.Json;
+using Chronicles.Documents;
 using Chronicles.Documents.Internal;
 
-namespace Chronicles.Documents.Testing;
+namespace Chronicles.Testing;
 
 public interface IFakeDocumentStoreProvider
 {

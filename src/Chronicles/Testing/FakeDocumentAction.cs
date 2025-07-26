@@ -1,4 +1,4 @@
-﻿namespace Chronicles.Documents.Testing;
+﻿namespace Chronicles.Testing;
 
 public enum FakeDocumentAction
 {

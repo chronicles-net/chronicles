@@ -1,8 +1,9 @@
 using System.Net;
 using System.Text.Json;
+using Chronicles.Documents;
 using Microsoft.Azure.Cosmos;
 
-namespace Chronicles.Documents.Testing;
+namespace Chronicles.Testing;
 
 /// <summary>
 /// Represents a fake <see cref="IDocumentWriter{T}"/> that can be

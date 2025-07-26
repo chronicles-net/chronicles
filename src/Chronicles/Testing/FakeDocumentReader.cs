@@ -2,11 +2,12 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Net;
 using System.Text.Json;
+using Chronicles.Documents;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Serialization.HybridRow;
 using static System.FormattableString;
 
-namespace Chronicles.Documents.Testing;
+namespace Chronicles.Testing;
 
 /// <summary>
 /// Represents a fake <see cref="IDocumentReader{T}"/> that can be

@@ -1,7 +1,7 @@
 using Chronicles.Documents;
 using Chronicles.Documents.DependencyInjection;
 using Chronicles.Documents.Internal;
-using Chronicles.Documents.Testing;
+using Chronicles.Testing;
 using Microsoft.Extensions.Options;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure

@@ -1,10 +1,10 @@
 using System.Collections.Immutable;
 using System.Text.Json;
 using Chronicles.Documents;
-using Chronicles.Documents.Testing;
 using Chronicles.EventStore;
 using Chronicles.EventStore.Internal;
 using Chronicles.EventStore.Internal.Converters;
+using Chronicles.Testing;
 using Microsoft.Azure.Cosmos;
 using NSubstitute;
 

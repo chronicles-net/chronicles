@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace Chronicles.Documents.Testing;
+namespace Chronicles.Testing;
 
 public interface IFakePartitionChangeTracking
 {

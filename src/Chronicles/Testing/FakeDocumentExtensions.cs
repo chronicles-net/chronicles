@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Chronicles.Documents.Testing;
+namespace Chronicles.Testing;
 
 public static class FakeDocumentExtensions
 {

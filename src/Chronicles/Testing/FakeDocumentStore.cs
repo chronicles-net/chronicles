@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using System.Text.Json;
 using Chronicles.Documents.Internal;
 
-namespace Chronicles.Documents.Testing;
+namespace Chronicles.Testing;
 
 public class FakeDocumentStore
 {
@@ -36,7 +36,7 @@ public class FakeDocumentStore
         JsonSerializerOptions serializerOptions)
     {
         this.registry = registry;
-        this.containers = new[] { new FakeContainer(containerName) }
+        containers = new[] { new FakeContainer(containerName) }
             .ToImmutableDictionary(
                 container => container.Name,
                 container => container);

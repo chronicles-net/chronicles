@@ -1,7 +1,8 @@
-﻿using Chronicles.Documents.Internal;
+﻿using Chronicles.Documents;
+using Chronicles.Documents.Internal;
 using Microsoft.Azure.Cosmos;
 
-namespace Chronicles.Documents.Testing;
+namespace Chronicles.Testing;
 
 public class FakeChangeFeedFactory(
     IFakeDocumentStoreProvider storeProvider)

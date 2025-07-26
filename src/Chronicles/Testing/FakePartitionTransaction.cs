@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
+using Chronicles.Documents;
 
-namespace Chronicles.Documents.Testing;
+namespace Chronicles.Testing;
 
 public class FakePartitionTransaction
 {
