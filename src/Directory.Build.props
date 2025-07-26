@@ -20,9 +20,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-    <None Include="..\..\docs\images\icon.png" Pack="true" PackagePath="\" />
-    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Visible="false"/>
+    <None Include="..\..\docs\images\icon.png" Pack="true" PackagePath="\" Visible="false"/>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" Visible="false"/>
   </ItemGroup>
   
   <PropertyGroup Label="Build instructions">

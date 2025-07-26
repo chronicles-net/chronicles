@@ -41,6 +41,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chronicles.OrderApi", "samp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chronicles.RestaurantApi", "sample\Chronicles.RestaurantApi\Chronicles.RestaurantApi.csproj", "{90E7B44B-336A-4B89-B984-E2427D92DAE2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B0FD6A50-8F13-406B-B70F-D4C89CA367CD}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +90,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{92A96794-A983-4C81-8401-52C57F1B642B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{EAA9EBB3-C403-492E-93D2-8504DE835DE4} = {B0FD6A50-8F13-406B-B70F-D4C89CA367CD}
 		{2791EDD4-A9E2-41F5-80E7-71B2CE858C59} = {6BAD8AD6-1D47-4173-9E01-A65E02F9D40F}
 		{B12579C9-9C1C-4E3E-BCB3-77B82377E854} = {C3BEEC4B-8125-4C4D-B2FF-EA58E1F172A6}
 		{950EBFF7-AB06-49D2-9D79-6D982281CFF1} = {C3BEEC4B-8125-4C4D-B2FF-EA58E1F172A6}
