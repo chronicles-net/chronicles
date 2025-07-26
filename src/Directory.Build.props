@@ -45,19 +45,4 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
-  <!-- <PropertyGroup Label="configurations">
-    <Configurations>Debug;Release</Configurations>
-    <Platforms>AnyCPU</Platforms>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DefineConstants>TRACE;AOT;</DefineConstants>
-    <IsAotCompatible>true</IsAotCompatible>
-  </PropertyGroup>
-  
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DefineConstants>TRACE;AOT;</DefineConstants>
-    <IsAotCompatible>true</IsAotCompatible>
-  </PropertyGroup>
-   -->
 </Project>
