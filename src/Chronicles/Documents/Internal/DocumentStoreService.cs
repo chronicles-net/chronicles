@@ -2,13 +2,13 @@ using Microsoft.Extensions.Hosting;
 
 namespace Chronicles.Documents.Internal;
 
-public class DocumentStoreService : IHostedService
+internal class DocumentStoreService : IHostedService
 {
-    private readonly ISubscriptionManager subscriptionManager;
+    private readonly ISubscriptionService subscriptionManager;
     private readonly IDocumentStoreInitializer initializer;
 
     public DocumentStoreService(
-        ISubscriptionManager subscriptionManager,
+        ISubscriptionService subscriptionManager,
         IDocumentStoreInitializer initializer)
     {
         this.subscriptionManager = subscriptionManager;
@@ -17,8 +17,12 @@ public class DocumentStoreService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await initializer.InitializeAsync(cancellationToken).ConfigureAwait(false);
-        await subscriptionManager.StartAsync(cancellationToken).ConfigureAwait(false);
+        await initializer
+            .InitializeAsync(cancellationToken)
+            .ConfigureAwait(false);
+        await subscriptionManager
+            .StartAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

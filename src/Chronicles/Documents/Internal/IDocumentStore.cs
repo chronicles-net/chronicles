@@ -1,6 +1,6 @@
 namespace Chronicles.Documents.Internal;
 
-public interface IDocumentStore
+internal interface IDocumentStore
 {
     string Name { get; }
 

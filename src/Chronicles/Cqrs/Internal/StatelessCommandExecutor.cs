@@ -12,5 +12,6 @@ internal class StatelessCommandExecutor<TCommand, THandler>(
         IAsyncEnumerable<StreamEvent> events,
         ICommandContext<TCommand> context,
         CancellationToken cancellationToken)
+        // Note: The events parameter is not used in stateless command handlers, so no events are read.
         => await handler.ExecuteAsync(context, cancellationToken);
 }

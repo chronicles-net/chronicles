@@ -1,6 +1,6 @@
 ﻿namespace Chronicles.Documents.Internal;
 
-public interface IDocumentSubscription
+internal interface IDocumentSubscription
 {
     string SubscriptionName { get; }
 

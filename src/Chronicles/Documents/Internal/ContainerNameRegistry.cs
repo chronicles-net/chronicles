@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Chronicles.Documents.Internal;
 
-public class ContainerNameRegistry : IContainerNameRegistry
+internal class ContainerNameRegistry : IContainerNameRegistry
 {
     private readonly ConcurrentDictionary<DocumentTypeKey, string> names;
 

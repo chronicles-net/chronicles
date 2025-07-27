@@ -2,6 +2,12 @@ using Chronicles.EventStore;
 
 namespace Chronicles.Cqrs;
 
+/// <summary>
+/// Defines a projection that builds and maintains a state object by consuming events from an event stream.
+/// State projections are used to derive and update read models or aggregate state from a sequence of events.
+/// Use this interface when you need to reconstruct or update state based on event sourcing,
+/// typically for queries or business logic that depends on the current state.
+/// </summary>
 public interface IStateProjection<TState>
 {
     /// <summary>

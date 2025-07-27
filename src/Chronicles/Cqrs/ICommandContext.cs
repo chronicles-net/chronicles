@@ -40,10 +40,18 @@ public interface ICommandContext<TCommand>
     IStateContext State { get; }
 }
 
+/// <summary>
+/// Represents a command context that provides access to both the command and its associated state.
+/// </summary>
+/// <typeparam name="TCommand">The type of the command being executed.</typeparam>
+/// <typeparam name="TState">The type of the state associated with the command.</typeparam>
 public interface ICommandContext<TCommand, TState>
     : ICommandContext<TCommand>
     where TCommand : class
     where TState : class
 {
+    /// <summary>
+    /// Gets the current state associated with the command.
+    /// </summary>
     TState CurrentState { get; }
 }

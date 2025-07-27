@@ -3,7 +3,7 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
 
-public class DocumentStoreInitializer : IDocumentStoreInitializer
+internal class DocumentStoreInitializer : IDocumentStoreInitializer
 {
     private readonly ICosmosClientProvider provider;
     private readonly IEnumerable<IDocumentStore> stores;

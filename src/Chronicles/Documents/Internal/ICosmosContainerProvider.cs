@@ -5,7 +5,7 @@ namespace Chronicles.Documents.Internal;
 /// <summary>
 /// Represents a provider for cosmos <see cref="Container"/> instances.
 /// </summary>
-public interface ICosmosContainerProvider
+internal interface ICosmosContainerProvider
 {
     /// <summary>
     /// Gets the configured container for the specified document type.

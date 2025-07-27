@@ -3,7 +3,7 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
 
-public class CosmosWriter<T> : IDocumentWriter<T>
+internal class CosmosWriter<T> : IDocumentWriter<T>
     where T : IDocument
 {
     private readonly ICosmosContainerProvider containers;

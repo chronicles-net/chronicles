@@ -1,6 +1,6 @@
-namespace Chronicles.EventStore;
+namespace Chronicles.EventStore.Internal;
 
-public class StateContext : IStateContext
+internal class StateContext : IStateContext
 {
     private readonly Dictionary<StateKey, object> states = [];
 

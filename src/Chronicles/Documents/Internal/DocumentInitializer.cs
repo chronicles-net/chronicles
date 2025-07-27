@@ -2,7 +2,7 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
 
-public class DocumentInitializer : IContainerInitializer
+internal class DocumentInitializer : IContainerInitializer
 {
     private readonly Action<ContainerProperties> containerProperties;
     private readonly ThroughputProperties? throughput;

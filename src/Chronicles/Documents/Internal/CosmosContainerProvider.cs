@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Chronicles.Documents.Internal;
 
-public class CosmosContainerProvider : ICosmosContainerProvider
+internal class CosmosContainerProvider : ICosmosContainerProvider
 {
     private readonly ConcurrentDictionary<DocumentTypeKey, Container> containers = new();
     private readonly ICosmosClientProvider clientProvider;

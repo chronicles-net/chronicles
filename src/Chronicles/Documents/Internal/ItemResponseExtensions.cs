@@ -2,7 +2,7 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
 
-public static class ItemResponseExtensions
+internal static class ItemResponseExtensions
 {
     public static async Task<T> GetItemAsync<T>(
         this Task<ItemResponse<T>> responseTask)

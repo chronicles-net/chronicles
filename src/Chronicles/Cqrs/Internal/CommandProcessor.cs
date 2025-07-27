@@ -1,4 +1,5 @@
 using Chronicles.EventStore;
+using Chronicles.EventStore.Internal;
 
 namespace Chronicles.Cqrs.Internal;
 

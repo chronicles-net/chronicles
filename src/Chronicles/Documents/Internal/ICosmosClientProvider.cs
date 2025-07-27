@@ -6,7 +6,7 @@ namespace Chronicles.Documents.Internal;
 /// Represents a provider for configured
 /// <see cref="CosmosClient"/> instances.
 /// </summary>
-public interface ICosmosClientProvider
+internal interface ICosmosClientProvider
 {
     /// <summary>
     /// Get the default <see cref="CosmosClient"/> instance.

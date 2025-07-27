@@ -3,7 +3,7 @@ using Microsoft.Azure.Cosmos.Linq;
 
 namespace Chronicles.Documents.Internal;
 
-public class CosmosLinqQuery : ICosmosLinqQuery
+internal class CosmosLinqQuery : ICosmosLinqQuery
 {
     public QueryDefinition GetQueryDefinition<T>(IQueryable<T> queryable)
         => queryable.ToQueryDefinition();

@@ -3,7 +3,7 @@ namespace Chronicles.Documents.Internal;
 /// <summary>
 /// Represents a registry for document types to container name mappings.
 /// </summary>
-public interface IContainerNameRegistry
+internal interface IContainerNameRegistry
 {
     /// <summary>
     /// Gets the container name for the specified type.

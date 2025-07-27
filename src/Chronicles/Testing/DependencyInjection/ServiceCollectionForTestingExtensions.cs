@@ -25,7 +25,7 @@ public static class ServiceCollectionForTestingExtensions
             .AddSingleton<IFakeDocumentStoreProvider, FakeDocumentStoreProvider>()
             .AddSingleton<IContainerNameRegistry, ContainerNameRegistry>()
             .AddSingleton<IChangeFeedFactory, FakeChangeFeedFactory>()
-            .AddSingleton<ISubscriptionManager, SubscriptionManager>()
+            .AddSingleton<ISubscriptionService, SubscriptionService>()
             .AddSingleton<IDocumentStoreInitializer, FakeDocumentStoreInitializer>()
             .AddHostedService<DocumentStoreService>();
 

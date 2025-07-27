@@ -22,7 +22,12 @@ public class CommandOptions
     /// Gets or sets the number of times to retry the command when receiving a conflict.
     /// <see cref="ConflictBehavior"/> must be set to <see cref="CommandConflictBehavior.Retry"/> to take effect.
     /// </summary>
-    /// <remarks>Default count is 3</remarks>
+    /// <remarks>
+    /// Default count is 3.
+    /// <para>
+    ///   Note: This will rerun the command handler and all events will be replayed.
+    /// </para>
+    /// </remarks>
     public int Retry { get; set; } = 3;
 
     /// <summary>

@@ -1,5 +1,5 @@
 namespace Chronicles.Documents.Internal;
 
-public record DocumentTypeKey(
+internal record DocumentTypeKey(
     Type DocumentType,
     string StoreName);

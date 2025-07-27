@@ -2,7 +2,7 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
 
-public class CosmosReader<T> : IDocumentReader<T>
+internal class CosmosReader<T> : IDocumentReader<T>
 {
     private readonly ICosmosContainerProvider containers;
     private readonly ICosmosLinqQuery linqQuery;

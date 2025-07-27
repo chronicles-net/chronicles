@@ -1,6 +1,7 @@
 ﻿using Chronicles.Cqrs.Internal.EventProcessors;
 using Chronicles.Documents;
 using Chronicles.EventStore;
+using Chronicles.EventStore.Internal;
 
 namespace Chronicles.Cqrs.Internal;
 

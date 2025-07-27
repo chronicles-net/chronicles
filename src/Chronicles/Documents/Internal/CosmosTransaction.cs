@@ -2,7 +2,7 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
 
-public class CosmosTransaction<T> : IDocumentTransaction<T>
+internal class CosmosTransaction<T> : IDocumentTransaction<T>
     where T : IDocument
 {
     private readonly TransactionalBatch transaction;

@@ -2,7 +2,7 @@ using Microsoft.Extensions.Options;
 
 namespace Chronicles.Documents.Internal;
 
-public class DocumentStore : IDocumentStore
+internal class DocumentStore : IDocumentStore
 {
     private readonly IOptionsMonitor<DocumentOptions> options;
 

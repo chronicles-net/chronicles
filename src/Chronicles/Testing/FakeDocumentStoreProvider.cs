@@ -15,7 +15,7 @@ public class FakeDocumentStoreProvider
 {
     private readonly ImmutableDictionary<string, FakeDocumentStore> stores;
 
-    public FakeDocumentStoreProvider(
+    internal FakeDocumentStoreProvider(
         IContainerNameRegistry registry,
         IEnumerable<IDocumentStore> stores)
     {

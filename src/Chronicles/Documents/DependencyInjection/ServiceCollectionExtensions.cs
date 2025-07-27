@@ -7,8 +7,19 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.DependencyInjection;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
+/// <summary>
+/// Provides extension methods for configuring Chronicles document stores and related services in the dependency injection container.
+/// Use these methods to register Cosmos DB document storage, readers, writers, and supporting infrastructure for event sourcing and projections.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Adds and configures Chronicles document store services to the dependency injection container.
+    /// Use this method to enable Cosmos DB-backed document store, event sourcing, and projections in your application.
+    /// </summary>
+    /// <param name="services">The service collection to configure.</param>
+    /// <param name="builder">Optional action to further configure the document store using a <see cref="DocumentStoreBuilder"/>.</param>
+    /// <returns>A <see cref="ChroniclesBuilder"/> for further configuration.</returns>
     public static ChroniclesBuilder AddChronicles(
         this IServiceCollection services,
         Action<DocumentStoreBuilder>? builder = null)
@@ -26,7 +37,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICosmosContainerProvider, CosmosContainerProvider>()
             .AddSingleton<ICosmosLinqQuery, CosmosLinqQuery>()
             .AddSingleton<IChangeFeedFactory, ChangeFeedFactory>()
-            .AddSingleton<ISubscriptionManager, SubscriptionManager>()
+            .AddSingleton<ISubscriptionService, SubscriptionService>()
             .AddSingleton<IDocumentStoreInitializer, DocumentStoreInitializer>()
             .AddHostedService<DocumentStoreService>();
 

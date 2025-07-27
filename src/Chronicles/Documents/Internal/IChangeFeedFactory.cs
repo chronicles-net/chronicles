@@ -6,7 +6,7 @@ namespace Chronicles.Documents.Internal;
 /// Represents a factory for creating a <see cref="ChangeFeedProcessor"/>
 /// for a <see cref="IDocument"/>.
 /// </summary>
-public interface IChangeFeedFactory
+internal interface IChangeFeedFactory
 {
     /// <summary>
     /// Create a <see cref="ChangeFeedProcessor"/>.

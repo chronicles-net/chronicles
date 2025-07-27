@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 
 namespace Chronicles.Documents.Internal;
 
-public class ChangeFeedFactory : IChangeFeedFactory
+internal class ChangeFeedFactory : IChangeFeedFactory
 {
     private readonly ICosmosContainerProvider containerProvider;
     private readonly IOptionsMonitor<SubscriptionOptions> subscriptionOptions;

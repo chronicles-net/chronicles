@@ -8,8 +8,20 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Chronicles.Cqrs.DependencyInjection;
 
+/// <summary>
+/// Provides extension methods for configuring event processors in the Chronicles CQRS pipeline.
+/// Use these methods to register projections, consumers, and processors for handling events and building read models.
+/// </summary>
 public static class EventProcessorBuilderExtensions
 {
+    /// <summary>
+    /// Registers a document projection processor for the specified document and consumer types.
+    /// Use this method to configure event processing that builds and maintains document-based read models from event streams.
+    /// </summary>
+    /// <typeparam name="TDocument">The type of the document being projected.</typeparam>
+    /// <typeparam name="TConsumer">The type of the document projection consumer.</typeparam>
+    /// <param name="builder">The event processor builder to configure.</param>
+    /// <returns>The updated <see cref="EventProcessorBuilder"/> instance.</returns>
     public static EventProcessorBuilder AddDocumentProjection<TDocument, TConsumer>(
         this EventProcessorBuilder builder)
         where TDocument : class, IDocument
@@ -35,6 +47,14 @@ public static class EventProcessorBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Registers a state projection processor for the specified state and consumer types.
+    /// Use this method to configure event processing that builds and maintains state-based read models from event streams.
+    /// </summary>
+    /// <typeparam name="TState">The type of the state being projected.</typeparam>
+    /// <typeparam name="TConsumer">The type of the state projection consumer.</typeparam>
+    /// <param name="builder">The event processor builder to configure.</param>
+    /// <returns>The updated <see cref="EventProcessorBuilder"/> instance.</returns>
     public static EventProcessorBuilder AddStateProjection<TState, TConsumer>(
         this EventProcessorBuilder builder)
         where TState : class
@@ -48,6 +68,14 @@ public static class EventProcessorBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Registers a state consumer processor for the specified state and consumer types.
+    /// Use this method to configure event processing that reacts to events and updates state, typically for side effects or notifications.
+    /// </summary>
+    /// <typeparam name="TState">The type of the state being consumed.</typeparam>
+    /// <typeparam name="TConsumer">The type of the state consumer.</typeparam>
+    /// <param name="builder">The event processor builder to configure.</param>
+    /// <returns>The updated <see cref="EventProcessorBuilder"/> instance.</returns>
     public static EventProcessorBuilder AddStateConsumer<TState, TConsumer>(
         this EventProcessorBuilder builder)
         where TState : class
@@ -61,6 +89,15 @@ public static class EventProcessorBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Registers a publishing document projection processor for the specified document, consumer, and publisher types.
+    /// Use this method to configure event processing that builds document-based read models and publishes them to external systems after processing.
+    /// </summary>
+    /// <typeparam name="TDocument">The type of the document being projected.</typeparam>
+    /// <typeparam name="TConsumer">The type of the document projection consumer.</typeparam>
+    /// <typeparam name="TPublisher">The type of the document publisher.</typeparam>
+    /// <param name="builder">The event processor builder to configure.</param>
+    /// <returns>The updated <see cref="EventProcessorBuilder"/> instance.</returns>
     public static EventProcessorBuilder AddPublishingDocumentProjection<TDocument, TConsumer, TPublisher>(
         this EventProcessorBuilder builder)
         where TDocument : class, IDocument

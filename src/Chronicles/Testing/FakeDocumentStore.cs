@@ -9,7 +9,7 @@ public class FakeDocumentStore
     private readonly ImmutableDictionary<string, FakeContainer> containers;
     private readonly IContainerNameRegistry registry;
 
-    public FakeDocumentStore(
+    internal FakeDocumentStore(
         IContainerNameRegistry registry,
         IDocumentStore store)
     {
@@ -29,7 +29,7 @@ public class FakeDocumentStore
         SerializerOptions = store.Options.SerializerOptions;
     }
 
-    protected FakeDocumentStore(
+    private FakeDocumentStore(
         IContainerNameRegistry registry,
         string storeName,
         string containerName,

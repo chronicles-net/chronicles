@@ -2,7 +2,8 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
 
-public class DocumentSubscription<TDocument, TProcessor> : IDocumentSubscription
+internal class DocumentSubscription<TDocument, TProcessor>
+    : IDocumentSubscription
     where TProcessor : IDocumentProcessor<TDocument>
     where TDocument : class
 {

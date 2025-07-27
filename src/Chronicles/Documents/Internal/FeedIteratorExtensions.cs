@@ -3,7 +3,7 @@ using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.Documents.Internal;
 
-public static class FeedIteratorExtensions
+internal static class FeedIteratorExtensions
 {
     public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(
         this FeedIterator<T> reader,
