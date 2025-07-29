@@ -27,6 +27,7 @@ public static class BuilderExtensions
                 eventStoreBuilder.Services));
 
         eventStoreBuilder.Services.TryAddSingleton<ICommandExecutorFactory, CommandExecutorFactory>();
+        eventStoreBuilder.Services.TryAddSingleton<ICommandProcessorFactory, CommandProcessorFactory>();
 
         return eventStoreBuilder;
     }
