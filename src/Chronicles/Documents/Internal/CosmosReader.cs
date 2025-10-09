@@ -56,6 +56,21 @@ internal class CosmosReader<T> : IDocumentReader<T>
             .GetItemAsync()
             .ConfigureAwait(false);
 
+    public async Task<IEnumerable<TResult>> ReadManyAsync<TResult>(
+        (string documentId, string partitionKey)[] ids,
+        ReadManyRequestOptions? options,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+        where TResult : T
+        => await containers
+            .GetContainer<T>(storeName)
+            .ReadManyItemsAsync<TResult>(
+                items: [.. ids.Select(t => (t.documentId, new PartitionKey(t.partitionKey)))],
+                options,
+                cancellationToken: cancellationToken)
+            .GetItemsAsync()
+            .ConfigureAwait(false);
+
     public IAsyncEnumerable<TResult> QueryAsync<TResult>(
         QueryDefinition query,
         string? partitionKey,

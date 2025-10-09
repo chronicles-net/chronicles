@@ -75,6 +75,35 @@ public class FakeDocumentReader<T> :
                 GetSerializerOptions(storeName)));
     }
 
+    public async Task<IEnumerable<TResult>> ReadManyAsync<TResult>(
+        (string documentId, string partitionKey)[] ids,
+        ReadManyRequestOptions? options,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+        where TResult : T
+    {
+        var items = new List<TResult>();
+        foreach (var id in ids)
+        {
+            try
+            {
+                var item = await ReadAsync<TResult>(
+                    id.documentId,
+                    id.partitionKey,
+                    null,
+                    storeName,
+                    cancellationToken);
+
+                items.Add(item);
+            }
+            catch (CosmosException)
+            {
+            }
+        }
+
+        return items;
+    }
+
     public virtual IAsyncEnumerable<TResult> QueryAsync<TResult>(
         QueryDefinition query,
         string? partitionKey,

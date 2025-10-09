@@ -51,6 +51,35 @@ public interface IDocumentReader<T>
         where TResult : T;
 
     /// <summary>
+    /// Reads multiple documents by ID and partition key from the store asynchronously and
+    /// returns the results as a collection of the specified type.
+    /// </summary>
+    /// <typeparam name="TResult">
+    /// The type into which each retrieved document is deserialized.
+    /// This can be used when <typeparamref name="T"/> is in it self a generic type.
+    /// </typeparam>
+    /// <param name="ids">
+    /// An array of tuples, each containing the document ID and partition key for a document to be read.
+    /// Cannot be null or contain null document IDs.</param>
+    /// <param name="options">
+    /// Optional request options that control aspects of the read operation, such as consistency
+    /// level or session token. May be null.
+    /// </param>
+    /// <param name="storeName">The name of the store to read from. If null, the default store is used.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains an enumerable
+    /// collection of deserialized documents of type <typeparamref name="TResult"/>.
+    /// The collection may be empty if no documents are found.
+    /// </returns>
+    public Task<IEnumerable<TResult>> ReadManyAsync<TResult>(
+        (string documentId, string partitionKey)[] ids,
+        ReadManyRequestOptions? options,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+        where TResult : T;
+
+    /// <summary>
     /// Query documents from the configured Cosmos container and returns a custom result.
     /// </summary>
     /// <typeparam name="TResult">The type used for the custom query result.</typeparam>
