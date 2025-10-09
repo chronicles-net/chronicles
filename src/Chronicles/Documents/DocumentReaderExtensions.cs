@@ -199,6 +199,33 @@ public static class DocumentReaderExtensions
             cancellationToken);
 
     /// <summary>
+    /// Asynchronously reads multiple documents identified by their IDs from the specified partition using the provided
+    /// document reader.
+    /// </summary>
+    /// <typeparam name="T">The type of the documents to be read.</typeparam>
+    /// <param name="reader">The document reader used to retrieve the documents.</param>
+    /// <param name="documentIds">An array of document IDs to read. Each ID must correspond to a document in the specified partition.</param>
+    /// <param name="partitionKey">The partition key that identifies the partition containing the documents.</param>
+    /// <param name="options">Optional settings that control the behavior of the read operation, such as consistency level or request options.</param>
+    /// <param name="storeName">The name of the document store to read from, or <see langword="null"/> to use the default store.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains an enumerable collection of
+    /// documents of type <typeparamref name="T"/> that were successfully read. The collection will be empty if no
+    /// documents are found.</returns>
+    public static Task<IEnumerable<T>> ReadManyAsync<T>(
+        this IDocumentReader<T> reader,
+        string[] documentIds,
+        string partitionKey,
+        ReadManyRequestOptions? options,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+        => reader.ReadManyAsync<T>(
+            ids: [.. documentIds.Select(id => (id, partitionKey))],
+            options,
+            storeName,
+            cancellationToken: cancellationToken);
+
+    /// <summary>
     /// Query documents from the configured Cosmos container.
     /// </summary>
     /// <typeparam name="T">The type used by the <see cref="IDocumentReader{T}"/>.</typeparam>
