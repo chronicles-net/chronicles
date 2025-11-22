@@ -10,12 +10,12 @@ public interface IFakeDocumentStoreProvider
     FakeDocumentStore GetStore(string? storeName);
 }
 
-public class FakeDocumentStoreProvider
+internal class FakeDocumentStoreProvider
     : IFakeDocumentStoreProvider
 {
     private readonly ImmutableDictionary<string, FakeDocumentStore> stores;
 
-    internal FakeDocumentStoreProvider(
+    public FakeDocumentStoreProvider(
         IContainerNameRegistry registry,
         IEnumerable<IDocumentStore> stores)
     {
