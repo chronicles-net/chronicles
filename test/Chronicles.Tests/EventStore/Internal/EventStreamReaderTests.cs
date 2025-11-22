@@ -1,6 +1,5 @@
 using Chronicles.EventStore;
 using Chronicles.EventStore.Internal;
-using Dasync.Collections;
 using NSubstitute;
 
 namespace Chronicles.Tests.EventStore.Internal;
@@ -13,7 +12,8 @@ public class EventStreamReaderTests
         StreamId streamId,
         string checkpointName,
         Checkpoint<TestCheckpoint> checkpoint,
-        EventStreamReader sut)
+        EventStreamReader sut,
+        CancellationToken cancellationToken)
     {
         reader
             .ReadAsync<TestCheckpoint>(
@@ -25,7 +25,8 @@ public class EventStreamReaderTests
 
         var cp = await sut.GetCheckpointAsync<TestCheckpoint>(
             checkpointName,
-            streamId);
+            streamId,
+            cancellationToken: cancellationToken);
 
         cp.Should().Be(checkpoint);
     }
@@ -35,7 +36,8 @@ public class EventStreamReaderTests
         [Frozen] IStreamMetadataReader reader,
         StreamId streamId,
         StreamMetadataDocument document,
-        EventStreamReader sut)
+        EventStreamReader sut,
+        CancellationToken cancellationToken)
     {
         reader
             .GetAsync(
@@ -45,7 +47,8 @@ public class EventStreamReaderTests
             .Returns(document);
 
         var metadata = await sut.GetMetadataAsync(
-            streamId);
+            streamId,
+            cancellationToken: cancellationToken);
 
         metadata.Should().Be(document);
     }
@@ -78,7 +81,8 @@ public class EventStreamReaderTests
         [Frozen] IStreamMetadataReader reader,
         StreamId streamId,
         StreamMetadataDocument document,
-        EventStreamReader sut)
+        EventStreamReader sut,
+        CancellationToken cancellationToken)
     {
         reader
             .GetAsync(
@@ -88,7 +92,8 @@ public class EventStreamReaderTests
             .Returns(document);
 
         await foreach (var evt in sut.ReadAsync(
-            streamId))
+            streamId,
+            cancellationToken: cancellationToken))
         {
         }
 
@@ -105,14 +110,15 @@ public class EventStreamReaderTests
         [Frozen] IStreamMetadataReader reader,
         StreamId streamId,
         StreamMetadataDocument document,
-        EventStreamReader sut)
+        EventStreamReader sut,
+        CancellationToken cancellationToken)
     {
         var options = new StreamReadOptions
         {
             Metadata = document
         };
 
-        await foreach (var evt in sut.ReadAsync(streamId, options))
+        await foreach (var evt in sut.ReadAsync(streamId, options, cancellationToken: cancellationToken))
         {
         }
 
@@ -130,7 +136,8 @@ public class EventStreamReaderTests
         StreamId streamId,
         StreamMetadataDocument document,
         StreamEvent[] events,
-        EventStreamReader sut)
+        EventStreamReader sut,
+        CancellationToken cancellationToken)
     {
         var options = new StreamReadOptions
         {
@@ -146,7 +153,7 @@ public class EventStreamReaderTests
             .Returns(events.ToAsyncEnumerable());
 
         var eventsRead = new List<StreamEvent>();
-        await foreach (var evt in sut.ReadAsync(streamId, options))
+        await foreach (var evt in sut.ReadAsync(streamId, options, cancellationToken: cancellationToken))
         {
             eventsRead.Add(evt);
         }

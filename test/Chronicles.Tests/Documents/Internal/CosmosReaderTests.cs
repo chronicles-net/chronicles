@@ -1,7 +1,6 @@
 using AutoFixture;
 using Chronicles.Documents;
 using Chronicles.Documents.Internal;
-using Dasync.Collections;
 using Microsoft.Azure.Cosmos;
 using NSubstitute;
 
@@ -149,7 +148,7 @@ public class CosmosReaderTests
         CancellationToken cancellationToken)
     {
         container
-            .ReadItemAsync<TestDocument>(default, default, default, default)
+            .ReadItemAsync<TestDocument>(default, default, default, cancellationToken)
             .Returns(Task.FromException<ItemResponse<TestDocument>>(exception));
 
         FluentActions
@@ -243,12 +242,13 @@ public class CosmosReaderTests
     {
         feedIterator.HasMoreResults.Returns(false);
 
-        var response = await sut.QueryAsync<TestDocument>(
-            query,
-            partitionKey,
-            options,
-            storeName,
-            cancellationToken)
+        var response = await sut
+            .QueryAsync<TestDocument>(
+                query,
+                partitionKey,
+                options,
+                storeName,
+                cancellationToken)
             .ToListAsync(cancellationToken);
 
         _ = feedIterator
@@ -257,7 +257,7 @@ public class CosmosReaderTests
 
         _ = feedIterator
             .Received(0)
-            .ReadNextAsync(default);
+            .ReadNextAsync(cancellationToken);
 
         response
             .Should()
@@ -274,12 +274,13 @@ public class CosmosReaderTests
     {
         feedIterator.HasMoreResults.Returns(true, false);
 
-        var response = await sut.QueryAsync<TestDocument>(
-            query,
-            partitionKey,
-            options,
-            storeName,
-            cancellationToken)
+        var response = await sut
+            .QueryAsync<TestDocument>(
+                query,
+                partitionKey,
+                options,
+                storeName,
+                cancellationToken)
             .ToListAsync(cancellationToken);
 
         _ = feedIterator
@@ -288,7 +289,7 @@ public class CosmosReaderTests
 
         _ = feedIterator
             .Received(1)
-            .ReadNextAsync(default);
+            .ReadNextAsync(cancellationToken);
 
         response
             .Should()
@@ -311,12 +312,13 @@ public class CosmosReaderTests
             .GetEnumerator()
             .Returns(new List<TestDocument> { document }.GetEnumerator());
 
-        var response = await sut.QueryAsync<TestDocument>(
-            query,
-            partitionKey,
-            options,
-            storeName,
-            cancellationToken)
+        var response = await sut
+            .QueryAsync<TestDocument>(
+                query,
+                partitionKey,
+                options,
+                storeName,
+                cancellationToken)
             .ToListAsync(cancellationToken);
 
         _ = feedIterator
@@ -325,7 +327,7 @@ public class CosmosReaderTests
 
         _ = feedIterator
             .Received(1)
-            .ReadNextAsync(default);
+            .ReadNextAsync(cancellationToken);
 
         response
             .Should()
@@ -486,7 +488,7 @@ public class CosmosReaderTests
 
         _ = feedIterator
             .Received(0)
-            .ReadNextAsync(default);
+            .ReadNextAsync(cancellationToken);
 
         response.Items
             .Should()
@@ -533,7 +535,7 @@ public class CosmosReaderTests
 
         _ = feedIterator
             .Received(1)
-            .ReadNextAsync(default);
+            .ReadNextAsync(cancellationToken);
 
         response.Items
             .Should()
@@ -556,8 +558,10 @@ public class CosmosReaderTests
     {
         _ = sut.ReadAsync<TestDocument>(documentId, partitionKey, options: null, storeName, cancellationToken);
         _ = sut.ReadAsync<TestDocumentSubClass>(documentId, partitionKey, options: null, storeName, cancellationToken);
+#pragma warning disable CA2012 // Use ValueTasks correctly
         _ = sut.QueryAsync<TestDocument>(query, partitionKey, options: null, storeName, cancellationToken).ToListAsync(cancellationToken);
         _ = sut.QueryAsync<TestAggregate>(query, partitionKey, options: null, storeName, cancellationToken).ToListAsync(cancellationToken);
+#pragma warning restore CA2012 // Use ValueTasks correctly
         _ = sut.PagedQueryAsync<TestDocument>(query, partitionKey, maxItemCount, continuationToken, options: null, storeName, cancellationToken);
         _ = sut.PagedQueryAsync<TestAggregate>(query, partitionKey, maxItemCount, continuationToken, options: null, storeName, cancellationToken);
 

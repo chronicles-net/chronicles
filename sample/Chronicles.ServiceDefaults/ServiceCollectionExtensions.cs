@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Any;
 using Scalar.AspNetCore;
 
 namespace Chronicles.ServiceDefaults;
@@ -20,35 +18,6 @@ public static class ServiceCollectionExtensions
         string version,
         string serverUri)
     {
-        if (!builder.Environment.IsDevelopment())
-        {
-            return builder;
-        }
-
-        builder.Services.AddOpenApi(options =>
-        {
-            options.AddDocumentTransformer(
-                new OpenApiServerDocumentTransformer(
-                    title,
-                    version,
-                    serverUri));
-
-            options.AddSchemaTransformer((schema, ctx, _) =>
-            {
-                if (schema.Format == "date-time")
-                {
-                    schema.Example = new OpenApiString(DateTimeOffset.Now.ToString("O"));
-                }
-
-                if (schema.Type == "string" && schema.Format == null && ctx.JsonPropertyInfo is { Name: { } name })
-                {
-                    schema.Example = new OpenApiString(name);
-                }
-
-                return Task.CompletedTask;
-            });
-        });
-
         return builder;
     }
 

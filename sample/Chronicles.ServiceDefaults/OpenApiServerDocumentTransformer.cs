@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Chronicles.ServiceDefaults;
 
@@ -17,8 +17,8 @@ public class OpenApiServerDocumentTransformer(
         document.Info.Title = title;
         document.Info.Version = version;
 
-        document.Servers.Clear();
-        document.Servers.Add(
+        document.Servers?.Clear();
+        document.Servers?.Add(
             new OpenApiServer
             {
                 Url = serverUri,
