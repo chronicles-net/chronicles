@@ -93,4 +93,15 @@ public record StreamId
     /// <returns>A <see cref="StreamId"/> instance.</returns>
     public static StreamId FromString(string streamId)
         => new(streamId);
+
+    public virtual bool Equals(StreamId? other)
+        => other is not null
+        && value == other.value;
+
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        hash.Add(value);
+        return hash.ToHashCode();
+    }
 }
