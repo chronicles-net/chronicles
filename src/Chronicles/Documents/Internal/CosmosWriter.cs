@@ -144,6 +144,53 @@ internal class CosmosWriter<T> : IDocumentWriter<T>
         }
     }
 
+    public async Task<T?> ConditionalUpdateAsync(
+        string documentId,
+        string partitionKey,
+        Func<T, bool> condition,
+        Func<T, Task<T>> updateDocument,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await containers
+                .GetContainer<T>(storeName)
+                .ReadItemAsync<T>(
+                    documentId,
+                    new PartitionKey(partitionKey),
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
+            var etag = response.ETag;
+            var document = response.Resource;
+
+            if (!condition(document))
+            {
+                return default;
+            }
+
+            document = await updateDocument(document)
+                .ConfigureAwait(false);
+
+            return await
+                ReplaceAsync(
+                    document,
+                    new ItemRequestOptions
+                    {
+                        IfMatchEtag = etag,
+                    },
+                    storeName,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (CosmosException ex)
+            when (ex.StatusCode == HttpStatusCode.PreconditionFailed)
+        {
+            return default;
+        }
+    }
+
     public async Task<T> UpdateOrCreateAsync(
         Func<T> getDefaultDocument,
         Func<T, Task<T>> updateDocument,
