@@ -220,6 +220,41 @@ public class FakeDocumentWriter<T> :
         return newDocument;
     }
 
+    public async Task<T?> ConditionalUpdateAsync(
+        string documentId,
+        string partitionKey,
+        Func<T, bool> condition,
+        Func<T, Task<T>> updateDocument,
+        string? storeName = null,
+        CancellationToken cancellationToken = default)
+    {
+        var document = storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .GetPartition(partitionKey)
+            .GetDocument(documentId) switch
+        {
+            T { } doc => doc.DeepClone(GetSerializerOptions(storeName)),
+            _ => default,
+        };
+
+        if (document == null || !condition(document))
+        {
+            return default;
+        }
+
+        var newDocument = await updateDocument(document);
+        await storeProvider
+            .GetStore(storeName)
+            .GetContainer<T>()
+            .GetPartition(partitionKey)
+            .ReplaceDocument(
+                newDocument.GetDocumentId(),
+                newDocument);
+
+        return newDocument;
+    }
+
     private JsonSerializerOptions GetSerializerOptions(
         string? storeName)
         => storeProvider

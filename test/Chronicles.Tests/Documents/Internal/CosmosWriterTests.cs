@@ -450,4 +450,145 @@ public class CosmosWriterTests
             .Should()
             .BeAssignableTo<CosmosTransaction<TestDocument>>();
     }
+
+    [Theory, AutoNSubstituteData]
+    public async Task ConditionalUpdateAsync_Returns_Null_When_Condition_Is_Not_Met(
+        [Substitute] Func<TestDocument, Task<TestDocument>> updateDocument,
+        string storeName,
+        TestDocument defaultDocument,
+        CancellationToken cancellationToken)
+    {
+        var response = await sut.ConditionalUpdateAsync(
+            defaultDocument.Id,
+            defaultDocument.Pk,
+            condition: d => false,
+            updateDocument,
+            storeName,
+            cancellationToken);
+
+        response.Should().BeNull();
+
+        _ = updateDocument
+            .DidNotReceive()
+            .Invoke(Arg.Any<TestDocument>());
+
+        _ = container
+            .DidNotReceive()
+            .ReplaceItemAsync(
+                Arg.Any<TestDocument>(),
+                Arg.Any<string>(),
+                Arg.Any<PartitionKey>(),
+                Arg.Any<ItemRequestOptions>(),
+                cancellationToken);
+    }
+
+    [Theory, AutoNSubstituteData]
+    public async Task ConditionalUpdateAsync_Calls_ReplaceItem_If_Document_Was_Found(
+        [Substitute] Func<TestDocument, Task<TestDocument>> updateDocument,
+        string storeName,
+        TestDocument defaultDocument,
+        CancellationToken cancellationToken)
+    {
+        updateDocument
+            .Invoke(document)
+            .ReturnsForAnyArgs(document);
+
+        await sut.ConditionalUpdateAsync(
+            defaultDocument.Id,
+            defaultDocument.Pk,
+            condition: d => true,
+            updateDocument,
+            storeName,
+            cancellationToken);
+
+        containerProvider
+            .Received()
+            .GetContainer<TestDocument>(storeName);
+        _ = container
+            .Received(1)
+            .ReplaceItemAsync(
+                document,
+                document.Id,
+                new PartitionKey(document.Pk),
+                Arg.Is<ItemRequestOptions>(o => o.IfMatchEtag == documentResponse.ETag),
+                cancellationToken);
+    }
+
+    [Theory, AutoNSubstituteData]
+    public async Task ConditionalUpdateAsync_Calls_UpdateDocument_If_Document_Was_Found(
+        [Substitute] Func<TestDocument, Task<TestDocument>> updateDocument,
+        string storeName,
+        TestDocument defaultDocument,
+        CancellationToken cancellationToken)
+    {
+        updateDocument
+            .Invoke(document)
+            .ReturnsForAnyArgs(document);
+
+        await sut.ConditionalUpdateAsync(
+            defaultDocument.Id,
+            defaultDocument.Pk,
+            condition: d => true,
+            updateDocument,
+            storeName,
+            cancellationToken);
+
+        _ = updateDocument
+            .Received(1)
+            .Invoke(document);
+    }
+
+    [Theory, AutoNSubstituteData]
+    public async Task ConditionalUpdateAsync_Should_Catch_Cosmos_NotFound_Exception(
+        [Substitute] Func<TestDocument, Task<TestDocument>> updateDocument,
+        string storeName,
+        TestDocument defaultDocument,
+        CancellationToken cancellationToken)
+    {
+        _ = container
+            .ReadItemAsync<TestDocument>(defaultDocument.Id, default, default, default)
+            .ReturnsForAnyArgs<ItemResponse<TestDocument>>(c
+                => throw new CosmosException("fake", HttpStatusCode.NotFound, 0, "1", 1));
+
+        updateDocument
+            .Invoke(document)
+            .ReturnsForAnyArgs(document);
+
+        var response = await sut.ConditionalUpdateAsync(
+            defaultDocument.Id,
+            defaultDocument.Pk,
+            condition: d => true,
+            updateDocument,
+            storeName,
+            cancellationToken);
+
+        response.Should().BeNull();
+    }
+
+    [Theory, AutoNSubstituteData]
+    public async Task ConditionalUpdateAsync_Should_Catch_Cosmos_PreconditionFailed_Exception(
+        [Substitute] Func<TestDocument, Task<TestDocument>> updateDocument,
+        string storeName,
+        TestDocument defaultDocument,
+        CancellationToken cancellationToken)
+    {
+        _ = container
+            .ReplaceItemAsync(defaultDocument, default, default, default, default)
+            .ReturnsForAnyArgs<ItemResponse<TestDocument>>(c
+                => throw new CosmosException("fake", HttpStatusCode.PreconditionFailed, 0, "1", 1));
+
+        updateDocument
+            .Invoke(document)
+            .ReturnsForAnyArgs(document);
+
+        var response = await sut.ConditionalUpdateAsync(
+            defaultDocument.Id,
+            defaultDocument.Pk,
+            condition: d => true,
+            updateDocument,
+            storeName,
+            cancellationToken);
+
+        response.Should().BeNull();
+    }
 }

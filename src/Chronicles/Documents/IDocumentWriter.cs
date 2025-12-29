@@ -185,4 +185,26 @@ public interface IDocumentWriter<T>
         int retries = 0,
         string? storeName = null,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Attempts to update a document asynchronously if a specified condition is met.
+    /// </summary>
+    /// <remarks>
+    /// If the condition is not met or the document has been changed, the document remains unchanged and the method returns <c>null</c>.
+    /// </remarks>
+    /// <param name="documentId">The unique identifier of the document to update. Cannot be null or empty.</param>
+    /// <param name="partitionKey">The partition key associated with the document. Cannot be null or empty.</param>
+    /// <param name="condition">A predicate function that determines whether the update should be applied to the document.</param>
+    /// <param name="updateDocument">An asynchronous function that defines how to update the document.</param>
+    /// <param name="storeName">(Optional) Name of the configured document store.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used.</param>
+    /// <returns>A <see cref="Task"/> that represents the asynchronous operation.
+    /// The task result is the updated document if the condition was met and the update was applied; otherwise, <c>null</c>.</returns>
+    Task<T?> ConditionalUpdateAsync(
+        string documentId,
+        string partitionKey,
+        Func<T, bool> condition,
+        Func<T, Task<T>> updateDocument,
+        string? storeName = null,
+        CancellationToken cancellationToken = default);
 }
