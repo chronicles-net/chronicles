@@ -185,7 +185,8 @@ internal class CosmosWriter<T> : IDocumentWriter<T>
                 .ConfigureAwait(false);
         }
         catch (CosmosException ex)
-            when (ex.StatusCode == HttpStatusCode.PreconditionFailed)
+            when (ex.StatusCode == HttpStatusCode.PreconditionFailed
+               || ex.StatusCode == HttpStatusCode.NotFound)
         {
             return default;
         }

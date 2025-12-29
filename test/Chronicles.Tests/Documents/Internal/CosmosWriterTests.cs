@@ -515,7 +515,7 @@ public class CosmosWriterTests
     }
 
     [Theory, AutoNSubstituteData]
-    public async Task ConditionalUpdateAsync_Calls_UpdateDocument_Document_Was_Found(
+    public async Task ConditionalUpdateAsync_Calls_UpdateDocument_If_Document_Was_Found(
         [Substitute] Func<TestDocument, Task<TestDocument>> updateDocument,
         string storeName,
         TestDocument defaultDocument,
@@ -536,5 +536,59 @@ public class CosmosWriterTests
         _ = updateDocument
             .Received(1)
             .Invoke(document);
+    }
+
+    [Theory, AutoNSubstituteData]
+    public async Task ConditionalUpdateAsync_Should_Catch_Cosmos_NotFound_Exception(
+        [Substitute] Func<TestDocument, Task<TestDocument>> updateDocument,
+        string storeName,
+        TestDocument defaultDocument,
+        CancellationToken cancellationToken)
+    {
+        _ = container
+            .ReadItemAsync<TestDocument>(defaultDocument.Id, default, default, default)
+            .ReturnsForAnyArgs<ItemResponse<TestDocument>>(c
+                => throw new CosmosException("fake", HttpStatusCode.NotFound, 0, "1", 1));
+
+        updateDocument
+            .Invoke(document)
+            .ReturnsForAnyArgs(document);
+
+        var response = await sut.ConditionalUpdateAsync(
+            defaultDocument.Id,
+            defaultDocument.Pk,
+            condition: d => true,
+            updateDocument,
+            storeName,
+            cancellationToken);
+
+        response.Should().BeNull();
+    }
+
+    [Theory, AutoNSubstituteData]
+    public async Task ConditionalUpdateAsync_Should_Catch_Cosmos_PreconditionFailed_Exception(
+        [Substitute] Func<TestDocument, Task<TestDocument>> updateDocument,
+        string storeName,
+        TestDocument defaultDocument,
+        CancellationToken cancellationToken)
+    {
+        _ = container
+            .ReplaceItemAsync(defaultDocument, default, default, default, default)
+            .ReturnsForAnyArgs<ItemResponse<TestDocument>>(c
+                => throw new CosmosException("fake", HttpStatusCode.PreconditionFailed, 0, "1", 1));
+
+        updateDocument
+            .Invoke(document)
+            .ReturnsForAnyArgs(document);
+
+        var response = await sut.ConditionalUpdateAsync(
+            defaultDocument.Id,
+            defaultDocument.Pk,
+            condition: d => true,
+            updateDocument,
+            storeName,
+            cancellationToken);
+
+        response.Should().BeNull();
     }
 }
