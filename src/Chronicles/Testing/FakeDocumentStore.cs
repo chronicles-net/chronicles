@@ -13,20 +13,20 @@ public class FakeDocumentStore
         IContainerNameRegistry registry,
         IDocumentStore store)
     {
-        containers = store.Options
-            .Initialization
-            .Containers
-            .OfType<DocumentInitializer>()
-            .Select(initializer => new FakeContainer(
-                registry.GetContainerName(
-                    initializer.DocumentType,
-                    store.Name)))
-            .ToImmutableDictionary(
-                container => container.Name,
-                container => container);
         this.registry = registry;
         Name = store.Name;
         SerializerOptions = store.Options.SerializerOptions;
+        containers = store.Options
+            .ContainerNames
+            .Select(kvp =>
+                registry.GetContainerName(
+                    kvp.Key,
+                    store.Name))
+            .Distinct()
+            .Select(cn => new FakeContainer(cn))
+            .ToImmutableDictionary(
+                container => container.Name,
+                container => container);
     }
 
     private FakeDocumentStore(

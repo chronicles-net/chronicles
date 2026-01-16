@@ -18,6 +18,7 @@ internal class ContainerNameRegistry : IContainerNameRegistry
                 .Select(c => KeyValuePair.Create(
                     new DocumentTypeKey(c.Key, s.Name),
                     c.Value)))
+            .Distinct()
             .ToDictionary(
                 r => r.Key,
                 r => r.Value));

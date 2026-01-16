@@ -19,9 +19,15 @@ internal class FakeDocumentStoreProvider
         IContainerNameRegistry registry,
         IEnumerable<IDocumentStore> stores)
     {
-        this.stores = stores.ToImmutableDictionary(
-            docStore => docStore.Name,
-            docStore => new FakeDocumentStore(registry, docStore));
+        var docStores = new Dictionary<string, IDocumentStore>();
+        foreach (var store in stores)
+        {
+            docStores[store.Name] = store;
+        }
+
+        this.stores = docStores.ToImmutableDictionary(
+            docStore => docStore.Key,
+            docStore => new FakeDocumentStore(registry, docStore.Value));
     }
 
     protected FakeDocumentStoreProvider(
