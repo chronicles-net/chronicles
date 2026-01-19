@@ -23,11 +23,6 @@ public class FakeDocumentWriter<T> :
         IFakeDocumentStoreProvider storeProvider)
         => this.storeProvider = storeProvider;
 
-    ///// <summary>
-    ///// Gets or sets the list of documents to be modified by the fake writer.
-    ///// </summary>
-    //public IList<T> Documents { get; set; } = [];
-
     public IDocumentTransaction<T> CreateTransaction(
         string partitionKey,
         string? storeName = null)
@@ -182,7 +177,7 @@ public class FakeDocumentWriter<T> :
         await storeProvider
             .GetStore(storeName)
             .GetContainer<T>()
-            .GetPartition(partitionKey)
+            .GetOrCreatePartition(partitionKey)
             .ReplaceDocument(
                 newDocument.GetDocumentId(),
                 newDocument);
@@ -201,7 +196,7 @@ public class FakeDocumentWriter<T> :
         var document = storeProvider
             .GetStore(storeName)
             .GetContainer<T>()
-            .GetPartition(defaultDocument.GetPartitionKey())
+            .GetOrCreatePartition(defaultDocument.GetPartitionKey())
             .GetDocument(defaultDocument.GetDocumentId()) switch
         {
             T { } doc => doc.DeepClone(GetSerializerOptions(storeName)),
@@ -231,7 +226,7 @@ public class FakeDocumentWriter<T> :
         var document = storeProvider
             .GetStore(storeName)
             .GetContainer<T>()
-            .GetPartition(partitionKey)
+            .GetOrCreatePartition(partitionKey)
             .GetDocument(documentId) switch
         {
             T { } doc => doc.DeepClone(GetSerializerOptions(storeName)),
