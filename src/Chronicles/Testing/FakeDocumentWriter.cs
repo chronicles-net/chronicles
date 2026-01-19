@@ -208,7 +208,7 @@ public class FakeDocumentWriter<T> :
             .GetStore(storeName)
             .GetContainer<T>()
             .GetPartition(defaultDocument.GetPartitionKey())
-            .ReplaceDocument(
+            .UpsertDocument(
                 newDocument.GetDocumentId(),
                 newDocument);
 
