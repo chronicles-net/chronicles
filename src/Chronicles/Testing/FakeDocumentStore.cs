@@ -40,9 +40,7 @@ public class FakeDocumentStore
 
     public FakeContainer GetContainer<T>()
         => containers.GetOrAdd(
-            registry.GetContainerName<T>(Name)
-                ?? throw new KeyNotFoundException(
-                     $"Container for type '{typeof(T).Name}' not found in store '{Name}'."),
+            registry.GetContainerName<T>(Name),
             cn => new FakeContainer(cn));
 
     public static FakeDocumentStore FromOptions(
