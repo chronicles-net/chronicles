@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Text.Json;
 using Chronicles.Documents.Internal;
@@ -6,7 +7,7 @@ namespace Chronicles.Testing;
 
 public class FakeDocumentStore
 {
-    private readonly ImmutableDictionary<string, FakeContainer> containers;
+    private readonly ConcurrentDictionary<string, FakeContainer> containers;
     private readonly IContainerNameRegistry registry;
 
     internal FakeDocumentStore(
@@ -16,17 +17,7 @@ public class FakeDocumentStore
         this.registry = registry;
         Name = store.Name;
         SerializerOptions = store.Options.SerializerOptions;
-        containers = store.Options
-            .ContainerNames
-            .Select(kvp =>
-                registry.GetContainerName(
-                    kvp.Key,
-                    store.Name))
-            .Distinct()
-            .Select(cn => new FakeContainer(cn))
-            .ToImmutableDictionary(
-                container => container.Name,
-                container => container);
+        containers = new();
     }
 
     private FakeDocumentStore(
@@ -36,10 +27,7 @@ public class FakeDocumentStore
         JsonSerializerOptions serializerOptions)
     {
         this.registry = registry;
-        containers = new[] { new FakeContainer(containerName) }
-            .ToImmutableDictionary(
-                container => container.Name,
-                container => container);
+        containers = new() { [containerName] = new FakeContainer(containerName) };
         Name = storeName;
         SerializerOptions = serializerOptions;
     }
@@ -51,12 +39,9 @@ public class FakeDocumentStore
     public JsonSerializerOptions SerializerOptions { get; }
 
     public FakeContainer GetContainer<T>()
-        => containers.TryGetValue(
+        => containers.GetOrAdd(
             registry.GetContainerName<T>(Name),
-            out var container)
-         ? container
-         : throw new KeyNotFoundException(
-             $"Container for type '{typeof(T).Name}' not found in store '{Name}'.");
+            cn => new FakeContainer(cn));
 
     public static FakeDocumentStore FromOptions(
         string storeName,
