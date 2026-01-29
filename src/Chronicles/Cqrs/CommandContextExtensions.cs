@@ -114,4 +114,104 @@ public static class CommandContextExtensions
 
         return context;
     }
+
+    /// <summary>
+    /// Adds the updated state as the response when the command has completed.
+    /// </summary>
+    /// <typeparam name="TCommand">Command type</typeparam>
+    /// <typeparam name="TState">State type.</typeparam>
+    /// <param name="context">Command context.</param>
+    /// <param name="projection">Projection for updating the state.</param>
+    /// <returns>A <see cref="ICommandContext{TCommand}"/> that can be used for further command processing.</returns>
+    public static ICommandContext<TCommand> WithStateResponse<TCommand, TState>(
+        this ICommandContext<TCommand> context,
+        IStateProjection<TState> projection)
+        where TCommand : class
+        where TState : class
+    {
+        context.Completed += (ctx, ct) =>
+        {
+            var state = ctx.State.GetState<TState>()
+                ?? projection.CreateState(context.Metadata.StreamId);
+
+            foreach (var evt in ctx.Events)
+            {
+                state = projection.ConsumeEvent(evt, state) ?? state;
+            }
+
+            ctx.Response = state;
+
+            return ValueTask.CompletedTask;
+        };
+
+        return context;
+    }
+
+    /// <summary>
+    /// Adds the updated state as the response when the command has completed.
+    /// </summary>
+    /// <typeparam name="TCommand">Command type</typeparam>
+    /// <typeparam name="TState">State type.</typeparam>
+    /// <param name="context">Command context.</param>
+    /// <param name="projection">Projection for updating the state.</param>
+    /// <param name="mapper">Delegate for mapping the state to a response object.</param>
+    /// <returns></returns>
+    public static ICommandContext<TCommand> WithStateResponse<TCommand, TState>(
+        this ICommandContext<TCommand> context,
+        IStateProjection<TState> projection,
+        Func<TState, object?> mapper)
+        where TCommand : class
+        where TState : class
+    {
+        context.Completed += (ctx, ct) =>
+        {
+            var state = ctx.State.GetState<TState>()
+                ?? projection.CreateState(context.Metadata.StreamId);
+
+            foreach (var evt in ctx.Events)
+            {
+                state = projection.ConsumeEvent(evt, state) ?? state;
+            }
+
+            ctx.Response = mapper.Invoke(state);
+
+            return ValueTask.CompletedTask;
+        };
+
+        return context;
+    }
+
+    /// <summary>
+    /// Adds the updated state as the response when the command has completed.
+    /// </summary>
+    /// <typeparam name="TCommand">Command type</typeparam>
+    /// <typeparam name="TState">State type.</typeparam>
+    /// <param name="context">Command context.</param>
+    /// <param name="projection">Projection for updating the state.</param>
+    /// <param name="mapper">Delegate for mapping the state to a response object.</param>
+    /// <returns></returns>
+    public static ICommandContext<TCommand> WithStateResponse<TCommand, TState>(
+        this ICommandContext<TCommand> context,
+        IStateProjection<TState> projection,
+        Func<ICommandCompletionContext<TCommand>, TState, object?> mapper)
+        where TCommand : class
+        where TState : class
+    {
+        context.Completed += (ctx, ct) =>
+        {
+            var state = ctx.State.GetState<TState>()
+                ?? projection.CreateState(context.Metadata.StreamId);
+
+            foreach (var evt in ctx.Events)
+            {
+                state = projection.ConsumeEvent(evt, state) ?? state;
+            }
+
+            ctx.Response = mapper.Invoke(ctx, state);
+
+            return ValueTask.CompletedTask;
+        };
+
+        return context;
+    }
 }
