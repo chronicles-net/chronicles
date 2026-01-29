@@ -214,4 +214,27 @@ public static class CommandContextExtensions
 
         return context;
     }
+
+    /// <summary>
+    /// Adds a response when the command has completed.
+    /// </summary>
+    /// <typeparam name="TCommand"></typeparam>
+    /// <typeparam name="TCommand">Command type</typeparam>
+    /// <param name="responseFactory">Delegate for constructing a response.</param>
+    /// <returns></returns>
+    public static ICommandContext<TCommand> WithResponse<TCommand>(
+        this ICommandContext<TCommand> context,
+        Func<ICommandCompletionContext<TCommand>, object?> responseFactory)
+        where TCommand : class
+    {
+        context.Completed += (ctx, ct) =>
+        {
+
+            ctx.Response = responseFactory.Invoke(ctx);
+
+            return ValueTask.CompletedTask;
+        };
+
+        return context;
+    }
 }
