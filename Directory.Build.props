@@ -26,6 +26,18 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <!-- NuGet package metadata (only applies to packable projects) -->
+  <PropertyGroup Condition="'$(IsPackable)' != 'false'">
+    <Description>Event sourcing and CQRS for .NET backed by Azure Cosmos DB. Provides append-only event streams, command handlers, state projections, and document projections with built-in Cosmos DB persistence and Aspire integration.</Description>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/chronicles-net/chronicles</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/chronicles-net/chronicles</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>event-sourcing;cqrs;cosmos-db;dotnet;aspire;eventsourcing</PackageTags>
+    <PackageIcon>icon.png</PackageIcon>
+  </PropertyGroup>
+
   <!--
   By default builds are non-deterministic, meaning there is no guarantee that building the same code twice(on the same or different machines)
   will produce exactly the same binary output. Deterministic builds are important as they enable verification that the resulting

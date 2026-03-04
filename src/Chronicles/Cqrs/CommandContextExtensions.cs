@@ -76,7 +76,7 @@ public static class CommandContextExtensions
         if (condition(context))
         {
             var evt = addEvent(context);
-            context.AddEvent(addEvent(context));
+            context.AddEvent(evt);
             context.Response = respondWith(context, evt);
         }
 
@@ -108,7 +108,7 @@ public static class CommandContextExtensions
         if (when(context, given))
         {
             var evt = then(context, given);
-            context.AddEvent(then(context, given));
+            context.AddEvent(evt);
             context.Response = respondWith(context, given, evt);
         }
 
@@ -218,10 +218,10 @@ public static class CommandContextExtensions
     /// <summary>
     /// Adds a response when the command has completed.
     /// </summary>
-    /// <typeparam name="TCommand"></typeparam>
-    /// <typeparam name="TCommand">Command type</typeparam>
+    /// <typeparam name="TCommand">Command type.</typeparam>
+    /// <param name="context">The command context.</param>
     /// <param name="responseFactory">Delegate for constructing a response.</param>
-    /// <returns></returns>
+    /// <returns>The same <paramref name="context"/> for chaining.</returns>
     public static ICommandContext<TCommand> WithResponse<TCommand>(
         this ICommandContext<TCommand> context,
         Func<ICommandCompletionContext<TCommand>, object?> responseFactory)

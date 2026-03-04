@@ -31,7 +31,7 @@ public static class StreamMetadataExtensions
         }
 
         if (options?.RequiredVersion is { } requiredVersion
-        && metadata.Version != requiredVersion)
+        && !metadata.Version.IsValid(requiredVersion))
         {
             throw new StreamConflictException(
                 metadata.StreamId,

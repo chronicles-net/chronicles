@@ -57,15 +57,6 @@ jobs:
           reporter: dotnet-trx
           fail-on-error: true
 
-      - name: 📋 Test Report
-        uses: dorny/test-reporter@v1
-        if: always()
-        with:
-          name: Test Report
-          path: "**/test-results.trx"
-          reporter: dotnet-trx
-          fail-on-error: true
-
       - name: 📭 Restore coverage history
         uses: dawidd6/action-download-artifact@v3
         with:
@@ -95,3 +86,4 @@ jobs:
 
       - name: 🛠️ Upload library to GitHub Package Repository
         run: dotnet nuget push **/Chronicles.*.nupkg -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/chronicles-net/index.json --skip-duplicate --no-symbols
+
