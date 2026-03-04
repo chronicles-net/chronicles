@@ -303,4 +303,189 @@ public class EventStreamWriterTests
                 storeName: storeName,
                 cancellationToken);
     }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task DeleteStreamAsync_Without_ExpectedVersion_Should_Not_Read_Metadata(
+        [Frozen] IStreamMetadataReader reader,
+        StreamId streamId,
+        string storeName,
+        EventStreamWriter sut)
+    {
+        await sut.DeleteStreamAsync(
+            streamId,
+            expectedVersion: null,
+            storeName,
+            CancellationToken.None);
+
+        _ = reader
+            .DidNotReceive()
+            .GetAsync(
+                Arg.Any<StreamId>(),
+                Arg.Any<string>(),
+                Arg.Any<CancellationToken>());
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task DeleteStreamAsync_With_Matching_ExpectedVersion_Should_Delete(
+        [Frozen] IDocumentWriter<IDocument> documentWriter,
+        [Frozen] IStreamMetadataReader reader,
+        StreamId streamId,
+        StreamMetadataDocument metadata,
+        string storeName,
+        EventStreamWriter sut)
+    {
+        metadata = metadata with
+        {
+            StreamId = streamId,
+            State = StreamState.Active,
+            Version = 10,
+        };
+
+        reader
+            .GetAsync(streamId, storeName, Arg.Any<CancellationToken>())
+            .ReturnsForAnyArgs(metadata);
+
+        await sut.DeleteStreamAsync(
+            streamId,
+            expectedVersion: 10,
+            storeName,
+            CancellationToken.None);
+
+        _ = documentWriter
+            .Received(1)
+            .DeletePartitionAsync(
+                partitionKey: (string)streamId,
+                options: null,
+                storeName: storeName,
+                Arg.Any<CancellationToken>());
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task DeleteStreamAsync_With_Mismatched_ExpectedVersion_Should_Throw_And_Not_Delete(
+        [Frozen] IDocumentWriter<IDocument> documentWriter,
+        [Frozen] IStreamMetadataReader reader,
+        StreamId streamId,
+        StreamMetadataDocument metadata,
+        string storeName,
+        EventStreamWriter sut)
+    {
+        metadata = metadata with
+        {
+            StreamId = streamId,
+            State = StreamState.Active,
+            Version = 3,
+        };
+
+        reader
+            .GetAsync(streamId, storeName, Arg.Any<CancellationToken>())
+            .ReturnsForAnyArgs(metadata);
+
+        await FluentActions
+            .Awaiting(
+                () => sut.DeleteStreamAsync(
+                    streamId,
+                    expectedVersion: 10,
+                    storeName,
+                    CancellationToken.None))
+            .Should()
+            .ThrowAsync<StreamConflictException>();
+
+        _ = documentWriter
+            .DidNotReceive()
+            .DeletePartitionAsync(
+                Arg.Any<string>(),
+                Arg.Any<Microsoft.Azure.Cosmos.ItemRequestOptions?>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>());
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task CloseAsync_On_Active_Stream_Should_Persist_Closed_Document(
+        [Frozen] IDocumentWriter<IDocument> documentWriter,
+        [Frozen] IStreamMetadataReader reader,
+        StreamId streamId,
+        StreamMetadataDocument metadata,
+        string storeName,
+        EventStreamWriter sut)
+    {
+        metadata = metadata with
+        {
+            StreamId = streamId,
+            State = StreamState.Active,
+            Version = 5,
+        };
+
+        reader
+            .GetAsync(streamId, storeName, Arg.Any<CancellationToken>())
+            .ReturnsForAnyArgs(metadata);
+
+        await sut.CloseAsync(streamId, storeName);
+
+        _ = documentWriter
+            .Received(1)
+            .WriteAsync(
+                Arg.Is<StreamMetadataDocument>(d => d.State == StreamState.Closed),
+                options: null,
+                storeName: storeName,
+                Arg.Any<CancellationToken>());
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task CloseAsync_On_New_Stream_Should_Throw_Conflict(
+        [Frozen] IStreamMetadataReader reader,
+        StreamId streamId,
+        StreamMetadataDocument metadata,
+        string storeName,
+        EventStreamWriter sut)
+    {
+        metadata = metadata with
+        {
+            StreamId = streamId,
+            State = StreamState.New,
+            Version = 0,
+        };
+
+        reader
+            .GetAsync(streamId, storeName, Arg.Any<CancellationToken>())
+            .ReturnsForAnyArgs(metadata);
+
+        await FluentActions
+            .Awaiting(() => sut.CloseAsync(streamId, storeName))
+            .Should()
+            .ThrowAsync<StreamConflictException>();
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task CloseAsync_On_Closed_Stream_Should_Succeed(
+        [Frozen] IDocumentWriter<IDocument> documentWriter,
+        [Frozen] IStreamMetadataReader reader,
+        StreamId streamId,
+        StreamMetadataDocument metadata,
+        string storeName,
+        EventStreamWriter sut)
+    {
+        metadata = metadata with
+        {
+            StreamId = streamId,
+            State = StreamState.Closed,
+            Version = 5,
+        };
+
+        reader
+            .GetAsync(streamId, storeName, Arg.Any<CancellationToken>())
+            .ReturnsForAnyArgs(metadata);
+
+        await FluentActions
+            .Awaiting(() => sut.CloseAsync(streamId, storeName))
+            .Should()
+            .NotThrowAsync();
+
+        _ = documentWriter
+            .Received(1)
+            .WriteAsync(
+                Arg.Is<StreamMetadataDocument>(d => d.State == StreamState.Closed),
+                options: null,
+                storeName: storeName,
+                Arg.Any<CancellationToken>());
+    }
 }
