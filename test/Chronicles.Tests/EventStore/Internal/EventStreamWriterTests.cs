@@ -283,7 +283,7 @@ public class EventStreamWriterTests
 
     [Theory, AutoNSubstituteData]
     internal async Task DeleteStreamAsync_Should_Call_DeletePartitionAsync(
-        [Frozen] IDocumentWriter<EventDocumentBase> documentWriter,
+        [Frozen] IDocumentWriter<IDocument> documentWriter,
         StreamId streamId,
         string storeName,
         EventStreamWriter sut,
@@ -291,6 +291,7 @@ public class EventStreamWriterTests
     {
         await sut.DeleteStreamAsync(
             streamId,
+            expectedVersion: null,
             storeName,
             cancellationToken);
 

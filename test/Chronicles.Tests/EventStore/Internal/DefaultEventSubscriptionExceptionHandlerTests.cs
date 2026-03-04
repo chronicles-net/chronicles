@@ -9,7 +9,7 @@ public class DefaultEventSubscriptionExceptionHandlerTests
         Exception exception,
         DefaultEventSubscriptionExceptionHandler sut)
         => await FluentActions
-            .Awaiting(async () => await sut.HandleAsync(exception))
+            .Awaiting(async () => await sut.HandleAsync(exception, null, CancellationToken.None))
             .Should()
             .NotThrowAsync();
 }

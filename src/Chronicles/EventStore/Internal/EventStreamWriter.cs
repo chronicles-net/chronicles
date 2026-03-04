@@ -4,7 +4,7 @@ using Chronicles.Documents;
 namespace Chronicles.EventStore.Internal;
 
 internal class EventStreamWriter(
-    IDocumentWriter<EventDocumentBase> documentWriter,
+    IDocumentWriter<IDocument> documentWriter,
     IEventDocumentWriter eventWriter,
     IStreamMetadataReader metadataReader,
     ICheckpointWriter checkpointWriter)
@@ -21,19 +21,36 @@ internal class EventStreamWriter(
 
         metadata.EnsureNotClosed(streamId);
 
-        // TODO: Implement close stream
+        var closedDocument = StreamMetadataDocument.FromMetadata(metadata) with { State = StreamState.Closed };
+
+        await documentWriter
+            .WriteAsync(closedDocument, options: null, storeName: storeName, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
-    public Task DeleteStreamAsync(
+    public virtual async Task DeleteStreamAsync(
         StreamId streamId,
+        StreamVersion? expectedVersion = null,
         string? storeName = null,
         CancellationToken cancellationToken = default)
-        => documentWriter
+    {
+        if (expectedVersion is not null)
+        {
+            var metadata = await metadataReader
+                .GetAsync(streamId, storeName, cancellationToken)
+                .ConfigureAwait(false);
+
+            metadata.EnsureSuccess(new StreamWriteOptions { RequiredVersion = expectedVersion });
+        }
+
+        await documentWriter
             .DeletePartitionAsync(
                 partitionKey: (string)streamId,
                 options: null,
                 storeName: storeName,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+    }
 
     public virtual async Task SetCheckpointAsync(
         string name,

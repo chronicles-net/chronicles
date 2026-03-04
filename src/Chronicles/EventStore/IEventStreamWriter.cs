@@ -44,11 +44,13 @@ public interface IEventStreamWriter
     /// </summary>
     /// <remarks>Data will no longer be retrievable after a deletion.</remarks>
     /// <param name="streamId">Event stream to delete.</param>
+    /// <param name="expectedVersion">(Optional) The expected version of the stream. If provided, the operation will fail if the stream is not at this version.</param>
     /// <param name="storeName">(Optional) Name of the configured document store.</param>
     /// <param name="cancellationToken">(Optional) <seealso cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns></returns>
     Task DeleteStreamAsync(
         StreamId streamId,
+        StreamVersion? expectedVersion = null,
         string? storeName = null,
         CancellationToken cancellationToken = default);
 

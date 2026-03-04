@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Q&A — GitHub Discussions
+    url: https://github.com/chronicles-net/chronicles/discussions
+    about: Ask questions and discuss Chronicles here. Issues are for confirmed bugs and feature requests only.
