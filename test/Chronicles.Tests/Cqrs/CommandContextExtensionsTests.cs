@@ -254,9 +254,9 @@ public class CommandContextExtensionsTests
     [Theory, AutoNSubstituteData]
     public async Task WithStateResponse_Should_Build_State_And_Set_As_Response_On_Completed(
         TestCommand command,
-        StreamId streamId,
-        IStateContext stateContext)
+        StreamId streamId)
     {
+        var stateContext = Substitute.For<IStateContext>();
         var metadata = Substitute.For<StreamMetadata>(streamId, StreamState.Active, new StreamVersion(5), DateTimeOffset.UtcNow);
         var context = new CommandContext<TestCommand>(command, metadata, stateContext);
         var projection = Substitute.For<IStateProjection<TestState>>();
@@ -285,9 +285,9 @@ public class CommandContextExtensionsTests
     [Theory, AutoNSubstituteData]
     public async Task WithStateResponse_Should_Use_Existing_State_If_Available(
         TestCommand command,
-        StreamId streamId,
-        IStateContext stateContext)
+        StreamId streamId)
     {
+        var stateContext = Substitute.For<IStateContext>();
         var metadata = Substitute.For<StreamMetadata>(streamId, StreamState.Active, new StreamVersion(5), DateTimeOffset.UtcNow);
         var context = new CommandContext<TestCommand>(command, metadata, stateContext);
         var projection = Substitute.For<IStateProjection<TestState>>();
@@ -313,9 +313,9 @@ public class CommandContextExtensionsTests
     [Theory, AutoNSubstituteData]
     public async Task WithStateResponse_With_State_Mapper_Should_Map_State_To_Response(
         TestCommand command,
-        StreamId streamId,
-        IStateContext stateContext)
+        StreamId streamId)
     {
+        var stateContext = Substitute.For<IStateContext>();
         var metadata = Substitute.For<StreamMetadata>(streamId, StreamState.Active, new StreamVersion(5), DateTimeOffset.UtcNow);
         var context = new CommandContext<TestCommand>(command, metadata, stateContext);
         var projection = Substitute.For<IStateProjection<TestState>>();
@@ -340,9 +340,9 @@ public class CommandContextExtensionsTests
     [Theory, AutoNSubstituteData]
     public async Task WithStateResponse_With_Context_Mapper_Should_Map_State_To_Response(
         TestCommand command,
-        StreamId streamId,
-        IStateContext stateContext)
+        StreamId streamId)
     {
+        var stateContext = Substitute.For<IStateContext>();
         var metadata = Substitute.For<StreamMetadata>(streamId, StreamState.Active, new StreamVersion(5), DateTimeOffset.UtcNow);
         var context = new CommandContext<TestCommand>(command, metadata, stateContext);
         var projection = Substitute.For<IStateProjection<TestState>>();
