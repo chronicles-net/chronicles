@@ -57,3 +57,48 @@ Chronicles follows [Semantic Versioning 2.0](https://semver.org/spec/v2.0.0.html
 2. The breaking removal happens in the next major release.
 
 Pre-release versions (alpha, beta, rc) are published to NuGet with a pre-release suffix (e.g. `1.1.0-beta.1`) and are not subject to the deprecation requirement.
+
+## Build & Test
+
+Build the solution:
+
+```bash
+dotnet build -c Release
+```
+
+Run tests:
+
+```bash
+dotnet test -c Release
+```
+
+All tests must pass before submitting a pull request. The CI pipeline runs these same commands on every push to `main` and on all pull requests.
+
+## Coding Conventions
+
+Chronicles follows consistent coding conventions enforced via `.editorconfig` and .NET analyzers:
+
+- **All public APIs use C# record types for events** — events are immutable records
+- **Events are immutable** — use `record` types with init-only properties
+- **Target framework: `net10.0`** — specified in all project files
+- **NuGet Central Package Management** — never add a `Version` attribute to `.csproj` files. Package versions are centrally managed in `Directory.Packages.props`
+- **File-scoped namespaces** — use `namespace Chronicles.EventStore;` instead of nested namespaces
+- **Nullable reference types enabled** — all projects have `<Nullable>enable</Nullable>`
+- **Follow existing patterns in `src/` for new features** — consistency matters
+
+## Branch Workflow
+
+Chronicles follows trunk-based development:
+
+- **Base all changes on `main`** — the default branch for development
+- **Never commit directly to `main`, `preview`, or `insider`** — always create a feature or fix branch
+- **Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)** for commit messages:
+  - `feat:` for new features
+  - `fix:` for bug fixes
+  - `chore:` for maintenance tasks
+  - `refactor:` for code refactoring
+  - `test:` for test changes
+  - `docs:` for documentation updates
+- **Open a pull request against `main`** when ready for review
+- **Keep commits small and logically atomic** — one concern per commit
+- **Every commit should leave the build green** — ensure tests pass after each commit
