@@ -174,28 +174,25 @@ public class OrderDocumentProjection : IDocumentProjection<OrderDocument>
 Subscribe to the event stream change feed to automatically update documents:
 
 ```csharp
-builder.Services.AddChronicles(chronicles =>
+builder.Services.AddChronicles(store =>
 {
-    chronicles.AddDocumentStore("default", store =>
+    store.Configure(options =>
     {
-        store.Configure(options =>
-        {
-            options.UseConnectionString("your-connection-string");
-            options.UseDatabase("your-database");
-        });
+        options.UseConnectionString("your-connection-string");
+        options.UseDatabase("your-database");
+    });
 
-        store.WithEventStore(eventStore =>
-        {
-            eventStore.AddEvent<OrderPlaced>("order-placed:v1");
-            eventStore.AddEvent<OrderShipped>("order-shipped:v1");
-            eventStore.AddEvent<OrderCancelled>("order-cancelled:v1");
+    store.WithEventStore(eventStore =>
+    {
+        eventStore.AddEvent<OrderPlaced>("order-placed:v1");
+        eventStore.AddEvent<OrderShipped>("order-shipped:v1");
+        eventStore.AddEvent<OrderCancelled>("order-cancelled:v1");
 
-            eventStore.AddEventSubscription("order-projection", subscription =>
+        eventStore.AddEventSubscription("order-projection", subscription =>
+        {
+            subscription.MapAllStreams(processor =>
             {
-                subscription.MapAllStreams(processor =>
-                {
-                    processor.AddDocumentProjection<OrderDocument, OrderDocumentProjection>();
-                });
+                processor.AddDocumentProjection<OrderDocument, OrderDocumentProjection>();
             });
         });
     });

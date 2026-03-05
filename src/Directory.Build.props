@@ -42,7 +42,7 @@
     <!-- Will generate nuget packages for each project -->
     <!-- CS1591: XML doc comments — suppressed until documentation pass is complete -->
     <NoWarn>$(NoWarn);1591</NoWarn>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <!-- Web projects aren't packable by default. To override the default behavior, add the following -->
     <IsPackable>true</IsPackable>
   </PropertyGroup>

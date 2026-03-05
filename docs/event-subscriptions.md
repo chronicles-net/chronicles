@@ -26,9 +26,9 @@ public class OrderEventLogger : IEventProcessor
     {
         _logger.LogInformation(
             "Event received: {EventType} from stream {StreamId} at version {Version}",
-            evt.EventType,
-            evt.StreamId,
-            evt.Version);
+            evt.Metadata.Name,
+            evt.Metadata.StreamId,
+            evt.Metadata.Version);
 
         switch (evt.Data)
         {
@@ -72,22 +72,19 @@ public class OrderEventLogger : IEventProcessor
 Register your event processor in the event subscription:
 
 ```csharp
-builder.Services.AddChronicles(chronicles =>
+builder.Services.AddChronicles(store =>
 {
-    chronicles.AddDocumentStore("default", store =>
+    store.WithEventStore(eventStore =>
     {
-        store.WithEventStore(eventStore =>
-        {
-            eventStore.AddEvent<OrderPlaced>("order-placed:v1");
-            eventStore.AddEvent<OrderShipped>("order-shipped:v1");
-            eventStore.AddEvent<OrderCancelled>("order-cancelled:v1");
+        eventStore.AddEvent<OrderPlaced>("order-placed:v1");
+        eventStore.AddEvent<OrderShipped>("order-shipped:v1");
+        eventStore.AddEvent<OrderCancelled>("order-cancelled:v1");
 
-            eventStore.AddEventSubscription("order-events", subscription =>
+        eventStore.AddEventSubscription("order-events", subscription =>
+        {
+            subscription.MapAllStreams(processor =>
             {
-                subscription.MapAllStreams(processor =>
-                {
-                    processor.AddEventProcessor<OrderEventLogger>();
-                });
+                processor.AddEventProcessor<OrderEventLogger>();
             });
         });
     });
@@ -285,7 +282,7 @@ public class OrderEmailNotificationProcessor : IEventProcessor
 
             case OrderShipped shipped:
                 await _emailService.SendAsync(
-                    to: shipped.CustomerId,
+                    to: shipped.OrderId,
                     subject: "Order Shipped",
                     body: $"Your order {shipped.OrderId} has shipped. Tracking: {shipped.TrackingNumber}",
                     cancellationToken);
@@ -318,6 +315,6 @@ eventStore.AddEventSubscription("order-notifications", subscription =>
 - **Handle all event types gracefully** — use pattern matching with default case
 - **Implement `IEventSubscriptionExceptionHandler`** for production error handling
 - **Use `hasMore` flag** to detect batch boundaries for flushing operations
-- **Configure `MaxItemCount`** based on processing time — smaller batches for heavy work
-- **Start from `Latest` for new processors** to avoid reprocessing historical events
+- **Configure `BatchSize`** based on processing time — smaller batches for heavy work
+- **Start from `FromNow` for new processors** to avoid reprocessing historical events
 - **Use separate subscriptions** for different processing concerns (projections, notifications, analytics)

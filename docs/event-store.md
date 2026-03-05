@@ -196,9 +196,9 @@ Each event read from the stream is wrapped in a `StreamEvent`:
 ```csharp
 await foreach (var evt in _reader.ReadAsync(streamId, cancellationToken: cancellationToken))
 {
-    Console.WriteLine($"Version: {evt.Version}");
-    Console.WriteLine($"Event Type: {evt.EventType}");
-    Console.WriteLine($"Timestamp: {evt.Timestamp}");
+    Console.WriteLine($"Version: {evt.Metadata.Version}");
+    Console.WriteLine($"Event Type: {evt.Metadata.Name}");
+    Console.WriteLine($"Timestamp: {evt.Metadata.Timestamp}");
     Console.WriteLine($"Data: {evt.Data}");
 }
 ```
