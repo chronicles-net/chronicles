@@ -33,3 +33,22 @@ Key source files under `src/Chronicles/`: `EventStore/` (streaming), `Documents/
 **Audit report:** `.squad/decisions/inbox/gurney-api-surface-audit.md`
 
 **Next step:** Thufir to review, then implement fix for `EventDocumentBase` visibility.
+
+### 2026-03-05: StateContext Architectural Fix
+
+**Context:** Fixed architectural violation where CQRS code (`CommandProcessor.cs`, `DocumentProjectionRebuilder.cs`) was referencing `Chronicles.EventStore.Internal.StateContext` — an internal type.
+
+**Implementation:**
+- Added `IStateContext.Create()` static factory method to provide public instantiation point
+- Updated `CommandProcessor.cs`: removed `using Chronicles.EventStore.Internal;`, changed parameter type to `IStateContext`, replaced `new StateContext()` with `IStateContext.Create()`
+- Updated `DocumentProjectionRebuilder.cs`: removed internal using, replaced instantiation with factory call
+- Documented two explicit architectural exceptions:
+  1. `EventStoreBuilder.cs` — permitted to reference `Documents.Internal` types for DI wiring of change-feed subscriptions
+  2. `IsExternalInit.cs` — `Chronicles.Tests` granted access to all internal types for test fakes and integration testing
+
+**Learnings:**
+- `IStateContext.Create()` static factory added as the public instantiation point for IStateContext in EventStore
+- StateContext violation fixed in CommandProcessor.cs and DocumentProjectionRebuilder.cs
+- EventStoreBuilder.cs and IsExternalInit.cs have explicit exception comments
+
+**Decision file:** `.squad/decisions/inbox/gurney-statecontext-fix.md`

@@ -42,3 +42,19 @@ Event flow in Chronicles: `IEventStreamWriter` appends `StreamEvent` to Cosmos D
 11. **Naming confusion:** `ICommandHandler<TCommand>` (without TState) is NOT stateless — it has `ConsumeEvent`. `IStatelessCommandHandler<TCommand>` IS stateless. The names are misleading.
 12. **No query-side abstraction** — CQRS "Q" is handled implicitly via Cosmos reads; no `IQueryHandler<TQuery,TResult>`.
 13. **`IEventSubscriptionExceptionHandler` loses event context** — handler receives only `Exception`, no stream/event info for dead-lettering.
+
+### 2026-03-05 — Architecture Enforcement with NetArchTest
+
+**Package added:** `NetArchTest.Rules` version 1.3.2 (NOT `NetArchTest.eNET` — that package does not exist on NuGet)
+
+**Test suite:** `test/Chronicles.Tests/Architecture/LayerBoundaryTests.cs` — 6 tests enforcing Lars's architectural directive:
+1. `Documents_should_not_reference_EventStore` — base layer cannot reference upper layer
+2. `Documents_should_not_reference_Cqrs` — base layer cannot reference upper layer
+3. `EventStore_should_not_reference_Cqrs` — middle layer cannot reference upper layer
+4. `EventStore_should_not_reference_Documents_Internal` — middle layer uses only PUBLIC types from base (exception: DI wiring in `EventStore.DependencyInjection` is excluded)
+5. `Cqrs_should_not_reference_EventStore_Internal` — top layer uses only PUBLIC types from middle
+6. `Cqrs_should_not_reference_Documents_Internal` — top layer uses only PUBLIC types from base
+
+**Explicit exception:** `EventStore.DependencyInjection` namespace is permitted to reference `Documents.Internal` for change-feed subscription wiring. This is the ONLY permitted upward dependency across internal boundaries.
+
+**Test outcome (2026-03-05):** All 6 architecture tests pass. No current violations detected. These tests will run in CI and catch any future violations.

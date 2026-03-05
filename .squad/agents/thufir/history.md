@@ -33,3 +33,24 @@ Chronicles provides abstractions for event streams (IEventStreamReader/Writer), 
 - Read-side architecture — document direct Cosmos access pattern
 
 **Principle applied:** Pre-release breaking changes are acceptable; post-release, defer or use additive overloads. When uncertain, defer.
+
+### 2026-03-05 — Layer Architecture Audit
+
+**Directive:** Documents → EventStore → CQRS strict layering (Lars, via coordinator directive). Higher layers may only use **public** types from lower layers. Any exception must be explicitly documented.
+
+**Structure:** Single assembly (`Chronicles.csproj`). All layers are namespace folders — `internal` is assembly-wide, not layer-scoped. The `.Internal` namespace is a naming convention with zero compiler enforcement.
+
+**Violations found (3 files):**
+1. `EventStore/DependencyInjection/EventStoreBuilder.cs` → uses `Chronicles.Documents.Internal` types (`IChangeFeedFactory`, `DocumentSubscription`, `IDocumentSubscription`) for change-feed subscription wiring
+2. `Cqrs/Internal/CommandProcessor.cs` → uses `Chronicles.EventStore.Internal.StateContext` (instantiates directly)
+3. `Cqrs/Internal/DocumentProjectionRebuilder.cs` → uses `Chronicles.EventStore.Internal.StateContext` (instantiates directly)
+
+**Compliant areas:** EventStore → Documents public types ✅, Cqrs → EventStore public types ✅, Cqrs → Documents public types ✅ (permitted by directive).
+
+**Recommendation:** Split into three projects (`Chronicles.Documents`, `Chronicles.EventStore`, `Chronicles.Cqrs`) to get compiler-enforced boundaries. This is the right time pre-1.0. Interim: add `NetArchTest` architecture tests to prevent further violations.
+
+**Immediate fixes needed:**
+- `StateContext`: Expose a public factory method on `IStateContext` or make constructor public
+- Change-feed subscription: Promote subscription factory API to public in Documents, or redesign the EventStore registration pattern
+
+**Report:** `.squad/decisions/inbox/thufir-layer-audit.md`
