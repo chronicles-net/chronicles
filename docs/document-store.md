@@ -356,18 +356,16 @@ All operations succeed or fail together.
 Configure multiple document stores:
 
 ```csharp
-builder.Services.AddChronicles(chronicles =>
-{
-    chronicles.AddDocumentStore("primary", store =>
+builder.Services.AddChronicles()
+    .AddDocumentStore("primary", store =>
     {
         store.Configure(options =>
         {
             options.UseConnectionString("primary-connection-string");
             options.UseDatabase("primary-database");
         });
-    });
-
-    chronicles.AddDocumentStore("archive", store =>
+    })
+    .AddDocumentStore("archive", store =>
     {
         store.Configure(options =>
         {
@@ -375,7 +373,6 @@ builder.Services.AddChronicles(chronicles =>
             options.UseDatabase("archive-database");
         });
     });
-});
 ```
 
 Specify the store name in read/write operations:

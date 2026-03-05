@@ -27,7 +27,7 @@ public class OrderServiceTests
                 eventStore.AddEvent<OrderShipped>("order-shipped:v1");
                 eventStore.AddEvent<OrderCancelled>("order-cancelled:v1");
             })
-            .WithCqrs("default", cqrs =>
+            .WithCqrs(cqrs =>
             {
                 cqrs.AddCommand<PlaceOrder, PlaceOrderHandler>();
                 cqrs.AddCommand<ShipOrder, ShipOrderHandler, OrderState>();
@@ -166,7 +166,7 @@ public async Task PlaceOrderHandler_CreatesOrderPlacedEvent()
         {
             eventStore.AddEvent<OrderPlaced>("order-placed:v1");
         })
-        .WithCqrs("default", cqrs =>
+        .WithCqrs(cqrs =>
         {
             cqrs.AddCommand<PlaceOrder, PlaceOrderHandler>();
         });
@@ -208,7 +208,7 @@ public async Task ShipOrderHandler_RequiresPlacedStatus()
             eventStore.AddEvent<OrderShipped>("order-shipped:v1");
             eventStore.AddEvent<OrderCancelled>("order-cancelled:v1");
         })
-        .WithCqrs("default", cqrs =>
+        .WithCqrs(cqrs =>
         {
             cqrs.AddCommand<PlaceOrder, PlaceOrderHandler>();
             cqrs.AddCommand<ShipOrder, ShipOrderHandler, OrderState>();
@@ -376,7 +376,7 @@ public class OrderTestFixture : IDisposable
                 eventStore.AddEvent<OrderShipped>("order-shipped:v1");
                 eventStore.AddEvent<OrderCancelled>("order-cancelled:v1");
             })
-            .WithCqrs("default", cqrs =>
+            .WithCqrs(cqrs =>
             {
                 cqrs.AddCommand<PlaceOrder, PlaceOrderHandler>();
                 cqrs.AddCommand<ShipOrder, ShipOrderHandler, OrderState>();

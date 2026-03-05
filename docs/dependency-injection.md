@@ -198,9 +198,8 @@ builder.Services.AddChronicles(store =>
 Configure multiple document stores for different databases or accounts:
 
 ```csharp
-builder.Services.AddChronicles(chronicles =>
-{
-    chronicles.AddDocumentStore("primary", store =>
+builder.Services.AddChronicles()
+    .AddDocumentStore("primary", store =>
     {
         store.Configure(options =>
         {
@@ -217,9 +216,8 @@ builder.Services.AddChronicles(chronicles =>
                 cqrs.AddCommand<PlaceOrder, PlaceOrderHandler>();
             });
         });
-    });
-
-    chronicles.AddDocumentStore("archive", store =>
+    })
+    .AddDocumentStore("archive", store =>
     {
         store.Configure(options =>
         {
@@ -227,7 +225,6 @@ builder.Services.AddChronicles(chronicles =>
             options.UseDatabase("archive-database");
         });
     });
-});
 ```
 
 Specify the store name when using services:
@@ -313,53 +310,50 @@ var processor = provider.GetRequiredService<ICommandProcessor<PlaceOrder>>();
 Full configuration with all features:
 
 ```csharp
-builder.Services.AddChronicles(chronicles =>
+builder.Services.AddChronicles(store =>
 {
-    chronicles.AddDocumentStore("default", store =>
+    store.Configure(options =>
     {
-        store.Configure(options =>
+        options.UseConnectionString(builder.Configuration["Cosmos:ConnectionString"]!);
+        options.UseDatabase(builder.Configuration["Cosmos:DatabaseName"]!);
+        options.AddInitialization(init =>
         {
-            options.UseConnectionString(builder.Configuration["Cosmos:ConnectionString"]!);
-            options.UseDatabase(builder.Configuration["Cosmos:DatabaseName"]!);
-            options.AddInitialization(init =>
+            init.CreateDatabase(ThroughputProperties.CreateManualThroughput(400));
+            init.CreateSubscriptionContainer();
+        });
+    });
+
+    store.WithEventStore(options =>
+    {
+        options.EventStoreContainer = "events";
+    },
+    eventStore =>
+    {
+        eventStore.AddEvent<OrderPlaced>("order-placed:v1");
+        eventStore.AddEvent<OrderShipped>("order-shipped:v1");
+        eventStore.AddEvent<OrderCancelled>("order-cancelled:v1");
+
+        eventStore.AddEventSubscription("order-subscription", options =>
+        {
+            options.SubscriptionOptions.StartOptions = SubscriptionStartOptions.FromNow;
+            options.SubscriptionOptions.BatchSize = 100;
+        }, subscription =>
+        {
+            subscription.MapAllStreams(processor =>
             {
-                init.CreateDatabase(ThroughputProperties.CreateManualThroughput(400));
-                init.CreateSubscriptionContainer();
+                processor.AddDocumentProjection<OrderDocument, OrderDocumentProjection>();
+                processor.AddEventProcessor<OrderEventLogger>();
             });
         });
 
-        store.WithEventStore(options =>
+        eventStore.WithCqrs(cqrs =>
         {
-            options.EventStoreContainer = "events";
-        },
-        eventStore =>
-        {
-            eventStore.AddEvent<OrderPlaced>("order-placed:v1");
-            eventStore.AddEvent<OrderShipped>("order-shipped:v1");
-            eventStore.AddEvent<OrderCancelled>("order-cancelled:v1");
-
-            eventStore.AddEventSubscription("order-subscription", options =>
+            cqrs.AddCommand<PlaceOrder, PlaceOrderHandler>();
+            cqrs.AddCommand<ShipOrder, ShipOrderHandler, OrderState>();
+            cqrs.AddCommand<CancelOrder, CancelOrderHandler>(new CommandOptions
             {
-                options.SubscriptionOptions.StartOptions = SubscriptionStartOptions.FromNow;
-                options.SubscriptionOptions.BatchSize = 100;
-            }, subscription =>
-            {
-                subscription.MapAllStreams(processor =>
-                {
-                    processor.AddDocumentProjection<OrderDocument, OrderDocumentProjection>();
-                    processor.AddEventProcessor<OrderEventLogger>();
-                });
-            });
-
-            eventStore.WithCqrs(cqrs =>
-            {
-                cqrs.AddCommand<PlaceOrder, PlaceOrderHandler>();
-                cqrs.AddCommand<ShipOrder, ShipOrderHandler, OrderState>();
-                cqrs.AddCommand<CancelOrder, CancelOrderHandler>(new CommandOptions
-                {
-                    ConflictBehavior = CommandConflictBehavior.Retry,
-                    Retry = 3
-                });
+                ConflictBehavior = CommandConflictBehavior.Retry,
+                Retry = 3
             });
         });
     });

@@ -51,11 +51,14 @@ public class PlaceOrderHandler : IStatelessCommandHandler<PlaceOrder>
 **Register:**
 
 ```csharp
-builder.Services.AddChronicles(chronicles =>
+builder.Services.AddChronicles(store =>
 {
-    chronicles.WithCqrs("default", cqrs =>
+    store.WithEventStore(eventStore =>
     {
-        cqrs.AddCommand<PlaceOrder, PlaceOrderHandler>();
+        eventStore.WithCqrs(cqrs =>
+        {
+            cqrs.AddCommand<PlaceOrder, PlaceOrderHandler>();
+        });
     });
 });
 ```
@@ -287,7 +290,8 @@ Command execution returns a `CommandResult`:
 var result = await processor.ExecuteAsync(
     new StreamId("order", "ord-123"),
     new PlaceOrder("ord-123", "cust-456", 99.99m),
-    cancellationToken: cancellationToken);
+    null,
+    cancellationToken);
 
 Console.WriteLine($"StreamId: {result.Id}");
 Console.WriteLine($"Version: {result.Version}");
@@ -327,7 +331,8 @@ public class OrderController
         var result = await _processor.ExecuteAsync(
             streamId,
             command,
-            cancellationToken: cancellationToken);
+            null,
+            cancellationToken);
 
         return Ok(new { OrderId = orderId, Version = result.Version });
     }
@@ -355,7 +360,7 @@ public class CommandRouter
         where TCommand : class
     {
         var processor = _factory.Create<TCommand>();
-        await processor.ExecuteAsync(streamId, command, cancellationToken: cancellationToken);
+        await processor.ExecuteAsync(streamId, command, null, cancellationToken);
     }
 }
 ```
