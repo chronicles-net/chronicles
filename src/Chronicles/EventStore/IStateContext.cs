@@ -9,6 +9,12 @@ namespace Chronicles.EventStore;
 public interface IStateContext
 {
     /// <summary>
+    /// Creates a new instance of <see cref="IStateContext"/>.
+    /// </summary>
+    /// <returns>A new <see cref="IStateContext"/> instance.</returns>
+    static IStateContext Create() => new Internal.StateContext();
+
+    /// <summary>
     /// Gets the state of the specified type.
     /// </summary>
     /// <typeparam name="TState">Type of state data.</typeparam>

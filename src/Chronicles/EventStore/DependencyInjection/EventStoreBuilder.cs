@@ -1,5 +1,11 @@
 using Chronicles.Documents;
 using Chronicles.Documents.DependencyInjection;
+// Explicit architectural exception (approved: Lars Skovslund, 2026-03-05):
+// EventStore DI wiring is permitted to reference Documents.Internal types to wire
+// change-feed subscriptions (IChangeFeedFactory, DocumentSubscription<T,P>,
+// IDocumentSubscription). This is a one-way, DI-only coupling — no runtime data
+// flows across the boundary. Promoting these types to public would expose
+// infrastructure details that are not part of the Documents public API contract.
 using Chronicles.Documents.Internal;
 using Chronicles.EventStore.Internal;
 using Microsoft.Extensions.DependencyInjection;
