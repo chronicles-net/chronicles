@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Chronicles.Documents;
 
 namespace Chronicles.EventStore.Internal;
 
@@ -13,11 +14,12 @@ internal sealed record StreamMetadataDocument(
         StreamId,
         State,
         Version,
-        Timestamp)
+        Timestamp),
+    IDocument
 {
-    protected override string GetDocumentId() => Id;
+    string IDocument.GetDocumentId() => Id;
 
-    protected override string GetPartitionKey() => Pk;
+    string IDocument.GetPartitionKey() => Pk;
 
     internal static StreamMetadataDocument FromMetadata(
         StreamMetadata metadata)

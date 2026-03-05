@@ -59,7 +59,7 @@ public class EventDocumentProcessorTests
         {
             await exceptionHandler
                 .Received(1)
-                .HandleAsync(exception);
+                .HandleAsync(exception, Arg.Any<StreamEvent?>(), Arg.Any<CancellationToken>());
         }
     }
 }

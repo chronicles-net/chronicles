@@ -483,3 +483,7 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 *.lutconfig
+# Squad: ignore generated logs
+.squad/orchestration-log/
+.squad/log/
+.squad-templates

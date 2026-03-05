@@ -4,6 +4,8 @@ internal sealed class DefaultEventSubscriptionExceptionHandler
     : IEventSubscriptionExceptionHandler
 {
     public ValueTask HandleAsync(
-        Exception exception)
+        Exception exception,
+        StreamEvent? streamEvent,
+        CancellationToken cancellationToken)
         => ValueTask.CompletedTask;
 }

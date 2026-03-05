@@ -1,5 +1,3 @@
-using Chronicles.EventStore.Internal;
-
 namespace Chronicles.EventStore;
 
 /// <summary>
@@ -13,5 +11,4 @@ public abstract record StreamMetadata(
     StreamId StreamId,
     StreamState State,
     StreamVersion Version,
-    DateTimeOffset Timestamp)
-    : EventDocumentBase();
+    DateTimeOffset Timestamp);

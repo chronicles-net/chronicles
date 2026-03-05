@@ -1,0 +1,33 @@
+name: Feature request
+description: Propose a new feature or API improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting, check [Discussions](https://github.com/chronicles-net/chronicles/discussions) and open issues to avoid duplicates.
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: Describe the problem you're trying to solve. What are you building and what does Chronicles currently prevent or make difficult?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-api
+    attributes:
+      label: Proposed API
+      description: Sketch the API or behaviour you'd like to see.
+      render: csharp
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What workarounds or alternative approaches have you tried or considered?
+    validations:
+      required: false

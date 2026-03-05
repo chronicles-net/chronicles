@@ -39,3 +39,21 @@ If you don't know what a pull request is, read this article: https://help.github
 ## Code of Conduct
 
 See [CODE-OF-CONDUCT.md](./CODE-OF-CONDUCT.md)
+
+## Versioning
+
+Chronicles follows [Semantic Versioning 2.0](https://semver.org/spec/v2.0.0.html).
+
+| Release | Meaning |
+|---------|---------|
+| **1.0.0** | First stable public release — API is considered production-ready |
+| **Patch** (1.0.x) | Backwards-compatible bug fixes only |
+| **Minor** (1.x.0) | Backwards-compatible new features or improvements |
+| **Major** (x.0.0) | Breaking changes to the public API |
+
+**Breaking changes** require a major version bump. Before a breaking change ships:
+
+1. The affected API is marked `[Obsolete]` in a minor release with a clear migration message.
+2. The breaking removal happens in the next major release.
+
+Pre-release versions (alpha, beta, rc) are published to NuGet with a pre-release suffix (e.g. `1.1.0-beta.1`) and are not subject to the deprecation requirement.

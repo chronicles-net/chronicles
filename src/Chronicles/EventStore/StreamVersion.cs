@@ -54,7 +54,7 @@ public readonly struct StreamVersion :
             { Value: RequireNotEmptyValue } when IsNotEmpty => true,
             { Value: RequireEmptyValue } when IsEmpty => true,
             { Value: AnyValue } => true,
-            { } required when this >= required => true,
+            { Value: >= 0 } required when this >= required => true,
             _ => false,
         };
 

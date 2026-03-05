@@ -41,7 +41,7 @@ internal class EventStoreConfigureDocumentStore
         options.AddDocumentType<Checkpoint>(eventStore.StreamIndexContainer);
         options.AddDocumentType(typeof(CheckpointDocument<>), eventStore.StreamIndexContainer);
         options.AddDocumentType<EventDocument>(eventStore.EventStoreContainer);
-        options.AddDocumentType<EventDocumentBase>(eventStore.EventStoreContainer);
+        options.AddDocumentType<IDocument>(eventStore.EventStoreContainer);
         options.AddDocumentType<StreamMetadataDocument>(eventStore.EventStoreContainer);
         options.AddDocumentType<StreamEvent>(eventStore.EventStoreContainer);
 

@@ -1,7 +1,6 @@
 ﻿using Chronicles.Cqrs.Internal.EventProcessors;
 using Chronicles.Documents;
 using Chronicles.EventStore;
-using Chronicles.EventStore.Internal;
 
 namespace Chronicles.Cqrs.Internal;
 
@@ -19,7 +18,7 @@ internal class DocumentProjectionRebuilder<TProjection, TDocument>(
         CancellationToken cancellationToken)
     {
         var initialState = projection.CreateState(streamId);
-        var stateContext = new StateContext();
+        var stateContext = IStateContext.Create();
         stateContext.SetState(initialState);
 
         StreamEvent? previous = null;

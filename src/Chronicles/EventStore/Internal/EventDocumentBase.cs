@@ -2,7 +2,7 @@ using Chronicles.Documents;
 
 namespace Chronicles.EventStore.Internal;
 
-public abstract record EventDocumentBase()
+internal abstract record EventDocumentBase()
     : IDocument
 {
     protected abstract string GetPartitionKey();

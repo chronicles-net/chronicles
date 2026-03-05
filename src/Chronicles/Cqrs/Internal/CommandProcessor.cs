@@ -1,5 +1,4 @@
 using Chronicles.EventStore;
-using Chronicles.EventStore.Internal;
 
 namespace Chronicles.Cqrs.Internal;
 
@@ -58,7 +57,7 @@ internal class CommandProcessor<TCommand>(
     protected virtual ValueTask<StreamReadOptions> GetStreamReadOptionsAsync(
         StreamMetadata metadata,
         CommandRequestOptions requestOptions,
-        StateContext state,
+        IStateContext state,
         CancellationToken cancellationToken)
     {
         var readOptions = requestOptions.GetStreamReadOptions(metadata, commandOptions);
@@ -80,7 +79,7 @@ internal class CommandProcessor<TCommand>(
                 cancellationToken)
             .ConfigureAwait(false);
 
-        var state = new StateContext();
+        var state = IStateContext.Create();
 
         // Provide access to command data through the state context.
         state.SetState(command);

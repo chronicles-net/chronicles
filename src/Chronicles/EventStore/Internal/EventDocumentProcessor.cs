@@ -15,7 +15,7 @@ internal class EventDocumentProcessor(
     public async Task ErrorAsync(
       string leaseToken,
       Exception exception)
-      => await exceptionHandler.HandleAsync(exception);
+      => await exceptionHandler.HandleAsync(exception, null, CancellationToken.None);
 
     public async Task ProcessAsync(
       IReadOnlyCollection<StreamEvent> changes,
@@ -39,7 +39,7 @@ internal class EventDocumentProcessor(
         }
         catch (Exception e)
         {
-            await exceptionHandler.HandleAsync(e);
+            await exceptionHandler.HandleAsync(e, null, cancellationToken);
         }
     }
 }

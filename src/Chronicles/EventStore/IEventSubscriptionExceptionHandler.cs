@@ -12,6 +12,8 @@ public interface IEventSubscriptionExceptionHandler
     /// Implement this method to log, retry, or otherwise respond to errors in event subscription workflows.
     /// </summary>
     /// <param name="exception">The exception that occurred.</param>
+    /// <param name="streamEvent">The stream event being processed when the exception occurred, if available.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> representing request cancellation.</param>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
-    ValueTask HandleAsync(Exception exception);
+    ValueTask HandleAsync(Exception exception, StreamEvent? streamEvent, CancellationToken cancellationToken);
 }
