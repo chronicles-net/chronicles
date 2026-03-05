@@ -87,10 +87,10 @@ jobs:
       - name: 📦 Publish to GitHub Packages
         run: dotnet nuget push **/Chronicles.*.nupkg -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/chronicles-net/index.json --skip-duplicate --no-symbols
 
-      - name: 🚀 Publish to NuGet.org
-        run: |
-          dotnet nuget push **/Chronicles.*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
-          dotnet nuget push **/Chronicles.*.snupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
+      # - name: 🚀 Publish to NuGet.org
+      #   run: |
+      #     dotnet nuget push **/Chronicles.*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
+      #     dotnet nuget push **/Chronicles.*.snupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
 
       - name: 🏷️ Create GitHub Release
         uses: softprops/action-gh-release@v2
