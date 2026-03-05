@@ -1,0 +1,10 @@
+{
+  "assignments": [
+    {
+      "assignment_id": "chronicles-2026-03-04",
+      "universe": "Dune",
+      "created_at": "2026-03-04T15:36:21Z",
+      "agents": ["Thufir", "Gurney", "Duncan", "Chani", "Stilgar", "Scribe", "Ralph"]
+    }
+  ]
+}
