@@ -102,6 +102,19 @@ Read-model projections driven by the Cosmos DB change feed.
 
 The [`sample/`](sample/) directory contains a food-delivery microservices demo built with .NET Aspire. It covers three bounded contexts — **Orders**, **Restaurants**, and **Couriers** — and shows how to wire up event streams, command handlers, and document projections end-to-end.
 
+## Documentation
+
+| Guide | Description |
+|---|---|
+| [Getting Started](docs/getting-started.md) | Install Chronicles, configure DI, and write your first events |
+| [Event Store](docs/event-store.md) | Streams, versioning, optimistic concurrency, and checkpoints |
+| [Command Handlers](docs/command-handlers.md) | Stateless, stateful, and selective-state handler patterns |
+| [Projections](docs/projections.md) | State projections, document projections, and commit actions |
+| [Document Store](docs/document-store.md) | Reading and writing Cosmos documents with IDocumentReader / IDocumentWriter |
+| [Event Subscriptions](docs/event-subscriptions.md) | Change-feed subscriptions and event processors |
+| [Dependency Injection](docs/dependency-injection.md) | Full DI reference: AddChronicles, event store, CQRS, subscriptions |
+| [Testing](docs/testing.md) | AddFakeChronicles, in-memory fakes, and xUnit test patterns |
+
 ## Contributing & community
 
 - **Questions**: [GitHub Discussions](https://github.com/chronicles-net/chronicles/discussions)

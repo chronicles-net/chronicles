@@ -12,12 +12,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- CS1591: XML doc comments — suppressed until documentation pass is complete -->
-    <NoWarn>$(NoWarn);1591</NoWarn>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,10 +21,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(IsPackable)' != 'false'">
-    <None Include="..\..\docs\images\icon.png" Pack="true" PackagePath="icon.png" Condition="Exists('..\..\docs\images\icon.png')" />
   </ItemGroup>
 
 </Project>
