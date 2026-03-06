@@ -126,6 +126,45 @@ public class StreamEventConverterTests
     }
 
     [Theory, AutoNSubstituteData]
+    internal void Convert_Should_Return_Unknown_Event_When_Converter_Returns_Null(
+        [Frozen] IEventCatalog eventCatalog,
+        EventMetadata eventMetadata,
+        IEventDataConverter converter,
+        StreamEventConverter sut)
+    {
+        var json = """
+            {
+                "name": "test"
+            }
+            """;
+        var context = new EventConverterContext(
+            JsonDocument.Parse(json).RootElement,
+            eventMetadata,
+            new JsonSerializerOptions());
+
+        converter
+            .Convert(context)
+            .Returns((object?)null);
+
+        eventCatalog
+            .GetConverter(eventMetadata.Name)
+            .Returns(converter);
+
+        var result = sut.Convert(context);
+
+        result
+            .Data
+            .Should()
+            .BeEquivalentTo(
+                new UnknownEvent(json));
+
+        result
+            .Metadata
+            .Should()
+            .BeEquivalentTo(eventMetadata);
+    }
+
+    [Theory, AutoNSubstituteData]
     internal void Convert_Should_Return_FaultedEvent_On_EventCatalog_Exception(
         [Frozen] IEventCatalog eventCatalog,
         EventMetadata eventMetadata,
