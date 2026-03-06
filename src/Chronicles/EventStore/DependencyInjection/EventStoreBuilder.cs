@@ -19,6 +19,7 @@ public class EventStoreBuilder(
     private readonly Dictionary<Type, (string Name, IEventDataConverter Converter)> eventNames = [];
     private readonly List<(Type EventType, string Alias, IEventDataConverter Converter)> aliasRegistrations = [];
     private readonly EventStoreOptions options = new();
+    private bool customCatalogRegistered;
 
     public IServiceCollection Services => documentBuilder.Services;
 
@@ -58,6 +59,7 @@ public class EventStoreBuilder(
         string name)
         where TEvent : class
     {
+        aliasRegistrations.RemoveAll(a => a.EventType == typeof(TEvent));
         eventNames[typeof(TEvent)] = (name, new EventDataConverter(name, typeof(TEvent)));
 
         return this;
@@ -105,6 +107,7 @@ public class EventStoreBuilder(
     {
         Arguments.EnsureNotNull(customConverter, nameof(customConverter));
 
+        aliasRegistrations.RemoveAll(a => a.EventType == typeof(TEvent));
         eventNames[typeof(TEvent)] = (name, customConverter);
 
         return this;
@@ -124,6 +127,7 @@ public class EventStoreBuilder(
         where TCatalog : class, IEventCatalog
     {
         Services.TryAddKeyedSingleton<IEventCatalog, TCatalog>(StoreName);
+        customCatalogRegistered = true;
 
         return this;
     }
@@ -163,10 +167,14 @@ public class EventStoreBuilder(
 
     internal void Build()
     {
-        ValidateEventNames();
+        if (!customCatalogRegistered)
+        {
+            ValidateEventNames();
 
-        var aliases = aliasRegistrations.ToDictionary(a => a.Alias, a => a.Converter);
-        Services.TryAddKeyedSingleton<IEventCatalog>(StoreName, new EventCatalog(eventNames, aliases));
+            var aliases = aliasRegistrations.ToDictionary(a => a.Alias, a => a.Converter);
+            Services.TryAddKeyedSingleton<IEventCatalog>(StoreName, new EventCatalog(eventNames, aliases));
+        }
+
         Services.Configure<EventStoreOptions>(StoreName, o =>
         {
             o.DocumentStoreName = StoreName;
