@@ -4,7 +4,7 @@
 
 Events in an event-sourced system accumulate over months and years. Business requirements evolve, domain language matures, and event schemas must adapt. Unlike traditional databases, event stores are append-only—you cannot "ALTER TABLE" your way out of schema changes.
 
-Chronicles handles this gracefully: streams **never throw**. When an event cannot be deserialized or is unrecognized, it is wrapped in a `FaultedEvent` or `UnknownEvent` respectively, allowing projections to skip gracefully, log warnings, and continue processing. This guide covers the patterns and APIs for managing event evolution in Chronicles.
+Chronicles handles this gracefully: **event deserialization and conversion never throw due to unknown or malformed events**. When an event cannot be deserialized or is unrecognized, it is wrapped in a `FaultedEvent` or `UnknownEvent` respectively, allowing projections to skip gracefully, log warnings, and continue processing. (Other stream operations, such as conflict detection or I/O, can still throw as usual.) This guide covers the patterns and APIs for managing event evolution in Chronicles.
 
 For general event sourcing theory, see [Event Sourcing: Building Event-Driven Systems](https://martinfowler.com/eaaDev/EventSourcing.html) (Martin Fowler) and [Versioning in an Event Sourced System](https://www.eventstore.com/blog/versioning-in-event-sourced-systems) (Event Store).
 
