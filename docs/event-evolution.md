@@ -53,8 +53,8 @@ public record OrderCreated(
     DateTimeOffset CreatedAt);
 
 // Service configuration
-services.AddChronicles(chronicles => chronicles
-    .AddEventStore("orders", store => store
+services.AddChronicles(builder => builder
+    .WithEventStore("orders", store => store
         .AddEvent<OrderCreated>("order-created", aliases: "order-placed")
         .AddEvent<OrderShipped>("order-shipped")
         .AddEvent<OrderCancelled>("order-cancelled")));
