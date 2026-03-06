@@ -75,7 +75,7 @@ public class StreamEventConverterTests
             .Data
             .Should()
             .BeEquivalentTo(
-                new UnknownEvent(json));
+                new UnknownEvent(context.Data.GetRawText()));
 
         result
             .Metadata
@@ -156,7 +156,7 @@ public class StreamEventConverterTests
             .Data
             .Should()
             .BeEquivalentTo(
-                new UnknownEvent(json));
+                new UnknownEvent(context.Data.GetRawText()));
 
         result
             .Metadata
