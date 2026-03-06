@@ -410,7 +410,8 @@ Verify that projections gracefully skip unrecognized events:
 public void Projection_SkipsUnknownEvents_WithoutThrowing()
 {
     // Arrange
-    var projection = new ResilientOrderProjection(Mock.Of<ILogger<ResilientOrderProjection>>());
+    var logger = Substitute.For<ILogger<ResilientOrderProjection>>();
+    var projection = new ResilientOrderProjection(logger);
     var state = OrderState.Empty;
     var unknownEvent = new UnknownEvent("""{"mysterious": "data"}""");
 
@@ -424,8 +425,8 @@ public void Projection_SkipsUnknownEvents_WithoutThrowing()
 public void Projection_SkipsFaultedEvents_WithoutThrowing()
 {
     // Arrange
-    var logger = new Mock<ILogger<ResilientOrderProjection>>();
-    var projection = new ResilientOrderProjection(logger.Object);
+    var logger = Substitute.For<ILogger<ResilientOrderProjection>>();
+    var projection = new ResilientOrderProjection(logger);
     var state = OrderState.Empty;
     var faultedException = new JsonException("Invalid JSON");
     var faultedEvent = new FaultedEvent("""{"corrupt": invalid}""", faultedException);
@@ -436,14 +437,12 @@ public void Projection_SkipsFaultedEvents_WithoutThrowing()
     Assert.Equal(state, result);  // State unchanged
     
     // Verify logging occurred
-    logger.Verify(
-        x => x.Log(
-            LogLevel.Error,
-            It.IsAny<EventId>(),
-            It.IsAny<It.IsAnyType>(),
-            It.IsAny<Exception>(),
-            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-        Times.Once);
+    logger.ReceivedWithAnyArgs(1).Log(
+        default,
+        default,
+        default!,
+        default,
+        default!);
 }
 ```
 
