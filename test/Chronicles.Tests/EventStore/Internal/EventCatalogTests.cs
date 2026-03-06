@@ -59,4 +59,64 @@ public class EventCatalogTests
             .Should()
             .Throw<ArgumentException>();
     }
+
+    [Theory, AutoNSubstituteData]
+    internal void GetConverter_Should_Return_Converter_For_Alias(
+        IEventDataConverter converter)
+    {
+        var sut = new EventCatalog(
+            new Dictionary<Type, (string Name, IEventDataConverter Converter)>
+            {
+                { typeof(TestEvent), (nameof(TestEvent), converter) }
+            },
+            new Dictionary<string, IEventDataConverter>
+            {
+                { "OldTestEvent", converter }
+            });
+
+        sut.GetConverter("OldTestEvent")
+            .Should()
+            .Be(converter);
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal void GetConverter_Should_Return_Same_Converter_For_Primary_And_Alias(
+        IEventDataConverter converter)
+    {
+        var sut = new EventCatalog(
+            new Dictionary<Type, (string Name, IEventDataConverter Converter)>
+            {
+                { typeof(TestEvent), (nameof(TestEvent), converter) }
+            },
+            new Dictionary<string, IEventDataConverter>
+            {
+                { "OldTestEvent", converter }
+            });
+
+        var primaryResult = sut.GetConverter(nameof(TestEvent));
+        var aliasResult = sut.GetConverter("OldTestEvent");
+
+        primaryResult
+            .Should()
+            .Be(aliasResult);
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal void GetEventName_Should_Return_Primary_Name_Even_When_Aliases_Exist(
+        IEventDataConverter converter)
+    {
+        var sut = new EventCatalog(
+            new Dictionary<Type, (string Name, IEventDataConverter Converter)>
+            {
+                { typeof(TestEvent), (nameof(TestEvent), converter) }
+            },
+            new Dictionary<string, IEventDataConverter>
+            {
+                { "OldTestEvent", converter }
+            });
+
+        sut.GetEventName(typeof(TestEvent))
+            .Should()
+            .Be(nameof(TestEvent));
+    }
 }

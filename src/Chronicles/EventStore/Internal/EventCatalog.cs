@@ -6,7 +6,8 @@ internal class EventCatalog : IEventCatalog
     private readonly Dictionary<string, (string Name, IEventDataConverter Converter)> names;
 
     public EventCatalog(
-        IDictionary<Type, (string Name, IEventDataConverter Converter)> typeToNameMappings)
+        IDictionary<Type, (string Name, IEventDataConverter Converter)> typeToNameMappings,
+        IDictionary<string, IEventDataConverter>? aliasMappings = null)
     {
         types = typeToNameMappings
             .ToDictionary(
@@ -17,6 +18,14 @@ internal class EventCatalog : IEventCatalog
             .ToDictionary(
                 kvp => kvp.Value.Name,
                 kvp => types[kvp.Key]);
+
+        if (aliasMappings is not null)
+        {
+            foreach (var (alias, converter) in aliasMappings)
+            {
+                names[alias] = (alias, converter);
+            }
+        }
     }
 
     public IEventDataConverter? GetConverter(

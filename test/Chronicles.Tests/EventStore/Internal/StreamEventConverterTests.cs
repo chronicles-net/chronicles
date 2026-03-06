@@ -75,7 +75,7 @@ public class StreamEventConverterTests
             .Data
             .Should()
             .BeEquivalentTo(
-                new UnknownEvent(json));
+                new UnknownEvent(context.Data.GetRawText()));
 
         result
             .Metadata
@@ -118,6 +118,45 @@ public class StreamEventConverterTests
                 new FaultedEvent(
                     context.Data.GetRawText(),
                     exception));
+
+        result
+            .Metadata
+            .Should()
+            .BeEquivalentTo(eventMetadata);
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal void Convert_Should_Return_Unknown_Event_When_Converter_Returns_Null(
+        [Frozen] IEventCatalog eventCatalog,
+        EventMetadata eventMetadata,
+        IEventDataConverter converter,
+        StreamEventConverter sut)
+    {
+        var json = """
+            {
+                "name": "test"
+            }
+            """;
+        var context = new EventConverterContext(
+            JsonDocument.Parse(json).RootElement,
+            eventMetadata,
+            new JsonSerializerOptions());
+
+        converter
+            .Convert(context)
+            .Returns((object?)null);
+
+        eventCatalog
+            .GetConverter(eventMetadata.Name)
+            .Returns(converter);
+
+        var result = sut.Convert(context);
+
+        result
+            .Data
+            .Should()
+            .BeEquivalentTo(
+                new UnknownEvent(context.Data.GetRawText()));
 
         result
             .Metadata
