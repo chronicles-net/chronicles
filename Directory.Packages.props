@@ -8,7 +8,7 @@
     <PackageVersion Include="AsyncEnumerator" Version="4.0.2" />
     <PackageVersion Include="Atc.Test" Version="2.0.17" />
     <PackageVersion Include="coverlet.collector" Version="8.0.0" PrivateAssets="All" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.4" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.57.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.3" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
