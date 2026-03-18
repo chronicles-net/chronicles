@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **Event metadata:** Removed `EventMetadata.EventId` from the public API. This is a breaking change for consumers that accessed this property directly.
+
 ## [1.0.0] - 2026-03-06
 
 ### Added
