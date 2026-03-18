@@ -108,7 +108,7 @@ var options = new StreamWriteOptions
     CausationId = "command-456"         // Links events in a causality chain
 };
 
-await _writer.WriteAsync(
+await writer.WriteAsync(
     streamId,
     events,
     options: options,
