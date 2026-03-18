@@ -66,7 +66,7 @@ eventStore.AddEvent<OrderCreated>("order-created",
 
 This allows you to rename events over time while maintaining backward compatibility with historical data. The primary name is used for new events; aliases are recognized during deserialization only.
 
-See [Event Evolution](docs/event-evolution.md) for detailed patterns and strategies.
+See [Event Evolution](event-evolution.md) for detailed patterns and strategies.
 
 **Event Store Options:**
 
