@@ -88,7 +88,7 @@ Each event carries metadata with context about when and why it was created:
 - **EventId**: Optional — unique identifier for deduplication and idempotency in at-least-once delivery scenarios
 
 ```csharp
-await foreach (var evt in _reader.ReadAsync(streamId))
+await foreach (var evt in reader.ReadAsync(streamId))
 {
     var metadata = evt.Metadata;
     Console.WriteLine($"Name: {metadata.Name}");
