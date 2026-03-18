@@ -85,7 +85,6 @@ Each event carries metadata with context about when and why it was created:
 - **StreamId**: Which stream the event belongs to
 - **CorrelationId**: Optional — links events across streams for a logical operation
 - **CausationId**: Optional — links events in a causality chain (e.g., command → event)
-- **EventId**: Optional — unique identifier for deduplication and idempotency in at-least-once delivery scenarios
 
 ```csharp
 await foreach (var evt in reader.ReadAsync(streamId))
@@ -96,26 +95,7 @@ await foreach (var evt in reader.ReadAsync(streamId))
     Console.WriteLine($"Timestamp: {metadata.Timestamp}");
     Console.WriteLine($"CorrelationId: {metadata.CorrelationId}");
     Console.WriteLine($"CausationId: {metadata.CausationId}");
-    Console.WriteLine($"EventId: {metadata.EventId}");  // For deduplication
 }
-```
-
-**Using EventId for Idempotency:**
-
-When your system may retry writes (e.g., after transient failures), use `EventId` to detect and skip duplicate events:
-
-```csharp
-var streamId = new StreamId("order", orderId);
-var eventId = Guid.NewGuid().ToString(); // Stable across retries
-
-// First attempt
-await _writer.WriteAsync(streamId, [
-    new OrderPlaced(orderId, customerId, amount)
-        { EventId = eventId }  // Attach deduplication ID
-]);
-
-// If a retry occurs, the same EventId is sent. Your projection
-// can check metadata.EventId to avoid processing the same event twice.
 ```
 
 ## Writing Events
@@ -144,7 +124,6 @@ public class OrderService
         CancellationToken cancellationToken = default)
     {
         var streamId = new StreamId("order", orderId);
-
         var events = ImmutableList<object>.Empty
             .Add(new OrderPlaced(orderId, customerId, totalAmount, DateTimeOffset.UtcNow));
 
@@ -352,6 +331,5 @@ if (checkpoint != null)
 - **Keep streams focused** on a single aggregate
 - **Use optimistic concurrency** when version matters
 - **Avoid large streams** — consider stream archival strategies for unbounded growth
-- **Use `EventId` for idempotent operations** — include a unique, stable ID when writing events to enable deduplication on retry
 - **Set `expectedVersion` on delete operations** — protect against concurrent modifications when deleting a stream
 - **Prefer `CloseAsync` over deletion** — use close for streams that should be immutable but still queryable; use delete only when the stream must be removed entirely

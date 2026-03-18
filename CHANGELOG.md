@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **Event metadata:** Removed `EventMetadata.EventId` from the public API. This is a breaking change for consumers that accessed this property directly.
+
 ## [1.0.0] - 2026-03-06
 
 ### Added
@@ -15,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CQRS:** Command handlers with state projections (`ICommandHandler<TCommand, TState>`, `IStatelessCommandHandler<TCommand>`, `IStateProjection<TState>`)
 - **Document Store:** Read-model projections via Cosmos DB change feed (`IDocumentProjection<TDocument>`, `IDocumentReader<T>`, `IDocumentWriter<T>`)
 - **Event Evolution:** Backward-compatible event schema evolution with aliases, upcasting, and fault-tolerant deserialization
-- **Event IDs:** `EventId` field on `EventMetadata` for idempotency and deduplication support in at-least-once delivery scenarios
 - **Stream deletion safety:** `expectedVersion` parameter on `DeleteStreamAsync` for safe concurrent deletion with optimistic concurrency
 - **Stream close:** `CloseAsync` on `IEventStreamWriter` to mark streams as permanently closed without deleting events
 - **Change-feed subscriptions:** Cosmos DB change-feed integration for real-time event processing via `IEventProcessor`

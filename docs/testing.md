@@ -531,25 +531,8 @@ public class OrderCommandTests : IClassFixture<OrderTestFixture>
 - **Keep tests focused** — test one behavior per test case
 - **Verify both success and failure paths** for commands and projections
 - **Test edge cases**: empty streams, null events, version conflicts, concurrent writes
-- **Verify idempotency** when using `EventId` for deduplication scenarios
 
 ## API Changes in v1.0.0
-
-### EventId for Idempotency
-
-The `EventMetadata` record now includes an optional `EventId` property for deduplication and idempotency:
-
-```csharp
-// Write events with explicit IDs for deduplication
-var eventId = Guid.NewGuid().ToString();
-await writer.WriteAsync(streamId, new[]
-{
-    new OrderPlaced("ord-123", "cust-456", 99.99m, DateTimeOffset.UtcNow)
-}, new StreamWriteOptions
-{
-    EventMetadata = new Dictionary<string, string> { ["EventId"] = eventId }
-});
-```
 
 ### IEventSubscriptionExceptionHandler Extended
 

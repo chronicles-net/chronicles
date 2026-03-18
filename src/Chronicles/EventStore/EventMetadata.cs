@@ -19,11 +19,6 @@ public record EventMetadata(
     DateTimeOffset Timestamp,
     StreamVersion Version)
 {
-    /// <summary>
-    /// Gets or sets the unique identifier of the event, if available.
-    /// </summary>
-    public string? EventId { get; init; }
-
     public static EventMetadata Empty
         => new(
             string.Empty,
