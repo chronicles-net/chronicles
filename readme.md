@@ -36,7 +36,7 @@ await writer.WriteAsync(streamId, [
 // Read events back
 await foreach (var evt in reader.ReadAsync(streamId))
 {
-    Console.WriteLine($"{evt.EventType} at {evt.Metadata.Timestamp}");
+    Console.WriteLine($"{evt.Metadata.Name} at {evt.Metadata.Timestamp}");
 }
 ```
 
@@ -44,17 +44,19 @@ await foreach (var evt in reader.ReadAsync(streamId))
 
 ### Event Store
 
-Append-only, versioned event streams persisted to Cosmos DB with optimistic concurrency.
+Append-only, immutable event streams persisted to Azure Cosmos DB with optimistic concurrency control.
 
 | Type | Role |
 |---|---|
-| `StreamId` | Identifies a stream by category + id (e.g. `"order.42"`) |
+| `StreamId` | Identifies a stream by category + id (e.g., `"order.42"`) |
 | `IEventStreamWriter` | Appends events, closes streams, manages checkpoints |
 | `IEventStreamReader` | Reads events, queries streams, retrieves checkpoints |
 
+Events are your source of truth — immutable facts stored permanently.
+
 ### CQRS
 
-Command handlers validate business rules, emit events, and rebuild state from event history.
+Command handlers validate business rules, emit events, and rebuild aggregate state from event history.
 
 | Type | Role |
 |---|---|
@@ -90,13 +92,15 @@ public class ShipOrderHandler : ICommandHandler<ShipOrder, OrderState>
 
 ### Document Store
 
-Read-model projections driven by the Cosmos DB change feed.
+Read-model projections driven by the Cosmos DB change feed — query-optimized, denormalized views.
 
 | Type | Role |
 |---|---|
 | `IDocumentProjection<TDocument>` | Projects events into a Cosmos read-model document |
 | `IDocumentWriter<T>` | Creates, updates, replaces, and deletes documents |
 | `IDocumentReader<T>` | Queries documents from Cosmos |
+
+Build fast read-side queries without CQRS complexity if you don't need it.
 
 ## Sample
 
@@ -112,6 +116,7 @@ The [`sample/`](sample/) directory contains a food-delivery microservices demo b
 | [Projections](docs/projections.md) | State projections, document projections, and commit actions |
 | [Document Store](docs/document-store.md) | Reading and writing Cosmos documents with IDocumentReader / IDocumentWriter |
 | [Event Subscriptions](docs/event-subscriptions.md) | Change-feed subscriptions and event processors |
+| [Event Evolution](docs/event-evolution.md) | Schema evolution, event aliases, upcasting, and fault-tolerant deserialization |
 | [Dependency Injection](docs/dependency-injection.md) | Full DI reference: AddChronicles, event store, CQRS, subscriptions |
 | [Testing](docs/testing.md) | AddFakeChronicles, in-memory fakes, and xUnit test patterns |
 

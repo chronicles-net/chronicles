@@ -15,7 +15,7 @@ For bugs or feature requests, log a new issue on the [issues list](https://githu
 
 - Follow the coding conventions used throughout the `chronicles` project.
 - Add, change, or delete unit tests to cover your changes. Make sure tests are specific to the changes you are making. Tests need to be provided for every bug/feature that is completed.
-- This repository follow the truck-based development approach, meaning changes should be based on the `main` branch.
+- This repository follows the trunk-based development approach, meaning changes should be based on the `main` branch.
 - Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) style commit messages.
 - Any code or documentation you share with the chronicles projects should fall under the projects license agreement.
 

@@ -11,11 +11,11 @@ using Chronicles.EventStore;
 
 public class OrderEventLogger : IEventProcessor
 {
-    private readonly ILogger<OrderEventLogger> _logger;
+    private readonly ILogger<OrderEventLogger> logger;
 
     public OrderEventLogger(ILogger<OrderEventLogger> logger)
     {
-        _logger = logger;
+        this.logger = logger;
     }
 
     public ValueTask ConsumeAsync(
@@ -24,7 +24,7 @@ public class OrderEventLogger : IEventProcessor
         bool hasMore,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation(
+        logger.LogInformation(
             "Event received: {EventType} from stream {StreamId} at version {Version}",
             evt.Metadata.Name,
             evt.Metadata.StreamId,
@@ -33,7 +33,7 @@ public class OrderEventLogger : IEventProcessor
         switch (evt.Data)
         {
             case OrderPlaced placed:
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Order placed: {OrderId} for customer {CustomerId}, total {TotalAmount}",
                     placed.OrderId,
                     placed.CustomerId,
@@ -41,14 +41,14 @@ public class OrderEventLogger : IEventProcessor
                 break;
 
             case OrderShipped shipped:
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Order shipped: {OrderId} with tracking {TrackingNumber}",
                     shipped.OrderId,
                     shipped.TrackingNumber);
                 break;
 
             case OrderCancelled cancelled:
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Order cancelled: {OrderId}, reason: {Reason}",
                     cancelled.OrderId,
                     cancelled.Reason);
@@ -178,11 +178,11 @@ using Chronicles.EventStore;
 
 public class CustomExceptionHandler : IEventSubscriptionExceptionHandler
 {
-    private readonly ILogger<CustomExceptionHandler> _logger;
+    private readonly ILogger<CustomExceptionHandler> logger;
 
     public CustomExceptionHandler(ILogger<CustomExceptionHandler> logger)
     {
-        _logger = logger;
+        this.logger = logger;
     }
 
     public ValueTask HandleAsync(
@@ -190,7 +190,7 @@ public class CustomExceptionHandler : IEventSubscriptionExceptionHandler
         StreamEvent? streamEvent,
         CancellationToken cancellationToken)
     {
-        _logger.LogError(
+        logger.LogError(
             exception,
             "Error processing event {EventType} from stream {StreamId}",
             streamEvent?.EventType,
@@ -249,15 +249,15 @@ using Chronicles.EventStore;
 
 public class OrderEmailNotificationProcessor : IEventProcessor
 {
-    private readonly IEmailService _emailService;
-    private readonly ILogger<OrderEmailNotificationProcessor> _logger;
+    private readonly IEmailService emailService;
+    private readonly ILogger<OrderEmailNotificationProcessor> logger;
 
     public OrderEmailNotificationProcessor(
         IEmailService emailService,
         ILogger<OrderEmailNotificationProcessor> logger)
     {
-        _emailService = emailService;
-        _logger = logger;
+        this.emailService = emailService;
+        this.logger = logger;
     }
 
     public async ValueTask ConsumeAsync(
@@ -269,13 +269,13 @@ public class OrderEmailNotificationProcessor : IEventProcessor
         switch (evt.Data)
         {
             case OrderPlaced placed:
-                await _emailService.SendAsync(
+                await emailService.SendAsync(
                     to: placed.CustomerId,
                     subject: "Order Confirmed",
                     body: $"Your order {placed.OrderId} for ${placed.TotalAmount} has been confirmed.",
                     cancellationToken);
 
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Sent order confirmation email for order {OrderId}",
                     placed.OrderId);
                 break;

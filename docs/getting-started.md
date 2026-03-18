@@ -71,11 +71,11 @@ using System.Collections.Immutable;
 
 public class OrderService
 {
-    private readonly IEventStreamWriter _writer;
+    private readonly IEventStreamWriter writer;
 
     public OrderService(IEventStreamWriter writer)
     {
-        _writer = writer;
+        this.writer = writer;
     }
 
     public async Task PlaceOrderAsync(
@@ -90,10 +90,32 @@ public class OrderService
             new OrderPlaced(orderId, customerId, totalAmount, DateTimeOffset.UtcNow)
         );
 
-        await _writer.WriteAsync(streamId, events, cancellationToken: cancellationToken);
-    }
+        await writer.WriteAsync(streamId, events, cancellationToken: cancellationToken);
+     }
 }
 ```
+
+### Write Options
+
+You can provide additional context when writing events using `StreamWriteOptions`:
+
+```csharp
+using Chronicles.EventStore;
+
+var options = new StreamWriteOptions
+{
+    CorrelationId = "correlation-123",  // Links events across streams
+    CausationId = "command-456"         // Links events in a causality chain
+};
+
+await _writer.WriteAsync(
+    streamId,
+    events,
+    options: options,
+    cancellationToken: cancellationToken);
+```
+
+The correlation and causation IDs are stored in each event's metadata and help trace operations across distributed systems.
 
 ## Reading Events
 
@@ -104,11 +126,11 @@ using Chronicles.EventStore;
 
 public class OrderQueryService
 {
-    private readonly IEventStreamReader _reader;
+    private readonly IEventStreamReader reader;
 
     public OrderQueryService(IEventStreamReader reader)
     {
-        _reader = reader;
+        this.reader = reader;
     }
 
     public async Task<OrderState?> GetOrderAsync(
@@ -117,7 +139,7 @@ public class OrderQueryService
     {
         var streamId = new StreamId("order", orderId);
 
-        var metadata = await _reader.GetMetadataAsync(streamId, cancellationToken: cancellationToken);
+        var metadata = await reader.GetMetadataAsync(streamId, cancellationToken: cancellationToken);
         if (metadata.State == StreamState.New)
         {
             return null;
@@ -125,7 +147,7 @@ public class OrderQueryService
 
         OrderState? state = null;
 
-        await foreach (var evt in _reader.ReadAsync(streamId, cancellationToken: cancellationToken))
+        await foreach (var evt in reader.ReadAsync(streamId, cancellationToken: cancellationToken))
         {
             state = evt.Data switch
             {

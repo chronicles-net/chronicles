@@ -12,15 +12,15 @@ Both interfaces are injected by type:
 ```csharp
 public class OrderController
 {
-    private readonly IDocumentReader<OrderDocument> _reader;
-    private readonly IDocumentWriter<OrderDocument> _writer;
+    private readonly IDocumentReader<OrderDocument> reader;
+    private readonly IDocumentWriter<OrderDocument> writer;
 
     public OrderController(
         IDocumentReader<OrderDocument> reader,
         IDocumentWriter<OrderDocument> writer)
     {
-        _reader = reader;
-        _writer = writer;
+        this.reader = reader;
+        this.writer = writer;
     }
 }
 ```
