@@ -558,17 +558,24 @@ Exception handlers now receive richer context for diagnostics:
 ```csharp
 public class CustomExceptionHandler : IEventSubscriptionExceptionHandler
 {
+    private readonly ILogger<CustomExceptionHandler> logger;
+
+    public CustomExceptionHandler(ILogger<CustomExceptionHandler> logger)
+    {
+        this.logger = logger;
+    }
+
     public ValueTask HandleAsync(Exception exception, StreamEvent? streamEvent, CancellationToken cancellationToken)
     {
         if (streamEvent is not null)
         {
-            _logger.LogError(exception, "Error processing event {EventType} in stream {StreamId}",
+            logger.LogError(exception, "Error processing event {EventType} in stream {StreamId}",
                 streamEvent.Metadata.Name,
                 streamEvent.Metadata.StreamId);
         }
         else
         {
-            _logger.LogError(exception, "Error processing event subscription");
+            logger.LogError(exception, "Error processing event subscription");
         }
 
         return ValueTask.CompletedTask;
