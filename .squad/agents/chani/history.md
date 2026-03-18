@@ -2,6 +2,54 @@
 
 ## Learnings
 
+### 2026-03-18: Documentation PR Prep Orchestration — Finalized
+
+**Coordinated Session:** All four agents completed focused documentation reviews. Orchestration logs generated, decision inbox merged, agent histories synchronized.
+
+**Team Contributions:**
+- Thufir (Lead): Overall consistency, positioning clarity, gap identification (Event Evolution in readme)
+- Gurney (Backend): Quick-start fix, write options section, DI alias docs
+- Duncan (ES/CQRS): Event store docs (EventMetadata, EventId, deleteStream), best practices
+- Chani (Tester): Testing docs (edge cases, coverage, API changes)
+
+**Outcome:** All documentation surfaces aligned and PR-ready. 220/220 tests passing.
+
+### 2026-03-06: Testing Documentation PR Readiness — Complete Review
+
+**Work Completed:**
+- Reviewed all testing-focused documentation against actual API surface, team decisions, and CI setup
+- Updated `docs/testing.md` with 5 major sections:
+  1. Framework context (xUnit v3, FluentAssertions, AutoFixture standards)
+  2. Delete with version safety example (new `expectedVersion` parameter)
+  3. Expanded projections section with state rebuilding verification guidance
+  4. API changes in v1.0.0 (EventId, CloseAsync, IEventSubscriptionExceptionHandler signature)
+  5. Edge cases section (empty streams, sentinel values)
+  6. Code coverage integration section (XPlat Coverage, badge auto-commit)
+- Updated `readme.md` to better describe testing guide (from "patterns" to "patterns, edge cases, coverage")
+- Verified CHANGELOG.md already accurately documents all testing features
+- Wrote decision document: `.squad/decisions/inbox/chani-doc-pr-prep.md`
+
+**Test Results:**
+- Full suite: 220 tests passing, 0 failures, 0 warnings ✅
+- Build: 0 errors, 0 warnings ✅
+- Coverage badges present and current ✅
+
+**Quality Assessment:**
+- ✅ No outdated API references in docs
+- ✅ Examples match team conventions (xUnit v3, Atc.Test, NSubstitute patterns)
+- ✅ Edge cases (empty streams, sentinels, concurrency) documented with examples
+- ✅ New v1.0.0 APIs (EventId, DeleteStreamAsync, CloseAsync, exception handler) all have example code
+- ✅ Code coverage expectations clear (XPlat Code Coverage + badge auto-commit to main)
+- ⚠️ No blocking issues found — PR ready for merge
+
+**Key Documentation Patterns Identified:**
+1. **Sentinel values** (`StreamVersion.New`, `RequireEmpty`, `RequireNotEmpty`, `Any`) are critical to document — they're easy to misuse in concurrent scenarios
+2. **State rebuilding** must be tested via command handlers (they replay events), separate from document projections
+3. **In-memory projections** process synchronously in tests, unlike async change-feed in production — must document this assumption
+4. **Exception handler signature change** (added `StreamEvent?` parameter) enables better dead-letter diagnostics but is breaking for implementations
+
+**Status:** ✅ COMPLETE — Testing documentation is PR-ready
+
 ### 2026-03-06: Event Evolution PRD — Test Coverage
 
 **Work Completed:**

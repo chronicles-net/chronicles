@@ -2,6 +2,47 @@
 
 ## Learnings
 
+### 2026-03-18: Documentation PR Prep Orchestration Complete
+
+**Coordinated Session:** All four team agents completed focused documentation reviews for v1.0.0 PR preparation.
+
+**Contributions:**
+- Thufir: Overall consistency, positioning, gap identification, Event Evolution guide reinstatement to readme index
+- Duncan: Event store docs, EventMetadata fields, EventId idempotency patterns, DeleteStreamAsync expectedVersion examples
+- Chani: Testing docs, edge cases (empty streams, sentinels), code coverage integration, API change examples
+- Gurney: README quick-start fix, getting-started write options section, DI alias reference, changelog date update
+
+**Key Validation:**
+- All 9 documentation guides verified complete and accurate
+- Quick-start example bug caught and fixed (evt.EventType → evt.Metadata.Name)
+- API examples verified against implementation
+- 220/220 tests passing, 0 warnings
+
+**Outcome:** All documentation surfaces PR-ready. No blocking issues for v1.0.0 release.
+
+### 2026-03-06: Documentation Update for v1.0.0 PR Preparation
+
+**Context:** Audited and updated Chronicles documentation (readme, getting-started, dependency-injection, changelog) for PR readiness and developer onboarding clarity.
+
+**Findings & Corrections:**
+1. **Quick-start code bug:** `evt.EventType` (non-existent property) → fixed to `evt.Metadata.Name`
+2. **Missing write options guidance:** Added `StreamWriteOptions` section to getting-started with correlation/causation ID patterns
+3. **Event aliases documentation gap:** Added quick-reference to dependency-injection.md with link to detailed Event Evolution guide
+4. **CHANGELOG accuracy:** Updated v1.0.0 date to 2026-03-06 (PR prep date)
+
+**Key Insight:** Documentation audit caught a real bug in the quick-start example that would prevent users from running sample code. Emphasizes importance of validating examples against actual API surface.
+
+**Architecture Pattern Observed:** Chronicles layers API documentation by audience:
+- **getting-started.md:** First 15 minutes; write/read patterns, basic DI
+- **dependency-injection.md:** Config reference; all options and advanced features
+- **Specialized guides:** event-store.md, event-subscriptions.md, event-evolution.md (deep patterns)
+- **Testing:** testing.md (AddFakeChronicles patterns)
+
+**Deliverables:**
+- Decision file: `.squad/decisions/inbox/gurney-doc-pr-prep.md`
+- Updated files: readme.md, getting-started.md, dependency-injection.md, CHANGELOG.md
+- Verification: Build ✅ (0 warnings), Tests ✅ (220/220 passing)
+
 ### 2026-03-06: Multi-Name Event Registration API
 
 **Context:** Implemented `AddEvent<TEvent>(string name, params string[] aliases)` overload per the Event Evolution PRD.

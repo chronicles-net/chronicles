@@ -12,6 +12,22 @@ Event flow in Chronicles: `IEventStreamWriter` appends `StreamEvent` to Cosmos D
 
 ## Learnings
 
+### 2026-03-18: Documentation PR Prep Orchestration — Finalized
+
+**Coordinated Session:** All four agents completed focused documentation reviews. Orchestration logs generated, decision inbox merged, agent histories synchronized.
+
+**Team Contributions:**
+- Thufir (Lead): Overall consistency, positioning clarity, gap identification (Event Evolution in readme)
+- Gurney (Backend): Quick-start fix, write options section, DI alias docs
+- Duncan (ES/CQRS): Event store docs (EventMetadata, EventId, deleteStream), best practices
+- Chani (Tester): Testing docs (edge cases, coverage, API changes)
+
+**Outcome:** All documentation surfaces aligned and PR-ready. 220/220 tests passing.
+
+### 2026-03-06: Documentation PR Prep Audit
+
+**Mission:** Ensure ES/CQRS docs are ready for v1.0.0 release to main branch.
+
 ### 2026-03-04 — EventStore Full Design Review
 
 **Interfaces reviewed:** `IEventStreamWriter`, `IEventStreamReader`, `IEventProcessor`, `IEventStreamProcessor`, `IEventCatalog`, `IEventDataConverter`, `ICommandHandler<TCommand,TState>`, `ICommandHandler<TCommand>`, `IStatelessCommandHandler<TCommand>`, `IStateProjection<TState>`, `IDocumentProjection<TDocument>`, `IStateConsumer<TState>`, `ICommandProcessor<TCommand>`, `ICommandExecutor<TCommand>`, `ICommandContext<TCommand>`, `ICommandCompletionContext<TCommand>`, `IDocumentProjectionRebuilder<TProjection,TDocument>`, `IDocumentPublisher<TDocument>`
@@ -126,3 +142,26 @@ Event flow in Chronicles: `IEventStreamWriter` appends `StreamEvent` to Cosmos D
 - All 10 code examples verified against actual implementation and test suite
 - Code review: APPROVED by Thufir as production-ready documentation
 - Status: ✅ Ready for publication to public docs
+
+### 2026-03-06 — Documentation PR Prep Audit
+
+**Mission:** Ensure ES/CQRS docs are ready for v1.0.0 release to main branch.
+
+**Audit findings:**
+- ✅ CHANGELOG.md — Already comprehensive, captures all v1.0.0 features (EventId, expectedVersion, CloseAsync, IEventSubscriptionExceptionHandler)
+- ✅ event-subscriptions.md — Already documents updated IEventSubscriptionExceptionHandler signature correctly
+- ✅ All other core docs (command-handlers.md, projections.md, event-evolution.md, getting-started.md, readme.md) — Accurate, no changes needed
+
+**Gaps identified & fixed in event-store.md:**
+1. **EventMetadata.EventId** — Added new subsection documenting all 6 metadata fields (Name, Timestamp, Version, StreamId, CorrelationId, CausationId, EventId) with code examples and "Using EventId for Idempotency" subsection showing Guid-based deduplication pattern
+2. **DeleteStreamAsync.expectedVersion** — Enhanced "Close and Delete" section with example showing safe concurrent deletion with expectedVersion guard and StreamConflictException handling
+3. **Best Practices** — Added 3 new entries: use EventId for idempotent operations, set expectedVersion on delete, prefer CloseAsync over deletion
+
+**Verification:**
+- Build: 0 warnings, 0 errors
+- Tests: 220/220 pass
+- No regressions
+
+**Outcome:** Documentation is PR-ready. All v1.0.0 features documented with clear examples and guidance.
+
+**Decision document:** .squad/decisions/inbox/duncan-doc-pr-prep.md
