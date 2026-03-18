@@ -208,12 +208,12 @@ using Chronicles.Cqrs;
 
 public class OrderProjectionRebuilder
 {
-    private readonly IDocumentProjectionRebuilder<OrderDocumentProjection, OrderDocument> _rebuilder;
+    private readonly IDocumentProjectionRebuilder<OrderDocumentProjection, OrderDocument> rebuilder;
 
     public OrderProjectionRebuilder(
         IDocumentProjectionRebuilder<OrderDocumentProjection, OrderDocument> rebuilder)
     {
-        _rebuilder = rebuilder;
+        this.rebuilder = rebuilder;
     }
 
     public async Task<OrderDocument> RebuildOrderProjectionAsync(
@@ -222,7 +222,7 @@ public class OrderProjectionRebuilder
     {
         var streamId = new StreamId("order", orderId);
 
-        return await _rebuilder.RebuildAsync(streamId, cancellationToken);
+        return await rebuilder.RebuildAsync(streamId, cancellationToken);
     }
 }
 ```

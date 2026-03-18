@@ -55,17 +55,17 @@ internal class StreamMetadataReader(
         DateTimeOffset? createdAfter)
         => (filter, createdAfter) switch
         {
-            ({ } f, { } c) => new QueryDefinition("SELECT * FROM c WHERE c.id == @metadataId AND c.streamId LIKE @filter AND c.timestamp > @createdAfter")
-                                .WithParameter("metadataId", JsonPropertyNames.StreamMetadataId)
-                                .WithParameter("filter", f)
-                                .WithParameter("createdAfter", c),
-            ({ } f, _) => new QueryDefinition("SELECT * FROM c WHERE c.id == @metadataId AND c.streamId LIKE @filter")
-                                .WithParameter("metadataId", JsonPropertyNames.StreamMetadataId)
-                                .WithParameter("filter", f),
-            (_, { } c) => new QueryDefinition("SELECT * FROM c WHERE c.id == @metadataId AND c.timestamp > @createdAfter")
-                                .WithParameter("metadataId", JsonPropertyNames.StreamMetadataId)
-                                .WithParameter("createdAfter", c),
-            _ => new QueryDefinition("SELECT * FROM c WHERE c.id == @metadataId")
-                                .WithParameter("metadataId", JsonPropertyNames.StreamMetadataId),
+            ({ } f, { } c) => new QueryDefinition("SELECT * FROM c WHERE c.id = @metadataId AND c.streamId LIKE @filter AND c.timestamp > @createdAfter")
+                                .WithParameter("@metadataId", JsonPropertyNames.StreamMetadataId)
+                                .WithParameter("@filter", f)
+                                .WithParameter("@createdAfter", c),
+            ({ } f, _) => new QueryDefinition("SELECT * FROM c WHERE c.id = @metadataId AND c.streamId LIKE @filter")
+                                .WithParameter("@metadataId", JsonPropertyNames.StreamMetadataId)
+                                .WithParameter("@filter", f),
+            (_, { } c) => new QueryDefinition("SELECT * FROM c WHERE c.id = @metadataId AND c.timestamp > @createdAfter")
+                                .WithParameter("@metadataId", JsonPropertyNames.StreamMetadataId)
+                                .WithParameter("@createdAfter", c),
+            _ => new QueryDefinition("SELECT * FROM c WHERE c.id = @metadataId")
+                                .WithParameter("@metadataId", JsonPropertyNames.StreamMetadataId),
         };
 }

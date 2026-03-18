@@ -83,17 +83,24 @@ internal class CosmosWriter<T> : IDocumentWriter<T>
                 options,
                 cancellationToken: cancellationToken);
 
-    public Task DeletePartitionAsync(
+    public async Task DeletePartitionAsync(
         string partitionKey,
         ItemRequestOptions? options,
         string? storeName = null,
         CancellationToken cancellationToken = default)
-        => containers
+    {
+        using var response = await containers
             .GetContainer<T>(storeName)
             .DeleteAllItemsByPartitionKeyStreamAsync(
                 new PartitionKey(partitionKey),
                 options,
                 cancellationToken: cancellationToken);
+        if (!response.IsSuccessStatusCode) // Reason the required feature is not enabled on the cosmos account.
+        {
+            throw new InvalidOperationException(
+                $"Failed to delete partition. StatusCode: {response.StatusCode}, ActivityId: {response.Headers.ActivityId}, Reason: {response.ErrorMessage}");
+        }
+    }
 
     public async Task<T> UpdateAsync(
         string documentId,

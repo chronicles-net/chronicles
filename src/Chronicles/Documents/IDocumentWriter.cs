@@ -120,6 +120,9 @@ public interface IDocumentWriter<T>
     /// <summary>
     /// Deletes all documents within a partition from Cosmos.
     /// </summary>
+    /// <remarks>
+    /// To use the method ensure the "Delete by Partition Key" is enabled on your Azure Cosmos DB account.
+    /// </remarks>
     /// <param name="partitionKey">Partition key of the documents to delete.</param>
     /// <param name="options">Options for the item request.</param>
     /// <param name="storeName">(Optional) Name of the configured document store.</param>

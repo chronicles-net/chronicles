@@ -4,7 +4,6 @@ using AutoFixture.AutoNSubstitute;
 using Chronicles.Documents;
 using Chronicles.Documents.Internal;
 using Microsoft.Azure.Cosmos;
-using NSubstitute;
 
 namespace Chronicles.Tests.Documents.Internal;
 
@@ -43,6 +42,11 @@ public class CosmosWriterTests
         container
             .PatchItemAsync<object>(default, default, default, default)
             .ReturnsForAnyArgs(response);
+
+        var deleteResponse = new ResponseMessage(HttpStatusCode.OK);
+        container
+            .DeleteAllItemsByPartitionKeyStreamAsync(default, default, default)
+            .ReturnsForAnyArgs(deleteResponse);
 
         documentResponse = Substitute.For<ItemResponse<TestDocument>>();
         documentResponse.Resource.Returns(document);

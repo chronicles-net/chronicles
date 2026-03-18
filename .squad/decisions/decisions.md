@@ -100,6 +100,86 @@ All 220 tests passing. No regressions.
 
 ---
 
+## 2026-03-06: Documentation PR Preparation — All Surfaces
+
+**Scope:** Comprehensive review and validation of all documentation for v1.0.0 PR readiness
+
+### By Thufir (Lead) — PR Readiness & Consistency Review
+
+**Changes Made:**
+1. **readme.md** — Enhanced three pillars positioning with clarity on immutability, event-driven design, and read-model optimization. Added Event Evolution guide to documentation table (was written but missing from index).
+2. **CHANGELOG.md** — Expanded v1.0.0 Added section from 8 to 12 bullets: called out Event Evolution, architecture enforcement (NetArchTest), and testing infrastructure (AddFakeChronicles).
+3. **CONTRIBUTING.md** — Fixed typo: "truck-based" → "trunk-based" development.
+
+**Key Finding:** Event Evolution guide existed but was omitted from readme documentation table — FIXED.
+
+**Verdict:** ✅ Chronicles v1.0.0 is PR-ready. All documentation surfaces align with API, codebase state, and release narrative.
+
+### By Gurney (Backend Dev) — README & Onboarding
+
+**Changes Made:**
+1. **readme.md** — Fixed quick-start bug: `evt.EventType` (non-existent) → `evt.Metadata.Name` (correct API)
+2. **docs/getting-started.md** — Added "Write Options" section documenting `StreamWriteOptions` for correlation/causation IDs
+3. **docs/dependency-injection.md** — Added "Event Aliases" subsection with quick-reference to Event Evolution guide
+4. **CHANGELOG.md** — Updated v1.0.0 release date to 2026-03-06
+
+**Key Insight:** Quick-start code bug caught — would prevent users from running sample code. Documentation audit catches real API mismatches.
+
+**Status:** ✅ All updates verified, 220/220 tests passing.
+
+### By Duncan (ES/CQRS Expert) — Event Store & CQRS Docs
+
+**Gaps Identified & Fixed in docs/event-store.md:**
+1. **EventMetadata.EventId** — Added new subsection documenting all 6 metadata fields with code example and "Using EventId for Idempotency" subsection showing Guid-based deduplication pattern
+2. **DeleteStreamAsync.expectedVersion** — Enhanced "Close and Delete" section with safe concurrent deletion example and StreamConflictException handling
+3. **Best Practices** — Added 3 new entries: use EventId for idempotent operations, set expectedVersion on delete, prefer CloseAsync over deletion
+
+**Files Verified (No Changes):** CHANGELOG.md, event-subscriptions.md, command-handlers.md, projections.md, event-evolution.md, getting-started.md
+
+**Status:** ✅ Documentation PR-ready. All v1.0.0 features documented with clear examples.
+
+### By Chani (Tester) — Testing Documentation
+
+**Changes Made to docs/testing.md:**
+1. Added framework context (xUnit v3, FluentAssertions, AutoFixture standards)
+2. Added "Delete with Version Safety" example with expectedVersion parameter
+3. Expanded "Projections" section with state rebuilding verification guidance
+4. Added "API Changes in v1.0.0" section (EventId, CloseAsync, IEventSubscriptionExceptionHandler signature)
+5. Added "Testing Edge Cases" section (empty streams, sentinel values)
+6. Added "Code Coverage" section (XPlat Coverage, badge auto-commit expectations)
+
+**Changes to readme.md:** Updated testing guide link description for better discoverability
+
+**Quality Assessment:** ✅ No outdated API references, examples match conventions, edge cases documented, coverage expectations clear.
+
+**Test Results:** 220/220 passing, 0 failures, 0 warnings.
+
+### Overall Status: ✅ ALL SURFACES PR-READY
+
+- 220/220 tests passing, 0 warnings
+- All 9 documentation guides complete and accurate
+- API examples verified against implementation
+- Architecture decisions (EventId, expectedVersion, CloseAsync, aliases) documented with examples
+- Testing infrastructure and edge cases documented
+- Code coverage integration documented
+- No blocking issues for v1.0.0 release
+
+---
+
+## 2026-03-18: User Directive — Code Style
+
+**By:** Lars Skovslund (via Copilot)  
+**Date:** 2026-03-18T13:36:34Z  
+**Status:** Directive Captured
+
+### Directive
+Do not use underscore-prefixed members in code or example code.
+
+### Context
+User request — captured for team memory and enforcement in all code generation and documentation decisions.
+
+---
+
 ## 2026-03-05: Architecture Enforcement with NetArchTest
 
 **Author:** Duncan (ES/CQRS Expert)  

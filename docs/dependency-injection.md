@@ -55,6 +55,19 @@ builder.Services.AddChronicles(store =>
 });
 ```
 
+### Event Aliases (Event Evolution)
+
+Register event aliases to support legacy event names during deserialization:
+
+```csharp
+eventStore.AddEvent<OrderCreated>("order-created", 
+    aliases: ["order-placed", "OrderPlacedEvent"]);
+```
+
+This allows you to rename events over time while maintaining backward compatibility with historical data. The primary name is used for new events; aliases are recognized during deserialization only.
+
+See [Event Evolution](event-evolution.md) for detailed patterns and strategies.
+
 **Event Store Options:**
 
 ```csharp

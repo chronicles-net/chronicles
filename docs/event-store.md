@@ -75,6 +75,49 @@ StreamVersion v5 = StreamVersion.FromLong(5);     // Fifth event
 bool isNew = version == StreamVersion.New;        // true
 ```
 
+### EventMetadata
+
+Each event carries metadata with context about when and why it was created:
+
+- **Name**: The event type name (e.g., `"order-placed:v1"`)
+- **Timestamp**: When the event was appended (UTC)
+- **Version**: Position in the stream (1-based, sequential)
+- **StreamId**: Which stream the event belongs to
+- **CorrelationId**: Optional — links events across streams for a logical operation
+- **CausationId**: Optional — links events in a causality chain (e.g., command → event)
+- **EventId**: Optional — unique identifier for deduplication and idempotency in at-least-once delivery scenarios
+
+```csharp
+await foreach (var evt in reader.ReadAsync(streamId))
+{
+    var metadata = evt.Metadata;
+    Console.WriteLine($"Name: {metadata.Name}");
+    Console.WriteLine($"Version: {metadata.Version}");
+    Console.WriteLine($"Timestamp: {metadata.Timestamp}");
+    Console.WriteLine($"CorrelationId: {metadata.CorrelationId}");
+    Console.WriteLine($"CausationId: {metadata.CausationId}");
+    Console.WriteLine($"EventId: {metadata.EventId}");  // For deduplication
+}
+```
+
+**Using EventId for Idempotency:**
+
+When your system may retry writes (e.g., after transient failures), use `EventId` to detect and skip duplicate events:
+
+```csharp
+var streamId = new StreamId("order", orderId);
+var eventId = Guid.NewGuid().ToString(); // Stable across retries
+
+// First attempt
+await _writer.WriteAsync(streamId, [
+    new OrderPlaced(orderId, customerId, amount)
+        { EventId = eventId }  // Attach deduplication ID
+]);
+
+// If a retry occurs, the same EventId is sent. Your projection
+// can check metadata.EventId to avoid processing the same event twice.
+```
+
 ## Writing Events
 
 ### IEventStreamWriter
@@ -87,11 +130,11 @@ using Chronicles.EventStore;
 
 public class OrderService
 {
-    private readonly IEventStreamWriter _writer;
+    private readonly IEventStreamWriter writer;
 
     public OrderService(IEventStreamWriter writer)
     {
-        _writer = writer;
+        this.writer = writer;
     }
 
     public async Task PlaceOrderAsync(
@@ -105,7 +148,7 @@ public class OrderService
         var events = ImmutableList<object>.Empty
             .Add(new OrderPlaced(orderId, customerId, totalAmount, DateTimeOffset.UtcNow));
 
-        var result = await _writer.WriteAsync(streamId, events, cancellationToken: cancellationToken);
+        var result = await writer.WriteAsync(streamId, events, cancellationToken: cancellationToken);
 
         Console.WriteLine($"Stream version after write: {result.Version}");
     }
@@ -148,11 +191,36 @@ Close a stream to prevent further writes:
 await _writer.CloseAsync(streamId, cancellationToken: cancellationToken);
 ```
 
+Once closed, the stream's state becomes `StreamState.Closed`. Subsequent write attempts will throw `StreamConflictException`.
+
 Delete a stream and all its events:
 
 ```csharp
+// Simple delete (no version check)
 await _writer.DeleteStreamAsync(streamId, cancellationToken: cancellationToken);
 ```
+
+**Safe concurrent deletion with expectedVersion:**
+
+To prevent accidental deletion when the stream has been modified concurrently, use the `expectedVersion` parameter:
+
+```csharp
+try
+{
+    // Only delete if the stream is at version 5
+    await _writer.DeleteStreamAsync(
+        streamId,
+        expectedVersion: StreamVersion.FromLong(5),
+        cancellationToken: cancellationToken);
+}
+catch (StreamConflictException ex)
+{
+    // Stream version did not match expected
+    Console.WriteLine($"Cannot delete: expected {ex.ExpectedVersion}, actual {ex.ActualVersion}");
+}
+```
+
+If the stream version does not match `expectedVersion`, a `StreamConflictException` is thrown, preventing accidental deletion of a stream that has received new events.
 
 ## Reading Events
 
@@ -165,11 +233,11 @@ using Chronicles.EventStore;
 
 public class OrderQueryService
 {
-    private readonly IEventStreamReader _reader;
+    private readonly IEventStreamReader reader;
 
     public OrderQueryService(IEventStreamReader reader)
     {
-        _reader = reader;
+        this.reader = reader;
     }
 
     public async Task<List<object>> GetOrderEventsAsync(
@@ -179,7 +247,7 @@ public class OrderQueryService
         var streamId = new StreamId("order", orderId);
         var events = new List<object>();
 
-        await foreach (var evt in _reader.ReadAsync(streamId, cancellationToken: cancellationToken))
+        await foreach (var evt in reader.ReadAsync(streamId, cancellationToken: cancellationToken))
         {
             events.Add(evt.Data);
         }
@@ -284,3 +352,6 @@ if (checkpoint != null)
 - **Keep streams focused** on a single aggregate
 - **Use optimistic concurrency** when version matters
 - **Avoid large streams** — consider stream archival strategies for unbounded growth
+- **Use `EventId` for idempotent operations** — include a unique, stable ID when writing events to enable deduplication on retry
+- **Set `expectedVersion` on delete operations** — protect against concurrent modifications when deleting a stream
+- **Prefer `CloseAsync` over deletion** — use close for streams that should be immutable but still queryable; use delete only when the stream must be removed entirely

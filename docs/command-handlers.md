@@ -312,11 +312,11 @@ Execute commands using `ICommandProcessor<TCommand>`:
 ```csharp
 public class OrderController
 {
-    private readonly ICommandProcessor<PlaceOrder> _processor;
+    private readonly ICommandProcessor<PlaceOrder> processor;
 
     public OrderController(ICommandProcessor<PlaceOrder> processor)
     {
-        _processor = processor;
+        this.processor = processor;
     }
 
     public async Task<IActionResult> PlaceOrderAsync(
@@ -328,7 +328,7 @@ public class OrderController
         var streamId = new StreamId("order", orderId);
         var command = new PlaceOrder(orderId, customerId, totalAmount);
 
-        var result = await _processor.ExecuteAsync(
+        var result = await processor.ExecuteAsync(
             streamId,
             command,
             null,
@@ -346,11 +346,11 @@ For dynamic command processor resolution, use `ICommandProcessorFactory`:
 ```csharp
 public class CommandRouter
 {
-    private readonly ICommandProcessorFactory _factory;
+    private readonly ICommandProcessorFactory factory;
 
     public CommandRouter(ICommandProcessorFactory factory)
     {
-        _factory = factory;
+        this.factory = factory;
     }
 
     public async Task ExecuteAsync<TCommand>(
@@ -359,7 +359,7 @@ public class CommandRouter
         CancellationToken cancellationToken)
         where TCommand : class
     {
-        var processor = _factory.Create<TCommand>();
+        var processor = factory.Create<TCommand>();
         await processor.ExecuteAsync(streamId, command, null, cancellationToken);
     }
 }
