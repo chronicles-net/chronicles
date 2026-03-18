@@ -260,3 +260,57 @@ Comprehensive event evolution reference guide (`docs/event-evolution.md`) coveri
 
 ### Approval
 Incorporated into Event Evolution PRD and approved by team.
+
+---
+
+## 2026-03-25: Event Evolution PRD Review — Status Update
+
+**Date:** 2026-03-25  
+**Reviewer:** Thufir (Lead)  
+**Trigger:** PRD review requested by Lars Skovslund  
+**Status:** ✅ COMPLETE — All v1.0 scope implemented
+
+### Finding
+
+The PRD (`docs/proposals/event-evolution-prd.md`) was written 2026-03-05 as a forward-looking proposal targeting "Chronicles v1.0." Since then, **all three v1.0 deliverables have been implemented and shipped:**
+
+| PRD Proposal | Current Status |
+|---|---|
+| Multi-name registration API (`AddEvent<T>(name, aliases)`) | ✅ Shipped — `EventStoreBuilder.cs` lines 80-94 |
+| Alias support in `EventCatalog` | ✅ Shipped — constructor accepts alias mappings |
+| Conflict detection (`ValidateEventNames()`) | ✅ Shipped — throws `InvalidOperationException` |
+| `docs/event-evolution.md` guide | ✅ Published — comprehensive guide with 4 patterns |
+| `IEventDataConverter` null-return XML docs | ✅ Documented — lines 12-17 |
+| Converter-returns-null test | ✅ Exists — `StreamEventConverterTests` line 128 |
+| Alias conflict tests | ✅ Exist — `EventStoreBuilderTests` (3 tests) |
+| EventCatalog alias tests | ✅ Exist — `EventCatalogTests` (3+ alias tests) |
+
+The PRD's "Open Questions" (Q1-Q3) have all been resolved through implementation.
+
+### Team Verdicts
+
+**Thufir (Lead):** PRD is outdated; recommend reframing as "Implemented — v1.0.0" or archiving. All v1.0 deliverables complete.
+
+**Gurney (Backend Dev):** API implementation 100% accurate. Test infrastructure complete. Docs shipped. Minor inaccuracy: PRD refers to non-existent `AliasedEventDataConverter` — implementation uses default `EventDataConverter` per alias (simpler).
+
+**Duncan (ES/CQRS Expert):** PRD is conceptually sound and architecturally correct. No domain flaws. Recommend moving from "Draft" to "Implemented — v1.0.0" and marking open questions as "Resolved."
+
+**Chani (Tester):** 67% of test deliverables implemented (6 of 9 tests done). Two gaps remain: JSON syntax error test and mixed-version stream integration test. These are nice-to-haves, not blockers. Test helpers deferred.
+
+### Recommendation
+
+1. Update PRD status from "Draft — Pending Maintainer Review" to "Implemented — v1.0.0"
+2. Remove or resolve Open Questions section (all answered by code)
+3. Remove Implementation Checklist checkboxes (all checked)
+4. Keep Deferred Features section as-is (still valid roadmap)
+5. Remove proposed `EventConverterTestBuilder` / `StreamEventAssertions` test helpers — standard xUnit+FluentAssertions patterns suffice
+
+### Remaining Test Gaps (Low-Priority)
+
+Two tests remain unwritten but are non-blocking:
+- `MalformedJson_ProducesFaultedEvent` — boundary condition (JSON syntax error, not type mismatch)
+- `MixedVersionStream_DeserializesAll` — integration-level test (unit-level alias coverage exists)
+
+### Next Steps
+
+Await decision from Lars: Keep PRD as-is with "✅ SHIPPED" banner, update technical details, or archive to `docs/archive/proposals/`?

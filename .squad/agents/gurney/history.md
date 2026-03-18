@@ -2,6 +2,115 @@
 
 ## Learnings
 
+### 2026-03-25: Event Evolution PRD Review — Complete Implementation Status
+
+**Coordination Session:** Thufir led team orchestration. All agents completed independent PRD reviews.
+
+**Work Completed:**
+- Reviewed `/docs/proposals/event-evolution-prd.md` (Duncan, 2026-03-05)
+- Validated against current codebase state
+- Documented findings: PRD is outdated; v1.0 scope fully shipped
+
+**Key Findings:**
+
+1. **✅ Multi-Name Registration API (Section 5a):**
+   - `AddEvent<TEvent>(string name, params string[] aliases)` exists in `EventStoreBuilder.cs`
+   - Alias tracking, conflict detection in `Build()` method
+   - `EventCatalog` constructor accepts optional `aliasMappings` parameter
+   - All behavior matches PRD specification: 100% accurate
+
+2. **✅ Test Infrastructure (Section 5b):**
+   - 6 critical tests implemented and passing:
+     - `Converter_ReturnsNull_ProducesUnknownEvent` ✅
+     - `Convert_Should_Return_FaultedEvent_On_Converter_Exception` ✅
+     - `Convert_Should_Return_FaultedEvent_On_EventCatalog_Exception` ✅
+     - Alias conflict detection (2 tests) ✅
+     - Alias registration & lookup (5+ tests) ✅
+
+3. **✅ Documentation (Section 5c):**
+   - `docs/event-evolution.md` published with full guide
+   - XML docs clarify null-return semantics
+   - Real-world examples included
+
+4. **⚠️ Minor Inaccuracies:**
+   - PRD refers to non-existent `AliasedEventDataConverter` class
+   - Implementation uses default `EventDataConverter(alias, type)` per alias (simpler)
+   - PRD suggests shared converter approach; implementation uses separate converters
+
+### Key Learning
+
+**Implementation Pattern:** No specialized alias converter class needed. The default `EventDataConverter(name, type)` works perfectly — just instantiate one per alias. The catalog's `names` dictionary makes them all reachable. Simpler than PRD's proposed design.
+
+**Files Validated:**
+- `src/Chronicles/EventStore/DependencyInjection/EventStoreBuilder.cs` — all 3 `AddEvent<T>` overloads
+- `src/Chronicles/EventStore/Internal/EventCatalog.cs` — alias-aware constructor
+- `src/Chronicles/EventStore/Internal/EventDataConverter.cs` — per-alias instantiation
+- `docs/event-evolution.md` — comprehensive guide
+- Test files: `EventStoreBuilderTests.cs`, `EventCatalogTests.cs`, `StreamEventConverterTests.cs`
+
+**PRD Status:** Feature complete, documentation complete, all tests passing. PRD can be archived or updated to reflect completed state.
+
+**Recommendation:** Update Appendix B to reflect actual implementation (no `AliasedEventDataConverter`), remove Open Questions section, mark success criteria as achieved, or archive with completion summary.
+
+### 2026-03-25: EventId Removal Impact Analysis
+
+**Context:** Analyzed the production-code impact of removing `EventId` from `EventMetadata` — a property added in v1.0.0 but currently unused.
+
+**Key Findings:**
+1. **Unused in production:** Only references are in `EventMetadataTests.cs` (3 test methods) and in the property definition itself
+2. **No serialization impact:** EventId has no `JsonPropertyName` attribute; never persisted to Cosmos DB
+3. **Safe removal:** All factory methods (`EventDocumentBatchProducer.Convert()`, `EventMetadata.Empty`, `EventMetadata.StreamMetadata`) don't set EventId
+4. **Breaking change:** Requires major version bump (API surface removal)
+5. **Test ownership:** 3 tests to delete belong to Chani (test lead)
+
+**Files Affected:**
+- **Production:** `EventMetadata.cs` (remove property + XML doc, 4 lines)
+- **Tests:** `EventMetadataTests.cs` (delete 3 tests, Chani's responsibility)
+- **Docs:** `CHANGELOG.md` (remove EventId feature line from v1.0.0)
+
+**Validation Commands:**
+- `dotnet build -c Release` → expect green, 0 warnings
+- `dotnet test -c Release` → expect all remaining tests pass
+- `rg EventId src/ test/ sample/` → expect 0 matches
+
+**Decision File:** `.squad/decisions/inbox/gurney-eventid-removal-impact.md` (comprehensive analysis with checklist and timeline)
+
+**Pattern Observed:** When a feature is added to public API but proves unused after initial review, early removal (pre-1.0 or early patch versions) is preferable to maintaining dead API surface.
+
+### 2026-03-25 — EventId Removal Production Implementation Owner
+
+**Task:** Backend implementation owner for EventId removal (production code + CHANGELOG).
+
+**Delegated Responsibilities:**
+1. **Production code:** Remove `public string? EventId { get; init; }` property + XML documentation from `src/Chronicles/EventStore/EventMetadata.cs`
+2. **CHANGELOG:** Remove EventId feature line from v1.0.0 "Added" section; add to "Unreleased" "Removed" section with rationale
+
+**Implementation Complexity:** ⭐ LOW
+- Property removal is purely API cleanup (no logic changes)
+- Constructor signature unchanged (EventId not in positional parameters)
+- No serialization impact (property never had JSON mapping)
+- No factory methods affected (never set EventId)
+
+**Build & Test Expectations:**
+- `dotnet build -c Release` → Green, 0 warnings (no broken references)
+- Existing tests remain unaffected (EventMetadata constructors unchanged)
+- Only EventMetadataTests.cs affected (Chani deletes 3 tests)
+
+**Validation Checklist:**
+- [ ] Remove property definition and XML docs from EventMetadata.cs
+- [ ] Update CHANGELOG.md (remove from Added, add to Unreleased)
+- [ ] Run: `dotnet build -c Release` → Green
+- [ ] Run: `dotnet test -c Release` (all non-EventId tests pass)
+
+**Coordination Notes:**
+- Depends on: No dependencies (can execute immediately)
+- Blocks: Chani's test removal (tests must compile without EventId property)
+- Parallelizable with: Documentation updates
+
+**Status:** ✅ Ready for immediate execution. Estimated time: 30 minutes.
+
+**Learning:** When a feature is added to public API but proves unused after initial review, early removal (pre-1.0 or early patch) is preferable to maintaining dead API surface. This maintains API surface cleanliness and prevents user confusion.
+
 ### 2026-03-18: Documentation PR Prep Orchestration Complete
 
 **Coordinated Session:** All four team agents completed focused documentation reviews for v1.0.0 PR preparation.
@@ -80,6 +189,15 @@ Key source files under `src/Chronicles/`: `EventStore/` (streaming), `Documents/
 
 ## Learnings
 <!-- Append entries here as you work -->
+
+### 2026-03-18: EventMetadata EventId Removal
+
+**Context:** Implemented the approved production change to remove `EventMetadata.EventId` after confirming it was unused outside dedicated tests.
+
+**Key Learnings:**
+- `EventMetadata` is only constructed positionally in production, so removing an init-only property was a surgical API cleanup with no downstream constructor churn.
+- `EventDocumentBatchProducer` and `StreamEventJsonConverter` already operate solely on the six positional metadata fields, so Cosmos event documents remain behaviorally unchanged after the removal.
+- Release validation stayed green with `dotnet build -c Release` and `dotnet test -c Release`, confirming no hidden production dependency on `EventId`.
 
 ### 2026-03-04: Public API Surface Audit (v1.0.0 Pre-Release)
 

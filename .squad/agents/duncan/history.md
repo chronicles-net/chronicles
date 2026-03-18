@@ -12,6 +12,51 @@ Event flow in Chronicles: `IEventStreamWriter` appends `StreamEvent` to Cosmos D
 
 ## Learnings
 
+### 2026-03-25: Event Evolution PRD Review — ES/CQRS Domain Analysis
+
+**Task:** Comprehensive ES/CQRS-domain review of Event Evolution PRD (`docs/proposals/event-evolution-prd.md`) to validate conceptual soundness and identify staleness.
+
+**Work Completed:**
+- Reviewed PRD problem statement, architecture diagrams, evolution patterns, test infrastructure, documentation
+- Validated against current codebase implementation
+- Assessed domain correctness from ES/CQRS perspective
+
+**Conceptual Soundness Assessment:**
+
+**✅ Sections Requiring No Changes:**
+1. Problem Statement (Section 1) — accurately captures ES evolution friction
+2. Current Architecture (Section 2) — pipeline diagram and types match implementation
+3. Evolution Scenarios (Section 3) — all four patterns are canonical ES/CQRS practices
+4. Success Criteria (Section 8) — all v1.0 release criteria met
+
+**⚠️ Sections Requiring Updates:**
+1. Document Status: Change from "Draft — Pending Maintainer Review" to "Implemented — v1.0.0"
+2. Open Questions (Section 6): All three resolved; add resolution block or remove
+3. Section 5 Headings: Change from "Proposed" to past-tense
+
+**Domain Correctness: ✅ SOUND**
+
+**Event Sourcing Semantics:**
+- Immutability preserved (aliases are read-only, historical events never mutated)
+- Stream integrity maintained (UnknownEvent/FaultedEvent wrappers prevent stream read failures)
+- Versioning philosophy correct (optional, user-driven evolution without forced migrations)
+- Backwards compatibility sound (old names coexist with new without data rewrite)
+
+**CQRS Alignment: ✅ CORRECT**
+- Write-side isolation: Primary name used for writes (consistency)
+- Read-side tolerance: Both primary and aliases accepted (resilience)
+- Projection responsibility: Projections decide handling of unknown/faulted events (separation of concerns)
+
+**Concurrency & Consistency: ✅ NO ISSUES**
+- Alias registration at build-time (no runtime race conditions)
+- Validation at DI registration (fail-fast before first event read)
+
+**Key Finding:** PRD is a high-quality planning artifact that correctly predicted the implementation. No conceptual flaws. Aliases are the correct pattern for event renames. Implementation matches domain semantics perfectly.
+
+**Recommendation:** Update PRD to serve as historical design record rather than active proposal. Alternatively, archive to `docs/archive/proposals/` with completion summary.
+
+**ES/CQRS Verdict:** No concerns. Implementation is correct. Ship it.
+
 ### 2026-03-18: Documentation PR Prep Orchestration — Finalized
 
 **Coordinated Session:** All four agents completed focused documentation reviews. Orchestration logs generated, decision inbox merged, agent histories synchronized.
@@ -165,3 +210,131 @@ Event flow in Chronicles: `IEventStreamWriter` appends `StreamEvent` to Cosmos D
 **Outcome:** Documentation is PR-ready. All v1.0.0 features documented with clear examples and guidance.
 
 **Decision document:** .squad/decisions/inbox/duncan-doc-pr-prep.md
+
+### 2026-03-07 — EventId Removal Analysis
+
+**Mission:** Analyze feasibility and implications of removing EventId from EventMetadata.
+
+**Analysis scope:**
+1. Codebase usage patterns for EventId
+2. Documentation/decision record accuracy post-removal
+3. Backward compatibility implications
+4. Implementation plan & user clarifications needed
+
+**Key findings:**
+
+- **EventId is completely unused internally** — Never populated by `EventDocumentBatchProducer.Convert()`, never accessed by any command handler or projection, only mentioned in unit tests and documentation
+- **Design intent was user-supplied deduplication** — EventId was documented as optional, user-populated for idempotency. Chronicles does NOT manage it
+- **Three minimal unit tests exist** — Only verifying that the property exists and can be mutated via record `with` syntax; no integration tests
+- **Zero usage in samples** — The sample Courier application never sets EventId
+- **Backward compat is sound** — Existing Cosmos DB documents with `eventId` JSON fields will deserialize successfully even after removal (unknown JSON fields ignored)
+
+**Removal is justified because:**
+1. No framework value — Event ID management is entirely user-responsibility
+2. Adds API surface clutter — Unused optional property complicates the mental model
+3. Pre-1.0.0 timing — Acceptable breaking change before release tag
+4. Low implementation cost — Delete 1 property, 3 tests, update 3 doc files
+
+**Documentation updates required:**
+- `docs/event-store.md` — Remove EventId field documentation, idempotency pattern example, best practice
+- `docs/testing.md` — Remove EventId section and idempotency verification guidance
+- `CHANGELOG.md` — Remove EventId from features list, optionally add to Removed section with rationale
+
+**Implementation blocker: TIMING** — Removal must occur before v1.0.0 release tag. After release, removing EventId is a breaking change requiring v2.0.0.
+
+**User clarification needed:**
+1. Should removal be in v1.0.0 final or deferred to v1.1?
+2. Should CHANGELOG explain removal rationale (e.g., "unused internally; idempotency better handled at application level")?
+3. Should documentation include alternative idempotency patterns (external dedup table, command result cache)?
+
+**Decision document:** .squad/decisions/inbox/duncan-eventid-removal-analysis.md
+
+### 2026-03-25 — EventId Removal Validation & Coordination Owner
+
+**Task:** ES/CQRS expert owner for EventId removal validation and documentation coordination.
+
+**Coordination Responsibilities:**
+1. **Validation:** Confirm EventId removal is technically sound (serialization impact, backward compatibility)
+2. **Documentation Coordination:** Ensure Gurney/Chani changes maintain consistency and completeness
+3. **Final Review:** Pre-merge sign-off on removal scope and validation
+
+**Analysis Findings (Summary):**
+- **No production code dependency:** Zero references in command handlers, projections, or event processors
+- **Never populated:** EventDocumentBatchProducer never sets EventId during event persistence
+- **Never serialized:** No JSON mapping; never persists to Cosmos DB
+- **Serialization safe:** Existing Cosmos documents with `eventId` fields will deserialize correctly after removal (unknown JSON fields ignored)
+- **Documentation currently misleading:** event-store.md and testing.md describe behavior that doesn't exist
+
+**Risk Assessment:** ✅ LOW
+- Removal is transparent to framework logic
+- No migration path needed (property never written)
+- Breaking change only affects code that directly accessed EventMetadata.EventId (only test code)
+
+**Validation Coordination for Team:**
+
+**For Gurney:**
+- Production code change straightforward (property removal only)
+- No serialization logic impact
+- CHANGELOG update should note: "Removed unused EventId property; infrastructure never implemented"
+
+**For Chani:**
+- 3 tests purely structural (safe to delete)
+- 9 indirect tests verify EventMetadata core functionality (unaffected)
+- Documentation removal is comprehensive (all EventId references targeted)
+
+**For Thufir (Audit):**
+- No architectural violations (removal doesn't affect layer boundaries)
+- API surface improvement (eliminates dead code)
+- Pre-1.0.0 timing acceptable
+
+**Validation Checklist:**
+- [ ] Confirm no EventId references in production code (post-removal)
+- [ ] Verify test count: 220 → 217 (3 deleted)
+- [ ] Ensure documentation consistency (no dangling references)
+- [ ] Build green: `dotnet build -c Release` (0 warnings)
+- [ ] Tests pass: `dotnet test -c Release` (217/217)
+
+**Status:** ✅ Analysis complete. Ready for team implementation with Duncan providing validation coordination during phases 1-2.
+
+**Learning:** Pre-release API cleanup (removing incomplete/unused features) is far preferable to shipping half-finished features. Customers reading docs expect EventId to work but it doesn't — removal eliminates user confusion. Decision #6 (acceptance of EventId) is reversed due to incomplete implementation post-acceptance.
+
+### 2026-03-25 — Event Evolution PRD Review
+
+**Mission:** Review `docs/proposals/event-evolution-prd.md` for accuracy against current codebase state and identify needed adjustments.
+
+**Context:** PRD authored 2026-03-05 as planning document for v1.0 event evolution features (multi-name registration API, test infrastructure, documentation).
+
+**Key Findings:**
+
+1. **PRD is conceptually sound** — Problem analysis, architecture diagrams, evolution patterns (rename, field addition, type change, unknown/faulted handling) are correct ES/CQRS practices
+2. **v1.0 scope FULLY IMPLEMENTED** — All proposed features shipped:
+   - Multi-name API: `EventStoreBuilder.AddEvent<T>(name, aliases)` at lines 80-94
+   - Alias semantics: Read-only mappings, primary name for writing (correct)
+   - Conflict validation: `ValidateEventNames()` throws `InvalidOperationException` (lines 186-207)
+   - Test coverage: All 6 required edge-case tests implemented and passing
+   - Documentation: `docs/event-evolution.md` published (per 2026-03-05 history entry)
+3. **Document status STALE** — Says "Draft — Pending Maintainer Review" but reality is "Shipped in v1.0.0"
+4. **Open questions RESOLVED** — All three maintainer questions answered during implementation:
+   - Q1 (Null return): Confirmed as intentional opt-out → `UnknownEvent` (XML docs added)
+   - Q2 (Alias conflicts): Option A (fail-fast) implemented with clear error messages
+   - Q3 (Documentation scope): Option C (Chronicles-specific) implemented with external links
+
+**Domain Correctness Assessment:**
+- ✅ Event sourcing semantics: Immutability preserved, stream integrity maintained via wrappers
+- ✅ CQRS alignment: Write-side uses primary name (consistency), read-side accepts aliases (resilience)
+- ✅ No concurrency issues: Alias registration is build-time, validation at DI registration
+
+**Recommended Adjustments:**
+1. **Update status** from "Draft" to "Implemented — v1.0.0"
+2. **Close open questions** with resolution notes and implementation references
+3. **Change section headings** from "Proposed" to past-tense ("Implemented", "Shipped API")
+4. **Add implementation references** to Section 5 (builder, catalog, converter, test files)
+5. **Mark success criteria** as achieved with timestamps
+
+**Alternative:** Archive PRD to `docs/archive/proposals/` and create `docs/event-evolution-design.md` as canonical design record reflecting shipped state.
+
+**Semantic Analysis:** Aliases are the CORRECT pattern for event renames in ES systems. Implementation correctly preserves stream immutability while providing read-side flexibility. No domain flaws identified.
+
+**Decision document:** `.squad/decisions/inbox/duncan-event-evolution-prd-review.md`
+
+**Pattern learned:** PRDs that accurately predict implementation become valuable historical design records. Keep them updated to serve as "why we built it this way" documentation for future maintainers.
