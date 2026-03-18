@@ -12,6 +12,32 @@ Chronicles provides abstractions for event streams (IEventStreamReader/Writer), 
 
 ## Learnings
 
+### 2026-03-18: Event Evolution PRD Gate Review — Approved & Documented
+
+**Coordination Session:** Scribe session (2026-03-18T16:06:43Z). Orchestration logs, session log, and decision merge completed.
+
+**Work Completed:**
+- Comprehensive gate review of Gurney's PRD rewrite
+- Verified all material claims against source code (5 files, 14+ tests)
+- Approved PRD as accurate and suitable for archival as historical design record
+- Non-blocking annotation: code snippet is simplified; adding "(simplified)" label would improve precision
+
+**Gate Verdict:** ✅ **APPROVED.** PRD ready for disposition decision.
+
+**Team Consensus Summary:**
+- Gurney: API implementation 100% accurate; minor inaccuracy on non-existent `AliasedEventDataConverter` documented
+- Chani: 67% test coverage; gaps are optional for v1.0; test helpers deferred
+- Duncan: Conceptually sound; ES/CQRS semantics correct (historical entry from 2026-03-25)
+- Thufir: Status stale; reframe as "Implemented — v1.0.0"
+
+**Deliverables:**
+- ✅ Orchestration log written (gate review summary)
+- ✅ Session log written
+- ✅ Decision merged into decisions.md
+- ✅ Inbox files deleted
+
+**Next Phase:** Await Lars's decision on final PRD disposition (update in-place, archive, or close).
+
 ### 2026-03-25 — Event Evolution PRD Review Orchestration
 
 **Context:** Led comprehensive team review of Event Evolution PRD (`docs/proposals/event-evolution-prd.md`). All four team members (Thufir, Gurney, Duncan, Chani) completed independent focused analyses.
@@ -251,4 +277,30 @@ All four agents (Gurney, Duncan, Chani, Thufir) completed focused documentation 
 **Decision:** PRD should be reframed from "Draft — Pending Review" to "Implemented — v1.0.0" or archived. Decision filed to `.squad/decisions/inbox/thufir-event-evolution-prd-review.md`.
 
 **Architecture note:** The `EventDataConverter` (Internal) accepts `eventName` in its constructor and only deserializes when `context.Metadata.Name == eventName`. For aliases, a separate `EventDataConverter` instance is created per alias name — this means alias converters are self-contained and require no changes to the converter contract.
+
+### 2026-03-25 — Gate Review: Event Evolution PRD Rewrite — APPROVED
+
+**Scope:** Reviewed the rewritten `docs/proposals/event-evolution-prd.md` (by Gurney) as a gate reviewer. The document was reframed from a draft proposal to a shipped design record.
+
+**Verification Method:** Cross-checked every material claim against source files:
+- `EventStoreBuilder.cs` — alias overload (lines 80-94), validation (lines 186-207), alias clearing (line 87)
+- `EventCatalog.cs` — constructor alias parameter (line 10), alias insertion loop (lines 22-28)
+- `IEventDataConverter.cs` — null-return XML docs (lines 12-17)
+- `StreamEventConverter.cs` — UnknownEvent/FaultedEvent wrapping (full file)
+- `EventStoreBuilderTests.cs` — 3 conflict-detection tests verified
+- `EventCatalogTests.cs` — 3 alias-related tests + 3 baseline tests verified
+- `StreamEventConverterTests.cs` — 5 conversion-behavior tests verified
+
+**Verdict: APPROVED**
+
+All factual claims about shipped behavior, API shape, test coverage, and non-shipped items are accurate. The document correctly:
+- Reframes from proposal to shipped record
+- Removes stale "draft/pending" language
+- Identifies `AliasedEventDataConverter`, test helpers, and standalone sample as NOT shipped
+- Scopes follow-up items honestly (boundary tests, integration coverage, sample strategy)
+- Preserves historical value
+
+**Minor notes (non-blocking):**
+1. Code snippet in Section 2 (lines 77-93) inlines `ConvertData` into `Convert` and omits the `virtual` modifier. Behavior is semantically identical but the label "Current Conversion Behavior" implies exact code. A "simplified" note would improve accuracy.
+2. No issues with test coverage claims, follow-up scoping, or roadmap items.
 

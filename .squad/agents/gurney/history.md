@@ -2,6 +2,30 @@
 
 ## Learnings
 
+### 2026-03-18: Event Evolution PRD Rewrite — Gate Review Complete
+
+**Coordination Session:** Scribe session (2026-03-18T16:06:43Z). Orchestration logs and decision merge completed.
+
+**Work Completed:**
+- Rewrote Event Evolution PRD from draft proposal to shipped design record
+- Verified all material claims against source code (14+ tests, 5 implementation files)
+- Identified and documented minor inaccuracy: PRD referred to non-existent `AliasedEventDataConverter`; actual implementation is simpler and superior
+
+**Thufir's Gate Verdict:** ✅ **APPROVED.** PRD accurate, suitable as historical design record.
+
+**Team Findings:**
+- All v1.0 deliverables shipped: API, tests (6/9), documentation
+- Test helpers (`EventConverterTestBuilder`, `StreamEventAssertions`) marked as deferred to v1.x
+- Remaining gaps (null-data boundary, mixed-version integration) are low-priority, optional for v1.0
+
+**PRD Disposition:** Update status to "Shipped — v1.0 Implementation Record" in place. Move deferred items to future section.
+
+**Deliverables:**
+- ✅ Orchestration log written
+- ✅ Session log written
+- ✅ Decision merged into decisions.md
+- ✅ Inbox files deleted
+
 ### 2026-03-25: Event Evolution PRD Review — Complete Implementation Status
 
 **Coordination Session:** Thufir led team orchestration. All agents completed independent PRD reviews.
@@ -238,3 +262,12 @@ Key source files under `src/Chronicles/`: `EventStore/` (streaming), `Documents/
 - EventStoreBuilder.cs and IsExternalInit.cs have explicit exception comments
 
 **Decision file:** `.squad/decisions/inbox/gurney-statecontext-fix.md`
+
+### 2026-03-25: Event Evolution PRD Rewritten as Shipped Design Record
+
+**Context:** Updated `docs/proposals/event-evolution-prd.md` in place so it matches the shipped implementation instead of presenting alias support as pending work.
+
+**Key Learnings:**
+- The event-evolution story is now primarily a documentation-reconciliation problem: aliases, conflict detection, null-return semantics, and the public guide already exist in production code.
+- The shipped alias implementation is intentionally simpler than the draft proposal: `EventStoreBuilder` registers one default `EventDataConverter` per primary name or alias instead of introducing a dedicated alias-converter type.
+- Remaining gaps are best tracked as follow-up notes for extra coverage or samples, not as missing v1 functionality.
