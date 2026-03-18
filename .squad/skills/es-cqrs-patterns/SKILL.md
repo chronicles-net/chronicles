@@ -99,9 +99,9 @@ Events that fail to deserialize are wrapped in `FaultedEvent(string Json, Except
 
 ## Anti-Patterns
 
-### Missing Event Identity (No EventId)
+### Speculative Metadata Fields
 
-`EventMetadata` carries `CorrelationId` and `CausationId` but no per-event unique ID. In at-least-once delivery (change feed, retries), projections cannot detect duplicate events. Always include a stable, writer-assigned `EventId` in event metadata for idempotent projection replay.
+Avoid adding public metadata members unless they are wired end-to-end through event production, persistence, and consumption. A field that is never populated or read only enlarges the public API and creates false expectations about supported behaviors such as idempotency or deduplication.
 
 ### No Schema Version on Events
 

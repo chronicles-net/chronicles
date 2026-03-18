@@ -352,6 +352,80 @@ git commit -m "chore: remove .squad/ from git tracking (internal team state)"
 
 ---
 
+## 9. EventId Removal from EventMetadata — Thufir (2026-03-25)
+
+**Status:** ✅ Approved (Pre-1.0.0 Cleanup)
+
+**Context:** Decision #6 (2026-03-04) accepted `EventId` property on `EventMetadata` for "idempotency and deduplication support." Post-implementation analysis revealed the feature was never completed:
+- Property exists but is never populated during event persistence
+- No production code reads or validates EventId
+- No serialization/storage implementation (property never persisted to Cosmos DB)
+- Documentation describes behavior that doesn't exist
+
+**Decision:** **REVERSE Decision #6** — Remove `EventId` from `EventMetadata` before v1.0.0 ships.
+
+**Rationale:**
+1. Incomplete feature implementation contradicts its stated purpose
+2. Misleading documentation (describes unsupported feature) worse than removing the feature
+3. Removal is pure API cleanup; no production code depends on EventId
+4. Serialization backward-compatible (property never written to documents)
+5. Pre-1.0.0 timing is acceptable for API cleanup
+
+**Implementation Plan:**
+
+### Phase 1: Production Code (Gurney)
+- **File:** `src/Chronicles/EventStore/EventMetadata.cs`
+- **Change:** Remove `public string? EventId { get; init; }` property + XML documentation (4 lines)
+- **Impact:** No code breakage (constructor signature unchanged; EventId not set anywhere in production code)
+- **Validation:** `dotnet build -c Release` must pass; 0 warnings expected
+
+### Phase 2: Tests (Chani)
+- **File:** `test/Chronicles.Tests/EventStore/EventMetadataTests.cs`
+- **Changes:** Delete 3 EventId-specific tests:
+  - `Empty_Has_Null_EventId()`
+  - `EventId_Can_Be_Set_Using_With_Syntax()`
+  - `EventId_Is_Preserved_Through_Record_Copy()`
+- **Validation:** `dotnet test -c Release` → 217/220 tests passing (3 deleted)
+
+### Phase 3: Documentation (Chani + Duncan)
+- **File 1:** `docs/event-store.md`
+  - Remove EventId from metadata field list
+  - Remove "Using EventId for Idempotency" subsection
+  - Remove "Use EventId" from best practices
+  
+- **File 2:** `docs/testing.md`
+  - Remove EventId from best practices bullet
+  - Remove "EventId for Idempotency" API changes section
+
+- **File 3:** `CHANGELOG.md` (Gurney)
+  - Remove EventId feature from v1.0.0 "Added" section
+  - Add to "Unreleased" section under "Removed": "Removed `EventId` from `EventMetadata` — unused property with no supporting infrastructure"
+
+**Test Impact:** 220 → 217 tests (3 EventId tests deleted; 9 indirect tests unaffected)
+
+**Validation Checklist:**
+- [ ] Build: `dotnet build -c Release` → Green, 0 warnings
+- [ ] Tests: `dotnet test -c Release` → 217/217 passing
+- [ ] Code search: `rg "EventId"` in src/test/docs → 0 matches (except CHANGELOG)
+- [ ] Documentation: No broken links or dangling references
+
+**Risk Level:** LOW — Property removal is transparent to framework logic
+
+**Conflicts Resolved:**
+- **Decision #6 Status:** REVERSED (incomplete implementation discovered post-acceptance)
+- **No architectural violations:** Removal does not affect layer boundaries or framework contracts
+
+**Delegation:**
+- Gurney: Production code + CHANGELOG
+- Chani: Test deletion + documentation cleanup
+- Duncan: Final validation coordination
+
+**Timeline:** ~1.5 hours total (30 min Gurney + 45 min Chani + 10 min validation)
+
+**Post-Decision Review:** Thufir approved as part of EventId removal planning session (2026-03-25).
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus
