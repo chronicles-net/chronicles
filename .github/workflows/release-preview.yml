@@ -40,5 +40,7 @@ jobs:
       - name: 🛠️ Build solution
         run: dotnet build --no-restore -c:Release -p:SourceRevisionId=${VERSION} -p:Version=${VERSION}
 
-      - name: 📦 Upload library to GitHub Package Repository
-        run: dotnet nuget push **/Chronicles.*.nupkg -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/chronicles-net/index.json --skip-duplicate --no-symbols
+      - name: 🚀 Publish to NuGet.org
+        run: |
+          dotnet nuget push **/Chronicles.*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_KEY }} --skip-duplicate
+          dotnet nuget push **/Chronicles.*.snupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_KEY }} --skip-duplicate
