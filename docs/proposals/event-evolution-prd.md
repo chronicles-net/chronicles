@@ -1,496 +1,353 @@
-# Event Evolution — Product Requirements Document
+# Event Evolution — Design Record
 
 **Author:** Duncan Idaho (ES/CQRS Expert)  
-**Status:** Draft — Pending Maintainer Review  
-**Date:** 2026-03-05  
-**Target:** Chronicles v1.0
+**Status:** Shipped — Implemented in v1.0  
+**Originally drafted:** 2026-03-05  
+**Reconciled to implementation:** 2026-03-25  
+**Scope:** Chronicles event rename support, deserialization safety, documentation, and validation coverage
 
 ## Summary
 
-Event evolution enables systems to handle schema changes in event-sourced architectures without data migration. This PRD defines the v1.0 scope: multi-name registration for event renames, critical test infrastructure fixes, and comprehensive documentation. Advanced features (fluent upcasting, lambda converters, deprecation support) are explicitly deferred.
+This document began as the v1 proposal for event evolution support. The core scope described here is now implemented in the codebase:
+
+- `EventStoreBuilder` supports `AddEvent<TEvent>(string name, params string[] aliases)` for backwards-compatible event renames.
+- `EventCatalog` accepts optional alias mappings and resolves legacy names during deserialization.
+- `EventStoreBuilder.Build()` validates primary names and aliases and throws `InvalidOperationException` on conflicts.
+- `IEventDataConverter` explicitly documents that returning `null` produces `UnknownEvent`.
+- `docs/event-evolution.md` is published as the user-facing guide.
+- Unit tests cover alias registration, alias lookup, conflict detection, null-return handling, and deserialization fault wrapping.
+
+The original draft also proposed a few implementation details that did not survive intact. In particular, Chronicles did **not** need a dedicated `AliasedEventDataConverter`, did **not** add bespoke test-helper types for this feature, and does **not** ship a standalone migration sample under `sample\`. Those items are corrected below so this document remains historically useful.
 
 ---
 
-## 1. Problem Statement
+## 1. Context and Problem Statement
 
-Event-sourced systems accumulate events over years. Business requirements change, domains evolve, and event schemas must adapt. Unlike traditional databases, event stores are append-only—you cannot "ALTER TABLE" your way out of schema changes.
+Event-sourced systems accumulate events over years. Business requirements change, domain language evolves, and event schemas must adapt without rewriting stored history.
 
-**Common evolution scenarios:**
-- **Rename**: `OrderPlaced` → `OrderCreated` (ubiquitous language refinement)
-- **Field addition**: New `Currency` field on `PaymentReceived`
-- **Type change**: `Amount` from `decimal` to `Money` value object
-- **Deprecation**: `LegacyUserRegistered` replaced by `UserRegistered`
+The scenarios that motivated this work remain valid:
 
-**What's awkward today:**
-1. **Event renames require custom converters** — even simple name changes need `IEventDataConverter` implementations
-2. **Test coverage gaps** — edge cases (malformed JSON, null data, mixed-version streams) lack verification
-3. **No documentation** — developers must reverse-engineer the pipeline from source code
+- **Rename**: `OrderPlaced` → `OrderCreated`
+- **Field addition**: add `Currency` to `PaymentReceived`
+- **Type change**: evolve `Amount` from `decimal` to a value object such as `Money`
+- **Forward compatibility**: older readers encounter newer event names or shapes
+
+Chronicles already had the right low-level deserialization model for most of this work:
+
+- unknown names become `UnknownEvent`
+- converter failures become `FaultedEvent`
+- stream reads continue rather than crashing the entire replay path
+
+The main v1 friction was simple renames. Before aliases shipped, even a pure name change required a custom `IEventDataConverter`. The goal of the v1 work was to make rename scenarios cheap while keeping structural changes explicit through custom converters.
 
 ---
 
-## 2. Current Architecture
+## 2. Shipped Architecture
 
 ### Deserialization Pipeline
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌──────────────┐    ┌────────────────────┐
 │ Cosmos DB JSON  │───▶│ StreamEvent-    │───▶│ EventCatalog │───▶│ IEventDataConverter│
-│                 │    │ JsonConverter   │    │ (lookup)     │    │ (Convert)          │
+│                 │    │ Converter       │    │ (lookup)     │    │ (Convert)          │
 └─────────────────┘    └─────────────────┘    └──────────────┘    └────────────────────┘
                                                      │                      │
                                                      ▼                      ▼
                                               UnknownEvent            FaultedEvent
-                                              (no converter)          (exception)
+                                              (no converter or         (exception during
+                                              converter returns null)  lookup/conversion)
 ```
 
 ### Key Types
 
-| Type | Purpose |
-|------|---------|
-| `StreamEvent` | Tuple of `(object Data, EventMetadata Metadata)` |
-| `FaultedEvent` | Wraps failed deserialization: `(string Json, Exception? Exception)` |
-| `UnknownEvent` | Wraps unregistered event names: `(string Json)` |
-| `IEventDataConverter` | Contract: `object? Convert(EventConverterContext context)` |
-| `EventConverterContext` | Conversion input: `(JsonElement Data, EventMetadata Metadata, JsonSerializerOptions Options)` |
-| `EventCatalog` | Dictionary-based name→converter lookup |
+| Type | Current role |
+|------|--------------|
+| `StreamEvent` | Pairs converted event data with `EventMetadata` |
+| `UnknownEvent` | Wraps raw JSON when no converter handles the event |
+| `FaultedEvent` | Wraps raw JSON and an exception when conversion fails |
+| `IEventDataConverter` | Converts `EventConverterContext` into an event instance or `null` |
+| `EventConverterContext` | Carries raw `JsonElement`, metadata, and serializer options |
+| `EventCatalog` | Resolves event names to converters and types to canonical names |
+| `EventStoreBuilder` | Registers primary event names, aliases, custom converters, and the event catalog |
 
-### Conversion Flow (StreamEventConverter.cs)
+### Current Conversion Behavior
+
+The implementation in `StreamEventConverter` is intentionally defensive:
 
 ```csharp
-// Simplified from src/Chronicles/EventStore/Internal/StreamEventConverter.cs
 public StreamEvent Convert(EventConverterContext context)
 {
     try
     {
-        var data = eventCatalog.GetConverter(context.Metadata.Name)?.Convert(context)
-            ?? new UnknownEvent(context.Data.GetRawText());
-        return new(data, context.Metadata);
+        return new(
+            eventCatalog.GetConverter(context.Metadata.Name)?.Convert(context)
+            ?? new UnknownEvent(context.Data.GetRawText()),
+            context.Metadata);
     }
     catch (Exception ex)
     {
-        return new(new FaultedEvent(context.Data.GetRawText(), ex), context.Metadata);
+        return new(
+            new FaultedEvent(context.Data.GetRawText(), ex),
+            context.Metadata);
     }
 }
 ```
 
-**Critical behavior:** Stream reads **never throw**. Unknown events and deserialization failures are wrapped, not propagated.
-
-### Current Registration API
-
-```csharp
-// Basic registration — default EventDataConverter
-builder.AddEvent<OrderPlaced>("order-placed");
-
-// Custom converter — full control
-builder.AddEvent<OrderPlaced>("order-placed", new OrderPlacedConverter());
-
-// Replace entire catalog — nuclear option
-builder.AddEventCatalog<MyCustomCatalog>();
-```
+That behavior is now both implemented and tested. The event stream layer treats unknown or malformed payloads as data problems to surface to projections, not as reasons to abort every read.
 
 ---
 
-## 3. Evolution Scenarios
+## 3. Shipped v1 Scope
 
-### Scenario 1: Event Rename
+### 3a. Multi-Name Registration API
 
-**Business context:** Team adopts "Created" suffix convention for domain events.
-
-| Before | After |
-|--------|-------|
-| Event name: `order-placed` | Event name: `order-created` |
-| Type: `OrderPlaced` | Type: `OrderCreated` |
-
-**Historical streams contain:** `order-placed` events  
-**New events written as:** `order-created`
-
-### Scenario 2: Field Addition (Backwards Compatible)
-
-**Business context:** Multi-currency support added.
+The v1 API shipped as a new overload on `EventStoreBuilder`:
 
 ```csharp
-// V1 (historical)
-public record PaymentReceived(decimal Amount);
-
-// V2 (current)
-public record PaymentReceived(decimal Amount, string Currency = "USD");
-```
-
-**Requirement:** V1 events deserialize with default `Currency = "USD"`.
-
-### Scenario 3: Type Change (Breaking)
-
-**Business context:** Replace primitive with value object.
-
-```csharp
-// V1
-public record PaymentReceived(decimal Amount);
-
-// V2
-public record PaymentReceived(Money Amount);
-```
-
-**Requirement:** Custom converter transforms `decimal` → `Money`.
-
-### Scenario 4: Handling Unknown/Faulted Events
-
-**Business context:** Projection encounters events from newer system version.
-
-**Requirement:** Projection skips gracefully, logs warning, continues processing.
-
----
-
-## 4. Gap Analysis
-
-| Scenario | Today | Friction |
-|----------|-------|----------|
-| Event rename | Custom `IEventDataConverter` required | 30+ lines of boilerplate per rename |
-| Field addition | Works via JSON defaults | ✅ No friction |
-| Type change | Custom converter required | Appropriate complexity |
-| Unknown events | `UnknownEvent` wrapper | ✅ Works well |
-| Faulted events | `FaultedEvent` wrapper | ✅ Works well |
-| **Testing edge cases** | **Gaps exist** | **Critical fixes needed** |
-
-### Test Coverage Gaps (Critical)
-
-1. **Converter returning null** — undocumented, no test verifies `UnknownEvent` result
-2. **Malformed JSON** — untested path to `FaultedEvent`
-3. **Null data element** — boundary condition untested
-4. **Mixed-version streams** — integration test missing
-
----
-
-## 5. Proposed Changes
-
-### 5a. Multi-Name Registration API
-
-**Goal:** Support event renames without custom converters.
-
-#### API Design
-
-```csharp
-/// <summary>
-/// Adds an event with optional aliases for backwards compatibility.
-/// </summary>
-/// <typeparam name="TEvent">Type of event.</typeparam>
-/// <param name="name">Primary (canonical) name for new events.</param>
-/// <param name="aliases">Legacy names to recognize during deserialization.</param>
-/// <returns>The <see cref="EventStoreBuilder"/> for further configurations.</returns>
 public EventStoreBuilder AddEvent<TEvent>(
     string name,
     params string[] aliases)
     where TEvent : class
 ```
 
-#### Usage Examples
-
-**BEFORE — Event Rename (Today)**
+#### What it enables
 
 ```csharp
-// Boilerplate converter for simple rename
-public class OrderCreatedConverter : IEventDataConverter
-{
-    private static readonly string[] SupportedNames = ["order-placed", "order-created"];
-    
-    public object? Convert(EventConverterContext context)
-    {
-        if (!SupportedNames.Contains(context.Metadata.Name))
-            return null;
-        
-        return context.Data.Deserialize<OrderCreated>(context.Options);
-    }
-}
-
-// Registration
-builder.AddEvent<OrderCreated>("order-created", new OrderCreatedConverter());
+builder.AddEvent<OrderCreated>("order-created", "order-placed");
 ```
 
-**AFTER — Event Rename (Proposed)**
+This allows new writes to use `order-created` while still recognizing historical `order-placed` events during deserialization.
 
-```csharp
-// One line, no custom converter
-builder.AddEvent<OrderCreated>("order-created", aliases: "order-placed");
-```
+#### Actual implementation details
 
-**Multiple Aliases**
+1. **Primary name is canonical for writes.** `GetEventName(Type)` still returns the primary registration only.
+2. **Aliases are read-only.** They exist for deserialization compatibility and are never written back out.
+3. **Conflict detection happens in `Build()`.** `ValidateEventNames()` checks the full set of primary names and aliases and throws `InvalidOperationException` if any name is duplicated.
+4. **No dedicated alias converter class was added.** The implementation uses `EventDataConverter(name, typeof(TEvent))` for the primary registration and creates additional `EventDataConverter(alias, typeof(TEvent))` instances for alias registrations.
+5. **Re-registering an event type replaces prior aliases.** The builder clears previous alias registrations for the same `TEvent` before adding new ones.
+6. **Custom catalogs still override builder registrations.** If `AddEventCatalog<TCatalog>()` is used, the default catalog built from `AddEvent(...)` registrations is skipped.
 
-```csharp
-// Event renamed twice over system lifetime
-builder.AddEvent<OrderCreated>("order-created", 
-    aliases: ["order-placed", "OrderPlacedEvent"]);
-```
+#### Why the implementation differs from the draft
 
-#### Implementation Notes
+The original draft proposed a dedicated `AliasedEventDataConverter`. The shipped code did not need that extra type. Separate default converters per registered name were simpler, preserved existing behavior, and kept the feature additive.
 
-1. **Primary name** (`name`) is used for **writing** new events
-2. **Aliases** are **read-only** — recognized during deserialization, never written
-3. **Conflict detection** — throw `InvalidOperationException` if alias conflicts with another event's primary name or alias
-4. **EventCatalog changes** — `names` dictionary gains entries for each alias pointing to same converter
+### 3b. Validation and Test Coverage
 
-#### Conflict Detection Example
+The original draft described test coverage as a major gap. That statement is no longer true for the v1 core scope.
 
-```csharp
-// This should throw InvalidOperationException
-builder.AddEvent<OrderCreated>("order-created", aliases: "order-placed");
-builder.AddEvent<OrderPlaced>("order-placed"); // CONFLICT: "order-placed" already registered
-```
+#### Tests that exist today
 
-### 5b. Test Infrastructure
+| Area | Evidence in current tests |
+|------|---------------------------|
+| Alias conflict detection | `EventStoreBuilderTests`: conflicting alias vs primary, duplicate alias, no-conflict success |
+| Alias lookup in catalog | `EventCatalogTests`: alias lookup, canonical name retention, primary/alias retrieval |
+| Converter returns `null` | `StreamEventConverterTests.Convert_Should_Return_Unknown_Event_When_Converter_Returns_Null` |
+| Converter throws | `StreamEventConverterTests.Convert_Should_Return_FaultedEvent_On_Converter_Exception` |
+| Catalog throws during lookup | `StreamEventConverterTests.Convert_Should_Return_FaultedEvent_On_EventCatalog_Exception` |
+| Unknown event name | `StreamEventConverterTests.Convert_Should_Return_Unknown_Event_When_EventName_Is_Unknown` |
 
-**Goal:** Verify all edge cases in the deserialization pipeline.
+#### What changed from the draft
 
-#### Required Tests
+- The v1 design no longer needs proposed helper abstractions like `EventConverterTestBuilder` or `StreamEventAssertions`.
+- Standard xUnit + FluentAssertions style is sufficient for the current scenarios.
+- The critical behavior around `null` returns and alias conflicts is covered already.
 
-| Test Case | Verifies |
-|-----------|----------|
-| `Converter_ReturnsNull_ProducesUnknownEvent` | Null return → `UnknownEvent` wrapping |
-| `MalformedJson_ProducesFaultedEvent` | Parse failures → `FaultedEvent` wrapping |
-| `NullDataElement_ProducesFaultedEvent` | Boundary condition handling |
-| `MixedVersionStream_DeserializesAll` | Aliases work in real stream |
-| `AliasConflict_ThrowsInvalidOperationException` | Registration validation |
-| `DuplicatePrimaryName_ThrowsInvalidOperationException` | Registration validation |
+#### Remaining low-priority coverage opportunities
 
-#### Test Helpers (Proposed)
+The following still make sense as follow-up coverage if someone wants deeper confidence, but they are not part of the shipped v1 scope:
 
-```csharp
-namespace Chronicles.Testing;
+- a syntax-level malformed JSON test that proves `FaultedEvent` wrapping from a broken payload shape, not just thrown converters
+- a fuller mixed-version integration test that exercises aliases through a stream-oriented scenario rather than focused unit tests
+- an explicit `JsonValueKind.Null` payload test if that boundary condition becomes important in practice
 
-/// <summary>
-/// Builds test scenarios for event converter verification.
-/// </summary>
-public class EventConverterTestBuilder
-{
-    public EventConverterTestBuilder WithEvent(string name, string json) { ... }
-    public EventConverterTestBuilder WithMalformedJson(string name) { ... }
-    public EventConverterContext Build() { ... }
-}
+### 3c. Documentation Deliverables
 
-/// <summary>
-/// Assertions for stream events in tests.
-/// </summary>
-public static class StreamEventAssertions
-{
-    public static void AssertIsFaulted(StreamEvent @event) { ... }
-    public static void AssertIsUnknown(StreamEvent @event) { ... }
-    public static T AssertIsEvent<T>(StreamEvent @event) { ... }
-}
-```
+The documentation work also shipped, with one correction to the original proposal.
 
-### 5c. Documentation
+| Deliverable | Status | Notes |
+|-------------|--------|-------|
+| `docs/event-evolution.md` | ✅ Shipped | Chronicles-focused guide with rename, field-addition, custom-converter, and unknown/faulted-event patterns |
+| XML doc clarification on `IEventDataConverter` | ✅ Shipped | `null` return is documented as "converter does not handle this event name" |
+| Standalone sample under `sample\` | ❌ Not part of shipped scope | No dedicated migration sample is confirmed in the current `sample\` tree |
 
-**Goal:** Developers can handle event evolution without reading source code.
-
-#### Deliverables
-
-| Document | Location | Content |
-|----------|----------|---------|
-| **Event Evolution Guide** | `docs/event-evolution.md` | Concepts, patterns, examples |
-| **XML Doc Improvements** | Source files | Clarify null-return semantics |
-| **Sample: Schema Migration** | `sample/` | Real-world rename + field addition |
-
-#### Event Evolution Guide Outline
-
-```markdown
-# Event Evolution
-
-## Overview
-- Why events evolve
-- Chronicles philosophy: streams never throw
-
-## Patterns
-
-### Pattern 1: Event Rename
-- Using aliases
-- Migration strategy
-
-### Pattern 2: Field Addition
-- JSON default values
-- Nullable vs required
-
-### Pattern 3: Custom Converter
-- When to use
-- Implementation template
-
-### Pattern 4: Handling Unknown Events
-- In projections
-- In command handlers
-
-## Testing
-- Verifying converters
-- Mixed-version streams
-
-## FAQ
-- Can I delete old events? (No)
-- How do I know which events exist? (EventCatalog)
-```
+The proposal originally promised a standalone sample. That did not materialize, and this document should not keep claiming otherwise. The guide in `docs/event-evolution.md` is the shipped documentation surface.
 
 ---
 
-## 6. Open Questions for Maintainer
+## 4. Resolved Questions from the Original Draft
 
-### Q1: Null Converter Return → UnknownEvent
+### Q1. Is `null` from `IEventDataConverter` intentional?
 
-**Current behavior:** If `IEventDataConverter.Convert()` returns `null`, the event becomes `UnknownEvent`.
+**Resolved:** Yes.
 
-**Question:** Is this intentional opt-out behavior, or should it be documented as an error?
+The public XML documentation on `IEventDataConverter.Convert()` now states that returning `null` means the converter does not handle the event name and that the event will be wrapped as `UnknownEvent`. `StreamEventConverterTests` verifies this behavior.
 
-**Team recommendation:** Keep current behavior. Document as "converter doesn't recognize this event name." This enables converters to be selective about which events they handle.
+### Q2. How do alias conflicts behave?
 
-**Decision needed:** Confirm or override.
+**Resolved:** Chronicles fails during `EventStoreBuilder.Build()` with `InvalidOperationException`.
 
-### Q2: Alias Conflict Behavior
+This is the shipped behavior for duplicate primary names, alias-vs-primary collisions, and alias-vs-alias collisions. The implementation is deterministic and avoids silent overrides.
 
-**Question:** When an alias conflicts with another registration, should we:
-- A) Throw `InvalidOperationException` at registration time (fail-fast)
-- B) Last-registration-wins (silent override)
-- C) First-registration-wins (silent ignore)
+### Q3. What scope should the documentation have?
 
-**Team recommendation:** Option A — `InvalidOperationException` with clear message:
-```
-Event name 'order-placed' is already registered. 
-Registered by: OrderCreated (primary)
-Attempted by: OrderPlaced (as alias)
-```
+**Resolved:** Chronicles-specific guidance with links out for general theory.
 
-**Decision needed:** Confirm approach.
-
-### Q3: Documentation Scope
-
-**Question:** Should `docs/event-evolution.md` include:
-- A) Just Chronicles-specific patterns
-- B) General ES/CQRS evolution theory + Chronicles specifics
-- C) Link to external resources for theory, focus on Chronicles
-
-**Team recommendation:** Option C — developers likely know ES basics; focus on "how to do X in Chronicles."
-
-**Decision needed:** Confirm scope.
+`docs/event-evolution.md` focuses on how to perform rename, field-addition, custom-converter, and tolerant projection scenarios in Chronicles. It links to external event-sourcing material rather than trying to duplicate broad theory.
 
 ---
 
-## 7. Deferred Features (v1.x)
+## 5. Technical Corrections to the Original Proposal
 
-The following features were discussed but explicitly excluded from v1.0. They may be added based on user feedback.
+The original PRD captured the right product direction, but several draft assumptions were superseded by the actual implementation.
+
+### Removed or corrected assumptions
+
+1. **`AliasedEventDataConverter`**  
+   Not implemented and not needed. Alias support is handled by registering per-name `EventDataConverter` instances and wiring them into `EventCatalog`.
+
+2. **Dedicated event-converter test helpers**  
+   Not implemented. Current tests use ordinary xUnit patterns and remain readable without extra framework surface.
+
+3. **"Critical test infrastructure gaps" framing**  
+   Outdated. The essential alias and null-return behaviors are now covered by the existing test suite.
+
+4. **Standalone `sample\` migration example**  
+   Not shipped. The canonical documentation lives in `docs/event-evolution.md`.
+
+### Still-valid design guidance
+
+The parts of the proposal that remain accurate are the most important ones:
+
+- aliases are the right abstraction for simple renames
+- field additions are usually handled by normal JSON defaults
+- structural/type changes should stay explicit through `IEventDataConverter`
+- unknown and faulted events should be surfaced to projections instead of crashing stream reads
+
+---
+
+## 6. Follow-Up Notes After v1
+
+These are genuine follow-up opportunities, not missing core features.
+
+1. **Deeper integration coverage**  
+   Add a mixed-version stream test if the team wants a higher-level proof that aliases behave correctly through a more realistic read model or replay path.
+
+2. **Boundary-payload coverage**  
+   Add explicit tests for malformed JSON syntax or `null` payload shapes if future regressions suggest value in locking those down.
+
+3. **Sample strategy**  
+   If a long-lived sample app under `sample\` needs to demonstrate a rename or custom converter, add it there deliberately. Until then, the guide in `docs/event-evolution.md` should remain the documented entry point.
+
+---
+
+## 7. Deferred Roadmap (Still Sensible Post-v1)
+
+The following ideas were explicitly out of v1 scope and still belong in roadmap territory rather than the shipped baseline.
 
 ### Fluent Upcasting API
 
 ```csharp
-// DEFERRED: Fluent transformation chain
 builder.AddEvent<OrderCreated>("order-created")
     .WithAlias("order-placed")
     .WithUpcast(v1 => new OrderCreated(v1.OrderId, v1.Amount, Currency: "USD"));
 ```
 
-**Exit criteria:** 3+ users request this pattern.
+Useful only if consumers repeatedly ask for chained transformations beyond the current alias + custom converter model.
 
 ### Lambda Converters
 
 ```csharp
-// DEFERRED: Inline converter without class
-builder.AddEvent<OrderCreated>("order-created", 
+builder.AddEvent<OrderCreated>(
+    "order-created",
     convert: ctx => ctx.Data.Deserialize<OrderCreated>(ctx.Options));
 ```
 
-**Exit criteria:** Boilerplate complaints after aliases ship.
+Potentially ergonomic, but not necessary while converter classes remain straightforward and explicit.
 
 ### Evolution Chain API
 
 ```csharp
-// DEFERRED: Multi-version transformation
 builder.AddEvent<OrderCreatedV3>("order-created")
     .FromV1<OrderCreatedV1>(v1 => ...)
     .FromV2<OrderCreatedV2>(v2 => ...);
 ```
 
-**Exit criteria:** Users need 3+ version transformations.
+Worth reconsidering only if real consumers start maintaining longer event-version chains.
 
-### SchemaVersion on EventMetadata
+### Schema Version on `EventMetadata`
 
 ```csharp
-// DEFERRED: Explicit version discriminator
 public record EventMetadata(
     string Name,
-    int? SchemaVersion,  // NEW
+    int? SchemaVersion,
     ...);
 ```
 
-**Exit criteria:** Users adopt schema registries (Avro, Protobuf) requiring version tracking.
+Still a plausible future enhancement, but it is not required for the current alias-based rename strategy.
 
 ### Event Deprecation Support
 
 ```csharp
-// DEFERRED: Mark events as deprecated
 builder.AddEvent<OrderPlaced>("order-placed")
-    .Deprecated("Use OrderCreated instead");
+    .Deprecated("Use order-created instead");
 ```
 
-**Exit criteria:** Large teams request compile-time/runtime deprecation warnings.
+Interesting for larger teams, but unnecessary for the shipped core feature set.
 
 ---
 
-## 8. Success Criteria
+## 8. Release Outcome
 
-### v1.0 Release Criteria
+### Core v1 Criteria
 
-| Criterion | Metric |
-|-----------|--------|
-| Multi-name API implemented | `AddEvent<T>(name, aliases)` merged |
-| All edge case tests pass | 6 new tests green |
-| Documentation published | `docs/event-evolution.md` exists |
-| No breaking changes | Existing `AddEvent<T>(name)` unchanged |
-| No new dependencies | Only BCL types used |
+| Criterion | Outcome |
+|-----------|---------|
+| Multi-name API implemented | ✅ `AddEvent<TEvent>(string name, params string[] aliases)` exists |
+| Alias-aware catalog behavior | ✅ `EventCatalog` accepts optional alias mappings |
+| Conflict detection | ✅ `Build()` rejects duplicate primary names and aliases |
+| Null-return behavior documented | ✅ `IEventDataConverter` XML docs updated |
+| User-facing documentation published | ✅ `docs/event-evolution.md` exists |
+| Existing registration APIs preserved | ✅ `AddEvent<TEvent>(string)` and custom-converter overload remain intact |
+| No new package dependencies required | ✅ Alias support uses existing infrastructure |
 
-### Quality Gates
+### Quality Readout
 
-- [ ] All tests pass (`dotnet test -c Release`)
-- [ ] No new warnings (`TreatWarningsAsErrors`)
-- [ ] XML docs complete for new public API
-- [ ] Sample code compiles and runs
+| Check | Outcome |
+|-------|---------|
+| Alias conflict tests present | ✅ Yes |
+| Alias lookup tests present | ✅ Yes |
+| `UnknownEvent` null-return test present | ✅ Yes |
+| Fault wrapping tests present | ✅ Yes |
+| Standalone migration sample present | ❌ No — not part of current shipped scope |
 
-### User Validation
+### Historical takeaway
 
-Post-release, track:
-- GitHub issues mentioning "event evolution" or "aliases"
-- Requests for deferred features
-- Confusion in documentation (indicates gaps)
+The original proposal was directionally correct. The shipped implementation landed the important user value with less machinery than first expected.
 
 ---
 
-## Appendix A: Code Examples
+## Appendix A: Representative Patterns
 
-### A1: Complete Event Rename Migration
+### A1. Event Rename with Alias
 
 ```csharp
-// Step 1: Define the new event type
 public record OrderCreated(
     string OrderId,
     decimal Amount,
     DateTimeOffset CreatedAt);
 
-// Step 2: Register with alias
-services.AddChronicles(chronicles => chronicles
-    .AddEventStore("orders", store => store
-        .AddEvent<OrderCreated>("order-created", aliases: "order-placed")
+services.AddChronicles(builder => builder
+    .WithEventStore("orders", store => store
+        .AddEvent<OrderCreated>("order-created", "order-placed")
         .AddEvent<OrderShipped>("order-shipped")
         .AddEvent<OrderCancelled>("order-cancelled")));
-
-// Step 3: Projection handles both old and new events identically
-public class OrderProjection : IStateProjection<OrderState>
-{
-    public OrderState Apply(OrderState state, object @event)
-        => @event switch
-        {
-            OrderCreated e => state with { Status = "Created", Amount = e.Amount },
-            OrderShipped e => state with { Status = "Shipped" },
-            OrderCancelled e => state with { Status = "Cancelled" },
-            _ => state
-        };
-}
 ```
 
-### A2: Custom Converter for Type Change
+Use this when the event name changed but the payload model is still compatible.
+
+### A2. Custom Converter for Structural Evolution
 
 ```csharp
-// When JSON structure changes, custom converter is required
 public class PaymentReceivedConverter : IEventDataConverter
 {
     public object? Convert(EventConverterContext context)
@@ -498,120 +355,64 @@ public class PaymentReceivedConverter : IEventDataConverter
         if (context.Metadata.Name != "payment-received")
             return null;
 
-        // Check for V1 structure (decimal Amount)
-        if (context.Data.TryGetProperty("Amount", out var amountProp) 
+        if (context.Data.TryGetProperty("Amount", out var amountProp)
             && amountProp.ValueKind == JsonValueKind.Number)
         {
             var amount = amountProp.GetDecimal();
             return new PaymentReceived(new Money(amount, "USD"));
         }
 
-        // V2 structure (Money object)
         return context.Data.Deserialize<PaymentReceived>(context.Options);
     }
 }
 
-// Registration
-builder.AddEvent<PaymentReceived>("payment-received", new PaymentReceivedConverter());
+builder.AddEvent<PaymentReceived>(
+    "payment-received",
+    new PaymentReceivedConverter());
 ```
 
-### A3: Handling Unknown/Faulted in Projections
+Use this when the event name can stay the same but the payload structure no longer deserializes cleanly into the current type.
+
+### A3. Tolerant Projection Behavior
 
 ```csharp
-public class ResilientOrderProjection : IDocumentProjection<OrderDocument>
-{
-    private readonly ILogger<ResilientOrderProjection> logger;
-
-    public OrderDocument Apply(OrderDocument doc, StreamEvent @event)
+public OrderDocument Apply(OrderDocument document, StreamEvent @event)
+    => @event.Data switch
     {
-        return @event.Data switch
-        {
-            OrderCreated e => ApplyOrderCreated(doc, e),
-            OrderShipped e => ApplyOrderShipped(doc, e),
-            
-            // Handle evolution gracefully
-            UnknownEvent u => HandleUnknown(doc, u, @event.Metadata),
-            FaultedEvent f => HandleFaulted(doc, f, @event.Metadata),
-            
-            _ => doc
-        };
-    }
-
-    private OrderDocument HandleUnknown(OrderDocument doc, UnknownEvent u, EventMetadata meta)
-    {
-        logger.LogWarning(
-            "Unknown event '{Name}' at version {Version} in stream {StreamId}. " +
-            "Consider upgrading to handle this event type.",
-            meta.Name, meta.Version, meta.StreamId);
-        return doc;
-    }
-
-    private OrderDocument HandleFaulted(OrderDocument doc, FaultedEvent f, EventMetadata meta)
-    {
-        logger.LogError(f.Exception,
-            "Failed to deserialize '{Name}' at version {Version}. JSON: {Json}",
-            meta.Name, meta.Version, f.Json);
-        return doc;
-    }
-}
+        OrderCreated e => ApplyOrderCreated(document, e),
+        UnknownEvent _ => document,
+        FaultedEvent _ => document,
+        _ => document
+    };
 ```
 
-### A4: Testing Mixed-Version Streams
-
-```csharp
-[Fact]
-public async Task Projection_HandlesMixedVersionStream()
-{
-    // Arrange: Stream with old and new event names
-    var stream = await eventStore.GetStreamAsync(streamId);
-    
-    // Simulate historical events (would exist in real DB)
-    // Event 1: "order-placed" (old name)
-    // Event 2: "order-created" (new name)
-    
-    var projection = new OrderProjection();
-    var state = OrderState.Empty;
-
-    // Act
-    foreach (var @event in stream.Events)
-    {
-        state = projection.Apply(state, @event.Data);
-    }
-
-    // Assert: Both events processed correctly
-    Assert.Equal("Created", state.Status);
-}
-```
+The important rule is that projections should remain tolerant of unknown or faulted data and surface diagnostics through logging or monitoring instead of halting replay.
 
 ---
 
-## Appendix B: Implementation Checklist
+## Appendix B: Implementation Record
 
-### EventStoreBuilder Changes
+### Shipped Work
 
-- [ ] Add `AddEvent<TEvent>(string name, params string[] aliases)` overload
-- [ ] Create `AliasedEventDataConverter` internal class
-- [ ] Add conflict detection in `Build()` method
-- [ ] Update XML documentation
+- [x] Add `AddEvent<TEvent>(string name, params string[] aliases)` overload
+- [x] Validate primary names and aliases in `EventStoreBuilder.Build()`
+- [x] Extend `EventCatalog` with optional alias mappings
+- [x] Clarify `IEventDataConverter` null-return semantics in XML docs
+- [x] Publish `docs/event-evolution.md`
+- [x] Add or retain unit coverage for alias lookup, alias conflicts, unknown events, and fault wrapping
 
-### EventCatalog Changes
+### Explicitly Not Shipped as Part of v1
 
-- [ ] Accept alias mappings in constructor
-- [ ] Register aliases pointing to primary converter
-- [ ] No changes to `GetConverter()` — aliases are transparent
+- [ ] Dedicated `AliasedEventDataConverter` type
+- [ ] Dedicated event-converter test-helper library
+- [ ] Standalone migration sample under `sample\`
 
-### Test Additions
+### Follow-Up Candidates
 
-- [ ] `EventDataConverterTests.cs` — null return, malformed JSON
-- [ ] `EventCatalogTests.cs` — alias registration, conflict detection
-- [ ] `StreamEventConverterTests.cs` — mixed-version integration
-
-### Documentation
-
-- [ ] Create `docs/event-evolution.md`
-- [ ] Update `docs/event-store.md` with evolution section
-- [ ] Add XML docs to new `AddEvent` overload
+- [ ] Add malformed JSON syntax coverage if needed
+- [ ] Add a mixed-version integration test if higher-level validation becomes valuable
+- [ ] Add a maintained sample only when a concrete sample application needs the scenario
 
 ---
 
-*End of PRD*
+*End of design record*
