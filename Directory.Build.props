@@ -28,13 +28,13 @@
 
   <!-- NuGet package metadata (only applies to packable projects) -->
   <PropertyGroup Condition="'$(IsPackable)' != 'false'">
-    <Description>Event sourcing and CQRS for .NET backed by Azure Cosmos DB. Provides append-only event streams, command handlers, state projections, and document projections with built-in Cosmos DB persistence and Aspire integration.</Description>
+    <Description>A .NET library for Azure Cosmos DB that combines a document store, an append-only event store, and a CQRS implementation built on top of both.</Description>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/chronicles-net/chronicles</PackageProjectUrl>
     <RepositoryUrl>https://github.com/chronicles-net/chronicles</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>event-sourcing;cqrs;cosmos-db;dotnet;aspire;eventsourcing</PackageTags>
+    <PackageTags>event-sourcing;cqrs;document-store;cosmos-db;dotnet</PackageTags>
     <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
