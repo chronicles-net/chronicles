@@ -65,7 +65,7 @@ jobs:
         continue-on-error: true
 
       - name: 📝 Generate Coverage report
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.5.3
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.5.4
         with:
           reports: "**/coverage.cobertura.xml"
           targetdir: .github/coveragereport
