@@ -33,9 +33,9 @@ public class EventDocumentWriterTests
 
     [Theory, AutoNSubstituteData]
     internal async Task WriteStreamAsync_Should_Produce_Events(
-        [Frozen] IDocumentWriter<IDocument> writer,
+        [Frozen] IDocumentWriter<EventDocumentBase> writer,
         [Frozen] IEventDocumentBatchProducer batchProducer,
-        IDocumentTransaction<IDocument> transaction,
+        IDocumentTransaction<EventDocumentBase> transaction,
         EventMetadata eventMetadata,
         SampleEvent eventData,
         TxResponse batchResponse,
@@ -88,9 +88,9 @@ public class EventDocumentWriterTests
     [InlineAutoNSubstituteData("storeName")]
     internal async Task WriteStreamAsync_Should_Create_Transaction(
         string? storeName,
-        [Frozen] IDocumentWriter<IDocument> writer,
+        [Frozen] IDocumentWriter<EventDocumentBase> writer,
         [Frozen] IEventDocumentBatchProducer batchProducer,
-        IDocumentTransaction<IDocument> transaction,
+        IDocumentTransaction<EventDocumentBase> transaction,
         EventMetadata eventMetadata,
         SampleEvent eventData,
         TxResponse batchResponse,
@@ -138,9 +138,9 @@ public class EventDocumentWriterTests
 
     [Theory, AutoNSubstituteData]
     internal async Task WriteStreamAsync_Should_Write_MetaData_To_Transaction(
-        [Frozen] IDocumentWriter<IDocument> writer,
+        [Frozen] IDocumentWriter<EventDocumentBase> writer,
         [Frozen] IEventDocumentBatchProducer batchProducer,
-        IDocumentTransaction<IDocument> transaction,
+        IDocumentTransaction<EventDocumentBase> transaction,
         EventMetadata eventMetadata,
         SampleEvent eventData,
         TxResponse batchResponse,
@@ -190,9 +190,9 @@ public class EventDocumentWriterTests
 
     [Theory, AutoNSubstituteData]
     internal async Task WriteStreamAsync_Should_Create_Event_To_Transaction(
-        [Frozen] IDocumentWriter<IDocument> writer,
+        [Frozen] IDocumentWriter<EventDocumentBase> writer,
         [Frozen] IEventDocumentBatchProducer batchProducer,
-        IDocumentTransaction<IDocument> transaction,
+        IDocumentTransaction<EventDocumentBase> transaction,
         EventMetadata eventMetadata,
         SampleEvent eventData,
         TxResponse batchResponse,
@@ -241,9 +241,9 @@ public class EventDocumentWriterTests
 
     [Theory, AutoNSubstituteData]
     internal async Task WriteStreamAsync_Should_Commit_Transaction(
-        [Frozen] IDocumentWriter<IDocument> writer,
+        [Frozen] IDocumentWriter<EventDocumentBase> writer,
         [Frozen] IEventDocumentBatchProducer batchProducer,
-        IDocumentTransaction<IDocument> transaction,
+        IDocumentTransaction<EventDocumentBase> transaction,
         EventMetadata eventMetadata,
         SampleEvent eventData,
         TxResponse batchResponse,
@@ -290,9 +290,9 @@ public class EventDocumentWriterTests
 
     [Theory, AutoNSubstituteData]
     internal async Task WriteStreamAsync_Should_Throw_CosmosException_On_TooManyRequest(
-        [Frozen] IDocumentWriter<IDocument> writer,
+        [Frozen] IDocumentWriter<EventDocumentBase> writer,
         [Frozen] IEventDocumentBatchProducer batchProducer,
-        IDocumentTransaction<IDocument> transaction,
+        IDocumentTransaction<EventDocumentBase> transaction,
         EventMetadata eventMetadata,
         SampleEvent eventData,
         TxResponse batchResponse,
@@ -337,9 +337,9 @@ public class EventDocumentWriterTests
 
     [Theory, AutoNSubstituteData]
     internal async Task WriteStreamAsync_Should_Throw_StreamConflictException_When_Unsuccessful(
-        [Frozen] IDocumentWriter<IDocument> writer,
+        [Frozen] IDocumentWriter<EventDocumentBase> writer,
         [Frozen] IEventDocumentBatchProducer batchProducer,
-        IDocumentTransaction<IDocument> transaction,
+        IDocumentTransaction<EventDocumentBase> transaction,
         EventMetadata eventMetadata,
         SampleEvent eventData,
         TxResponse batchResponse,

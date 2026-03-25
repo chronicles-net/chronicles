@@ -6,7 +6,7 @@ using Microsoft.Azure.Cosmos;
 namespace Chronicles.EventStore.Internal;
 
 internal class EventDocumentWriter(
-    IDocumentWriter<IDocument> writer,
+    IDocumentWriter<EventDocumentBase> writer,
     IEventDocumentBatchProducer batchProducer)
     : IEventDocumentWriter
 {

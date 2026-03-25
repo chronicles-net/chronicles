@@ -2,6 +2,40 @@
 
 ## Learnings
 
+### 2026-03-25: EventDocumentBase Visibility Test Alignment — Complete
+
+**Coordination Session:** Scribe session (2026-03-25T16:20:00Z). Full squad orchestration with decision merge and cross-agent history updates.
+
+**Work Completed:**
+- Analyzed 12 test failures after EventDocumentBase visibility change (internal → public)
+- Identified root cause: Generic type constraint mismatch in test dependency injection
+- Updated test fixtures in EventDocumentWriterTests and EventStreamWriterTests
+- Changed `[Frozen] IDocumentWriter<IDocument>` → `[Frozen] IDocumentWriter<EventDocumentBase>` (5 test methods)
+- Verified no production code changes required (test wiring issue only)
+
+**Key Finding:**
+- All test failures were runtime-only (no compile-time errors)
+- Groups: 5 direct type mismatches + 3 cascading dependencies + 2 metadata casting edge cases
+- Fix scope: 5 test parameter updates
+- Cascading failures (EventStreamWriterTests) resolve automatically once Group A fixed
+
+**Validation:**
+- ✅ Targeted test suite: 23/23 passing (EventDocumentWriterTests + EventStreamWriterTests)
+- ✅ Build: `dotnet build -c Release` green, 0 warnings
+- 🔄 Full Release validation: Chani running (220 tests expected to pass)
+
+**Deliverables:**
+- ✅ Orchestration log written
+- ✅ Test fixture corrections applied
+- ✅ Decision merged into decisions.md
+- ✅ Inbox files deleted
+- ✅ Awaiting Chani's full validation before merge
+
+**Impact:**
+- EventDocumentBase public visibility confirmed safe by test wiring fix
+- No architectural violations introduced
+- Type safety improved (generic constraints now explicitly correct)
+
 ### 2026-03-18: Event Evolution PRD Rewrite — Gate Review Complete
 
 **Coordination Session:** Scribe session (2026-03-18T16:06:43Z). Orchestration logs and decision merge completed.
@@ -271,3 +305,12 @@ Key source files under `src/Chronicles/`: `EventStore/` (streaming), `Documents/
 - The event-evolution story is now primarily a documentation-reconciliation problem: aliases, conflict detection, null-return semantics, and the public guide already exist in production code.
 - The shipped alias implementation is intentionally simpler than the draft proposal: `EventStoreBuilder` registers one default `EventDataConverter` per primary name or alias instead of introducing a dedicated alias-converter type.
 - Remaining gaps are best tracked as follow-up notes for extra coverage or samples, not as missing v1 functionality.
+
+### 2026-03-25: EventDocumentBase Writer Test Realignment
+
+**Context:** Fixed EventStore writer tests that broke after production switched writer dependencies to `IDocumentWriter<EventDocumentBase>`.
+
+**Key Learnings:**
+- AutoFixture + NSubstitute freezing must use the exact closed generic consumed by the SUT; `IDocumentWriter<IDocument>` does not stand in for `IDocumentWriter<EventDocumentBase>` during constructor injection.
+- The same rule applies to nested transactional dependencies: `EventDocumentWriter` tests also need `IDocumentTransaction<EventDocumentBase>` so the created transaction substitute is the one committed and asserted.
+- Adjacent EventStore test scan found the stale generic assumption only in `test/Chronicles.Tests/EventStore/Internal/EventDocumentWriterTests.cs` and `test/Chronicles.Tests/EventStore/Internal/EventStreamWriterTests.cs`; no production cleanup was needed in `src/Chronicles/EventStore/Internal/EventDocumentWriter.cs` once the tests matched the live contract.

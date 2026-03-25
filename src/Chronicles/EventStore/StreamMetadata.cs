@@ -11,4 +11,5 @@ public abstract record StreamMetadata(
     StreamId StreamId,
     StreamState State,
     StreamVersion Version,
-    DateTimeOffset Timestamp);
+    DateTimeOffset Timestamp)
+    : EventDocumentBase();

@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- Dependency resolution issue where `EventDocumentBase` was not correctly resolved from the DI container, causing runtime errors when using event store.
+- Event store internal tests now use `EventDocumentBase` document writers and transactions, matching the event document pipeline.
 
 ### Removed
 

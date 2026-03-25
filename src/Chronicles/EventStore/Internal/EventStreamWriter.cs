@@ -4,7 +4,7 @@ using Chronicles.Documents;
 namespace Chronicles.EventStore.Internal;
 
 internal class EventStreamWriter(
-    IDocumentWriter<IDocument> documentWriter,
+    IDocumentWriter<EventDocumentBase> documentWriter,
     IEventDocumentWriter eventWriter,
     IStreamMetadataReader metadataReader,
     ICheckpointWriter checkpointWriter)
@@ -21,7 +21,10 @@ internal class EventStreamWriter(
 
         metadata.EnsureNotClosed(streamId);
 
-        var closedDocument = StreamMetadataDocument.FromMetadata(metadata) with { State = StreamState.Closed };
+        var closedDocument = StreamMetadataDocument.FromMetadata(metadata) with
+        {
+            State = StreamState.Closed,
+        };
 
         await documentWriter
             .WriteAsync(closedDocument, options: null, storeName: storeName, cancellationToken: cancellationToken)

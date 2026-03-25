@@ -283,7 +283,7 @@ public class EventStreamWriterTests
 
     [Theory, AutoNSubstituteData]
     internal async Task DeleteStreamAsync_Should_Call_DeletePartitionAsync(
-        [Frozen] IDocumentWriter<IDocument> documentWriter,
+        [Frozen] IDocumentWriter<EventDocumentBase> documentWriter,
         StreamId streamId,
         string storeName,
         EventStreamWriter sut,
@@ -327,7 +327,7 @@ public class EventStreamWriterTests
 
     [Theory, AutoNSubstituteData]
     internal async Task DeleteStreamAsync_With_Matching_ExpectedVersion_Should_Delete(
-        [Frozen] IDocumentWriter<IDocument> documentWriter,
+        [Frozen] IDocumentWriter<EventDocumentBase> documentWriter,
         [Frozen] IStreamMetadataReader reader,
         StreamId streamId,
         StreamMetadataDocument metadata,
@@ -362,7 +362,7 @@ public class EventStreamWriterTests
 
     [Theory, AutoNSubstituteData]
     internal async Task DeleteStreamAsync_With_Mismatched_ExpectedVersion_Should_Throw_And_Not_Delete(
-        [Frozen] IDocumentWriter<IDocument> documentWriter,
+        [Frozen] IDocumentWriter<EventDocumentBase> documentWriter,
         [Frozen] IStreamMetadataReader reader,
         StreamId streamId,
         StreamMetadataDocument metadata,
@@ -401,7 +401,7 @@ public class EventStreamWriterTests
 
     [Theory, AutoNSubstituteData]
     internal async Task CloseAsync_On_Active_Stream_Should_Persist_Closed_Document(
-        [Frozen] IDocumentWriter<IDocument> documentWriter,
+        [Frozen] IDocumentWriter<EventDocumentBase> documentWriter,
         [Frozen] IStreamMetadataReader reader,
         StreamId streamId,
         StreamMetadataDocument metadata,
@@ -457,7 +457,7 @@ public class EventStreamWriterTests
 
     [Theory, AutoNSubstituteData]
     internal async Task CloseAsync_On_Closed_Stream_Should_Succeed(
-        [Frozen] IDocumentWriter<IDocument> documentWriter,
+        [Frozen] IDocumentWriter<EventDocumentBase> documentWriter,
         [Frozen] IStreamMetadataReader reader,
         StreamId streamId,
         StreamMetadataDocument metadata,
