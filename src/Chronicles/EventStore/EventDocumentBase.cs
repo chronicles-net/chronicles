@@ -1,8 +1,8 @@
 using Chronicles.Documents;
 
-namespace Chronicles.EventStore.Internal;
+namespace Chronicles.EventStore;
 
-internal abstract record EventDocumentBase()
+public abstract record EventDocumentBase()
     : IDocument
 {
     protected abstract string GetPartitionKey();
