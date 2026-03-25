@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Dependency resolution issue where `EventDocumentBase` was not correctly resolved from the DI container, causing runtime errors when using event store.
+
 ### Removed
 
 - **Event metadata:** Removed `EventMetadata.EventId` from the public API. This is a breaking change for consumers that accessed this property directly.
