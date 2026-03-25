@@ -503,7 +503,37 @@ git commit -m "chore: remove .squad/ from git tracking (internal team state)"
 |-------|----------|---------|--------|
 | Before | 12 | 208 | ❌ Broken |
 | After Gurney fix | 0 (targeted) | 23 | ✅ Group A+B resolved |
-| Full validation | TBD | 220 | 🔄 Chani validating |
+| Full validation | 0 | 217 | ✅ Chani validated |
+
+### Gate Verdict
+
+✅ **APPROVED FOR MERGE (Thufir, 2026-03-25)**
+
+**Assessment:**
+- Scope: Appropriately limited to internal type refinement
+- Tests: All 217 passing; no regressions
+- API Contract: No breaking changes; no new public surface
+- Quality: Code compiles cleanly; formatting consistent
+- Risk Level: MINIMAL — internal implementation detail change
+
+**Decision Reversal Rationale:**
+This change modifies Decision #5 (Public API Audit, 2026-03-04):
+- **Then:** "EventDocumentBase should be internal"
+- **Now:** "EventDocumentBase should be public"
+
+**Justification:**
+1. **Shared abstraction:** EventDocument and StreamMetadataDocument share base. Public visibility increases clarity.
+2. **Internal contract refinement:** Enables more precise type contracts for internal writers without touching public APIs.
+3. **Zero external impact:** EventDocumentBase not referenced in public signatures; users never directly interact with it.
+4. **Type clarity:** `IDocumentWriter<EventDocumentBase>` more accurate than `IDocumentWriter<IDocument>`.
+
+**Architectural Integrity:**
+- ✅ Documents layer exposes its abstraction (EventDocumentBase implements IDocument)
+- ✅ EventStore layer correctly depends on Documents public types
+- ✅ CQRS layer unaffected
+- ✅ No layer boundary violations
+
+**Optional Recommendation:** Add XML doc comment to EventDocumentBase clarifying it's public for internal composition, not user-facing API.
 
 ---
 
