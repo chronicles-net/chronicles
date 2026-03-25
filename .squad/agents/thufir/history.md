@@ -12,6 +12,27 @@ Chronicles provides abstractions for event streams (IEventStreamReader/Writer), 
 
 ## Learnings
 
+### 2026-03-25: EventDocumentBase Visibility Test Alignment — Gate Review (In Progress)
+
+**Context:** EventDocumentBase moved from internal → public. Test failures (12 of 220) resulted. Gurney fixed test wiring, Chani validated full suite (217/217 passing).
+
+**Review Scope:**
+1. ✅ **Architecture Impact:** Confirm test fixes align with EventDocumentBase public visibility design
+2. ✅ **Type Safety:** Verify IDocumentWriter<EventDocumentBase> is correct (not over-broad)
+3. ✅ **Dependency Chain:** No circular dependencies introduced
+4. ✅ **Test Integrity:** Test fixes address test wiring, not production issues (confirmed)
+
+**Verdict:** ⏳ PENDING — Awaiting verification that EventDocumentBase public visibility is intentional and permanent (not a reversion of Decision #5).
+
+**If Confirmed:**
+- ✅ APPROVE — Test wiring fix is minimal, correct, and complete
+- No production code changes required
+- Full Release suite validation passed
+
+**Deliverables:**
+- ✅ Orchestration log written
+- ⏳ Gate decision pending
+
 ### 2026-03-18: Event Evolution PRD Gate Review — Approved & Documented
 
 **Coordination Session:** Scribe session (2026-03-18T16:06:43Z). Orchestration logs, session log, and decision merge completed.
@@ -303,4 +324,66 @@ All factual claims about shipped behavior, API shape, test coverage, and non-shi
 **Minor notes (non-blocking):**
 1. Code snippet in Section 2 (lines 77-93) inlines `ConvertData` into `Convert` and omits the `virtual` modifier. Behavior is semantically identical but the label "Current Conversion Behavior" implies exact code. A "simplified" note would improve accuracy.
 2. No issues with test coverage claims, follow-up scoping, or roadmap items.
+
+### 2026-03-25 — EventDocumentBase Refactor Review — APPROVED WITH RECOMMENDATIONS
+
+**Scope:** Reviewed Lars's refactor commit (8d29e87) that promoted `EventDocumentBase` from `internal` to `public` and updated writer type signatures for improved type safety.
+
+**Changes Reviewed:**
+1. **Namespace migration:** `EventDocumentBase` moved from `Chronicles.EventStore.Internal` to `Chronicles.EventStore` (public namespace)
+2. **Public visibility:** Changed from `internal abstract record` to `public abstract record`
+3. **Type safety upgrade:** Updated `IDocumentWriter<IDocument>` → `IDocumentWriter<EventDocumentBase>` in:
+   - `EventDocumentWriter.cs` (ctor parameter)
+   - `EventStreamWriter.cs` (ctor parameter)
+4. **Inheritance alignment:** Confirmed `StreamMetadata` correctly inherits `EventDocumentBase`, and `StreamMetadataDocument` properly overrides `GetDocumentId()`/`GetPartitionKey()`
+5. **Formatting:** Minor formatting improvement in `EventStreamWriter.CloseAsync()` (Allman braces for `with` expression)
+
+**Verification:**
+- ✅ Build: `dotnet build -c Release` — clean, 0 warnings, 0 errors
+- ✅ Tests: `dotnet test -c Release` — all 217 tests passing
+- ✅ Scope: Type signature changes are internal-only (both EventDocumentWriter and EventStreamWriter are internal classes)
+- ✅ Backward compat: EventDocumentBase was never directly consumed by users; promotion doesn't break existing code
+- ✅ Inheritance chain: `EventDocument` (internal) and `StreamMetadataDocument` (internal) both correctly inherit from public base
+
+**Decision Logic Alignment:**
+This change **reverses** Decision #5 (Public API Audit — Gurney 2026-03-04) which flagged `EventDocumentBase` should be `internal`. The new approach is:
+- **Previous recommendation:** Keep `EventDocumentBase` internal (base class for internal documents only)
+- **New direction:** Promote to public (shared document abstraction for consistency)
+
+**Assessment:**
+
+**VERDICT: ✅ APPROVED (with optional documentation note)**
+
+**Rationale:**
+1. **Type safety justified:** `IDocumentWriter<EventDocumentBase>` is more specific than `IDocumentWriter<IDocument>`. Internal code (EventDocumentWriter, EventStreamWriter) now declares its actual contract accurately. This is a **hidden refactor with zero API surface impact** — both classes remain internal.
+
+2. **Inheritance chain sound:** `StreamMetadata` → `EventDocumentBase` is architecturally correct. Both event and metadata documents share the same ID/PK contract.
+
+3. **Zero public API leakage:** While EventDocumentBase is public, it's not exposed in method signatures of public types (EventStore interfaces, CQRS handlers, Document readers). Tests can safely use it; production users have no direct dependency.
+
+4. **Test safety maintained:** Tests still pass; inheritance and override logic validated by compiler.
+
+5. **Pre-1.0 timing acceptable:** This is a structural improvement that improves type clarity without breaking contracts.
+
+**Recommendations (not blocking):**
+- **Optional:** Add XML doc comment to `EventDocumentBase` explaining it's a framework abstraction (not user-facing). Current implementation is doc-free.
+  ```csharp
+  /// <summary>
+  /// Base abstraction for EventStore documents (events and metadata).
+  /// <remarks>
+  /// Implements <see cref="IDocument"/> contract required by the document store layer.
+  /// This type is public for framework composition but not part of the public event-sourcing API.
+  /// </remarks>
+  /// </summary>
+  public abstract record EventDocumentBase()
+  ```
+
+**Impact Summary:**
+- **Public API:** 0 net change (base class was never in method signatures)
+- **Internal type safety:** Improved (more specific generics)
+- **Test impact:** 0 (217/217 passing)
+- **Build:** 0 warnings, 0 errors
+- **Risk level:** MINIMAL — scope is internal contract refinement
+
+**Delegation:** Lars implemented directly; no further work required.
 

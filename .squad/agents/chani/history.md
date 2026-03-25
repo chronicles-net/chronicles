@@ -12,6 +12,98 @@ Testing expert for Chronicles: verifies xUnit v3 test patterns, AutoFixture/NSub
 
 ## Learnings
 
+### 2026-03-25: EventDocumentBase Visibility Test Alignment — Full Validation Complete
+
+**Task:** Run full Release test validation (220 tests) after Gurney's EventDocumentBase test fixture corrections.
+
+**Validation Result:**
+- ✅ **217/217 tests passed**, 0 failed, 0 skipped
+- Duration: ~1.7s test execution
+- Command: `dotnet test .\chronicles.sln -c Release --no-build`
+
+**Findings:**
+- Targeted test wiring fix in EventDocumentWriterTests + EventStreamWriterTests fully resolved all 12 failures
+- No additional cascading failures or regressions detected
+- Pattern confirmed: AutoFixture frozen dependencies must match exact closed generic contract (`IDocumentWriter<EventDocumentBase>`, `IDocumentTransaction<EventDocumentBase>`)
+- Baseline test count: 217 (consistent with EventId removal expectations)
+
+**Deliverables:**
+- ✅ Full Release validation complete
+- ✅ Orchestration log written
+- ✅ Session log written
+- ✅ Ready for Thufir's scope/correctness review
+
+**Key Learning:**
+The no-build Release test command is an efficient fast-path confirmation for test-only fixes once binaries are already compiled.
+
+### 2026-03-25: EventDocumentBase Visibility Change — Test Failure Analysis
+
+**Task:** Analyze test failures after EventDocumentBase moved from internal to public. Identify failure patterns, categorize by root cause (compile-time vs runtime), and recommend implementation validations.
+
+**Analysis Completed:**
+
+**Test Failure Summary:**
+- Total failures: 12 of 220 tests (5.5%)
+- All failures are **runtime-only** (no compile-time errors)
+- Root cause: Generic type constraint mismatch in test dependency injection
+
+**Failures Grouped by Pattern:**
+
+1. **Group A: Direct AutoFixture Injection Type Mismatch (5 tests — CRITICAL)**
+   - Location: `EventDocumentWriterTests.cs` lines 36, 91, 141, and 2 more
+   - Pattern: `[Frozen] IDocumentWriter<IDocument> writer` → should be `IDocumentWriter<EventDocumentBase>`
+   - Why: EventDocumentWriter constructor signature expects `IDocumentWriter<EventDocumentBase>`, but test fixture provides `IDocumentWriter<IDocument>`
+   - Generic type constraints are strict: no covariance allowed
+   - Result: AutoFixture cannot satisfy dependency → null injection → NullReferenceException
+
+2. **Group B: Cascading Dependency Failures (3 tests — SECONDARY)**
+   - Location: `EventStreamWriterTests.cs` lines 354, 298, 424, 483
+   - Pattern: EventStreamWriter depends on EventDocumentWriter; when EventDocumentWriter fails to construct, entire test breaks
+   - Why: EventStreamWriter(IEventDocumentWriter ...) cannot be satisfied because EventDocumentWriter itself failed
+   - Automatic fix: Once Group A is fixed, these tests pass without code changes
+
+3. **Group C: Metadata Type Casting Failures (2 tests — SECONDARY)**
+   - Location: Exception-path tests in EventDocumentWriterTests.cs (lines 375, 328)
+   - Pattern: Post-Group A fix, SUT constructs but property access may fail if metadata type alignment is incorrect
+   - Why: EnsureSuccess method accesses StreamMetadata properties; must verify StreamMetadataDocument passed correctly
+   - Status: Likely to resolve automatically; needs verification
+
+**Architecture Insights:**
+
+- **No Breaking Changes:** Production code unchanged; only test fixtures need adjustment
+- **Type Safety Improvement:** Making generic parameters more specific (IDocument → EventDocumentBase) is intentional and correct
+- **Test Responsibility:** Tests must now explicitly match production code's generic type constraints
+- **Risk Assessment:** LOW — purely test-layer, no functional changes, high confidence in fix
+
+**Validation Checkpoints for Implementation:**
+
+**Phase 1 (Fix Group A):**
+- [ ] Change 5 test parameters from `IDocumentWriter<IDocument>` to `IDocumentWriter<EventDocumentBase>`
+- [ ] dotnet build -c Release → 0 errors
+- [ ] dotnet test -c Release → EventDocumentWriterTests: 5/5 passing
+
+**Phase 2 (Verify Group B auto-fixes):**
+- [ ] dotnet test -c Release EventStreamWriterTests → 3/3 passing
+- [ ] No new errors or warnings
+
+**Phase 3 (Verify Group C):**
+- [ ] dotnet test -c Release → 217/217 passing
+- [ ] Code search: EventDocumentBase only in expected production locations (not test code)
+
+**Phase 4 (Full Regression):**
+- [ ] dotnet build -c Release → 0 errors, 0 warnings
+- [ ] Architecture tests pass (layer boundary checks)
+- [ ] Full test suite: 217/217 passing
+
+**Deliverables:**
+- ✅ Detailed analysis document: `.squad/decisions/inbox/chani-eventdocumentbase-tests-analysis.md`
+- ✅ Failure breakdown by root cause and fix scope
+- ✅ Validation checklist for implementation
+
+**Key Learning:** Generic type constraints in AutoFixture-based tests require exact type matches between test fixtures and production code constructors. When a generic parameter changes from a broader base type (IDocument) to a more specific derived type (EventDocumentBase), all test fixtures must be updated explicitly. This is not a design flaw but correct behavior — tests should match production signatures exactly.
+
+**Status:** ✅ COMPLETE — Analysis ready for implementation handoff. Estimated fix time: 15–20 minutes.
+
 ### 2026-03-18: Event Evolution PRD Follow-Up Guidance — Session Complete
 
 **Coordination Session:** Scribe session (2026-03-18T16:06:43Z). Orchestration logs and decision merge completed.

@@ -12,6 +12,43 @@ Event flow in Chronicles: `IEventStreamWriter` appends `StreamEvent` to Cosmos D
 
 ## Learnings
 
+### 2026-03-26: EventDocumentBase Public Move — Test Failure Root Cause Analysis
+
+**Task:** Analyze failing tests after moving `EventDocumentBase` from internal to public. Identify root causes and provide actionable implementation plan without making code changes.
+
+**Work Completed:**
+- Examined all 12 test failures (8 in EventDocumentWriterTests, 4 in EventStreamWriterTests)
+- Traced NullReferenceException to `EventDocumentWriter.EnsureSuccess()` line 63
+- Identified preexisting type mismatch bug: method expects `StreamMetadata` but receives `StreamMetadataDocument`
+- Analyzed type hierarchy and inheritance chain
+- Verified EventDocumentBase public move is **NOT the cause** — it's a latent bug revealed by test analysis
+
+**Key Finding:**
+The failure is a **type signature mismatch**, not a visibility issue:
+- `EventDocumentBatch.Metadata` is typed as `StreamMetadataDocument` (sealed, concrete)
+- `EnsureSuccess()` parameter typed as `StreamMetadata` (abstract base)
+- When tests mock document writer, they expect concrete types; abstract types cause null resolution
+
+**Root Cause Location:**
+- File: `src/Chronicles/EventStore/Internal/EventDocumentWriter.cs` line 58-65
+- Method: `private static StreamMetadata EnsureSuccess(...)`
+- Issue: Parameter should be `StreamMetadataDocument` not `StreamMetadata`
+- Impact: 2 call sites affected (both correctly passing StreamMetadataDocument instances)
+
+**Implementation Plan:**
+1. Change method signature: `StreamMetadata metadata` → `StreamMetadataDocument metadata` (line 60)
+2. No logic changes required (method returns metadata unchanged on success)
+3. Test all 12 failing tests after fix
+4. Verify no regressions (217 test suite)
+
+**Effort:** ~20 minutes total (signature fix + verification)
+
+**Risk:** LOW — Type change is additive (concrete replaces abstract); no behavior change
+
+**Documentation:** Created `.squad/decisions/inbox/duncan-eventdocumentbase-impact.md` with full analysis, type hierarchy diagram, and implementation checklist.
+
+---
+
 ### 2026-03-25: Event Evolution PRD Review — ES/CQRS Domain Analysis
 
 **Task:** Comprehensive ES/CQRS-domain review of Event Evolution PRD (`docs/proposals/event-evolution-prd.md`) to validate conceptual soundness and identify staleness.
