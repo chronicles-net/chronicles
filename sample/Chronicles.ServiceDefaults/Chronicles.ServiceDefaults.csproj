@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Cosmos" />
     <ProjectReference Include="..\..\src\Chronicles\Chronicles.csproj" />
   </ItemGroup>
 
