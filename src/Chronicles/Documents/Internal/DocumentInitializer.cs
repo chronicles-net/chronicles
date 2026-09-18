@@ -25,18 +25,24 @@ internal class DocumentInitializer : IContainerInitializer
         CancellationToken cancellationToken = default)
     {
         containerProperties.Invoke(properties);
-        if (throughput == null)
-        {
-            await database.CreateContainerIfNotExistsAsync(
-               properties,
-               cancellationToken: cancellationToken);
-        }
-        else
-        {
-            await database.CreateContainerIfNotExistsAsync(
-                properties,
-                throughput,
-                cancellationToken: cancellationToken);
-        }
+
+        await CosmosRetryHelper.ExecuteWithRetryAsync(
+            async () =>
+            {
+                if (throughput == null)
+                {
+                    await database.CreateContainerIfNotExistsAsync(
+                       properties,
+                       cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    await database.CreateContainerIfNotExistsAsync(
+                        properties,
+                        throughput,
+                        cancellationToken: cancellationToken);
+                }
+            },
+            cancellationToken);
     }
 }
