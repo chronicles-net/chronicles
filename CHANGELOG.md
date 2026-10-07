@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Event store internal tests now use `EventDocumentBase` document writers and transactions, matching the event document pipeline.
+- Document store initialization (`CreateDatabaseIfNotExistsAsync`/`CreateContainerIfNotExistsAsync` for documents and the subscription/lease container) now retries with backoff on the transient Cosmos DB "not yet available for read" error (404, substatus 1013). This commonly occurred against the Cosmos DB emulator when multiple services/processors raced to create the same database or container concurrently, e.g. in local Aspire setups.
 
 ### Removed
 

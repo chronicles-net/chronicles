@@ -63,12 +63,14 @@ internal class DocumentStoreInitializer : IDocumentStoreInitializer
                     .GetDatabase(store.Options.DatabaseName);
             }
 
-            var response = await provider
-                .GetClient(store.Name)
-                .CreateDatabaseIfNotExistsAsync(
-                    store.Options.DatabaseName,
-                    store.Options.Initialization.Database,
-                    cancellationToken: cancellationToken)
+            var response = await CosmosRetryHelper.ExecuteWithRetryAsync(
+                () => provider
+                    .GetClient(store.Name)
+                    .CreateDatabaseIfNotExistsAsync(
+                        store.Options.DatabaseName,
+                        store.Options.Initialization.Database,
+                        cancellationToken: cancellationToken),
+                cancellationToken)
                 .ConfigureAwait(false);
 
             return response.Database;
