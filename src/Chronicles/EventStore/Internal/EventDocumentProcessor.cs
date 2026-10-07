@@ -1,4 +1,6 @@
+using System.Net;
 using Chronicles.Documents;
+using Microsoft.Azure.Cosmos;
 
 namespace Chronicles.EventStore.Internal;
 
@@ -15,7 +17,16 @@ internal class EventDocumentProcessor(
     public async Task ErrorAsync(
       string leaseToken,
       Exception exception)
-      => await exceptionHandler.HandleAsync(exception, null, CancellationToken.None);
+    {
+        // Lease ownership moving to another instance (e.g. during scale-out or rollout)
+        // is expected; the new owner continues from the last checkpoint.
+        if (IsLeaseLost(exception))
+        {
+            return;
+        }
+
+        await exceptionHandler.HandleAsync(exception, null, CancellationToken.None);
+    }
 
     public async Task ProcessAsync(
       IReadOnlyCollection<StreamEvent> changes,
@@ -41,5 +52,24 @@ internal class EventDocumentProcessor(
         {
             await exceptionHandler.HandleAsync(e, null, cancellationToken);
         }
+    }
+
+    private static bool IsLeaseLost(Exception exception)
+    {
+        if (exception is ChangeFeedProcessorUserException)
+        {
+            return false;
+        }
+
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is CosmosException { StatusCode: HttpStatusCode.PreconditionFailed }
+                || current.GetType().Name == "LeaseLostException")
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
