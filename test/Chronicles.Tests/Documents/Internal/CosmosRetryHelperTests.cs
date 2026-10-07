@@ -28,6 +28,7 @@ public class CosmosRetryHelperTests
     public async Task ExecuteWithRetryAsync_Retries_On_Creation_Race_Then_Succeeds()
     {
         var attempts = 0;
+        var delays = new List<TimeSpan>();
 
         var result = await CosmosRetryHelper.ExecuteWithRetryAsync(
             () =>
@@ -40,16 +41,25 @@ public class CosmosRetryHelperTests
 
                 return Task.FromResult(attempts);
             },
-            CancellationToken.None);
+            CancellationToken.None,
+            delayAsync: (delay, _) =>
+            {
+                delays.Add(delay);
+                return Task.CompletedTask;
+            });
 
         result.Should().Be(3);
         attempts.Should().Be(3);
+        delays.Should().Equal(
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(2));
     }
 
     [Fact]
     public async Task ExecuteWithRetryAsync_Stops_After_MaxAttempts()
     {
         var attempts = 0;
+        var delays = new List<TimeSpan>();
 
         Func<Task> act = () => CosmosRetryHelper.ExecuteWithRetryAsync(
             () =>
@@ -58,10 +68,18 @@ public class CosmosRetryHelperTests
                 throw CreationRaceException();
             },
             CancellationToken.None,
-            maxAttempts: 3);
+            maxAttempts: 3,
+            delayAsync: (delay, _) =>
+            {
+                delays.Add(delay);
+                return Task.CompletedTask;
+            });
 
         await act.Should().ThrowAsync<CosmosException>();
         attempts.Should().Be(3);
+        delays.Should().Equal(
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(2));
     }
 
     [Fact]

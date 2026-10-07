@@ -22,7 +22,8 @@ internal static class CosmosRetryHelper
     public static async Task ExecuteWithRetryAsync(
         Func<Task> operation,
         CancellationToken cancellationToken,
-        int maxAttempts = 6)
+        int maxAttempts = 6,
+        Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
     {
         await ExecuteWithRetryAsync(
             async () =>
@@ -31,14 +32,17 @@ internal static class CosmosRetryHelper
                 return true;
             },
             cancellationToken,
-            maxAttempts);
+            maxAttempts,
+            delayAsync);
     }
 
     public static async Task<T> ExecuteWithRetryAsync<T>(
         Func<Task<T>> operation,
         CancellationToken cancellationToken,
-        int maxAttempts = 6)
+        int maxAttempts = 6,
+        Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
     {
+        delayAsync ??= Task.Delay;
         var delay = InitialDelay;
         for (var attempt = 1; ; attempt++)
         {
@@ -49,8 +53,7 @@ internal static class CosmosRetryHelper
             catch (CosmosException ex)
                 when (attempt < maxAttempts && IsCreationRace(ex))
             {
-                await Task
-                    .Delay(delay, cancellationToken)
+                await delayAsync(delay, cancellationToken)
                     .ConfigureAwait(false);
 
                 delay = delay + delay > MaxDelay
