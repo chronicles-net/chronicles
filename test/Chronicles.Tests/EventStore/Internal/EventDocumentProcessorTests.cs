@@ -1,5 +1,7 @@
+using System.Net;
 using Chronicles.EventStore;
 using Chronicles.EventStore.Internal;
+using Microsoft.Azure.Cosmos;
 using NSubstitute;
 
 namespace Chronicles.Tests.EventStore.Internal;
@@ -62,4 +64,91 @@ public class EventDocumentProcessorTests
                 .HandleAsync(exception, Arg.Any<StreamEvent?>(), Arg.Any<CancellationToken>());
         }
     }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task Should_Call_ExceptionHandler_On_Error(
+        [Frozen] IEventSubscriptionExceptionHandler exceptionHandler,
+        EventDocumentProcessor sut,
+        string leaseToken,
+        Exception exception)
+    {
+        await sut.ErrorAsync(leaseToken, exception);
+
+        await exceptionHandler
+            .Received(1)
+            .HandleAsync(exception, null, CancellationToken.None);
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task Should_Call_ExceptionHandler_On_Non_Lease_CosmosException(
+        [Frozen] IEventSubscriptionExceptionHandler exceptionHandler,
+        EventDocumentProcessor sut,
+        string leaseToken)
+    {
+        var exception = new CosmosException("boom", HttpStatusCode.ServiceUnavailable, 0, "activity", 0);
+
+        await sut.ErrorAsync(leaseToken, exception);
+
+        await exceptionHandler
+            .Received(1)
+            .HandleAsync(exception, null, CancellationToken.None);
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task Should_Ignore_Lease_Taken_Over_Error(
+        [Frozen] IEventSubscriptionExceptionHandler exceptionHandler,
+        EventDocumentProcessor sut,
+        string leaseToken)
+    {
+        var exception = new CosmosException(
+            "The lease token was taken over by owner 'other'",
+            HttpStatusCode.PreconditionFailed,
+            0,
+            "activity",
+            0);
+
+        await sut.ErrorAsync(leaseToken, exception);
+
+        await exceptionHandler
+            .DidNotReceiveWithAnyArgs()
+            .HandleAsync(default!, default, default);
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task Should_Ignore_Wrapped_Lease_Lost_Error(
+        [Frozen] IEventSubscriptionExceptionHandler exceptionHandler,
+        EventDocumentProcessor sut,
+        string leaseToken)
+    {
+        var exception = new InvalidOperationException(
+            "outer",
+            new LeaseLostException("Lease was lost due to load balancing"));
+
+        await sut.ErrorAsync(leaseToken, exception);
+
+        await exceptionHandler
+            .DidNotReceiveWithAnyArgs()
+            .HandleAsync(default!, default, default);
+    }
+
+    [Theory, AutoNSubstituteData]
+    internal async Task Should_Call_ExceptionHandler_On_User_Exception_With_PreconditionFailed(
+        [Frozen] IEventSubscriptionExceptionHandler exceptionHandler,
+        EventDocumentProcessor sut,
+        string leaseToken,
+        ChangeFeedProcessorContext context)
+    {
+        var exception = new ChangeFeedProcessorUserException(
+            new CosmosException("conflict", HttpStatusCode.PreconditionFailed, 0, "activity", 0),
+            context);
+
+        await sut.ErrorAsync(leaseToken, exception);
+
+        await exceptionHandler
+            .Received(1)
+            .HandleAsync(exception, null, CancellationToken.None);
+    }
+
+    private sealed class LeaseLostException(string message)
+        : Exception(message);
 }
