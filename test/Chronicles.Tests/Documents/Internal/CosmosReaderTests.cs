@@ -227,7 +227,7 @@ public class CosmosReaderTests
                 null,
                 Arg.Is<QueryRequestOptions>(o => o.PartitionKey == new PartitionKey(partitionKey)));
         container
-            .ReceivedCallWithArgument<QueryRequestOptions>()
+            .ReceivedArg<QueryRequestOptions>()
             .Should()
             .BeEquivalentTo(options, c => c.Excluding(o => o.PartitionKey));
     }
@@ -421,7 +421,7 @@ public class CosmosReaderTests
                     => o.PartitionKey == new PartitionKey(partitionKey)
                     && o.MaxItemCount == maxItemCount));
         container
-            .ReceivedCallWithArgument<QueryRequestOptions>()
+            .ReceivedArg<QueryRequestOptions>()
             .Should()
             .BeEquivalentTo(options, c => c
                 .Excluding(o => o.PartitionKey)
