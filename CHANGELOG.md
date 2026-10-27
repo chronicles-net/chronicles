@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Event subscriptions:** Change-feed lease-lost errors (lease taken over by or rebalanced to another instance, e.g. during scale-out or rollout) are no longer forwarded to `IEventSubscriptionExceptionHandler`. These are expected; the new lease owner resumes from the last checkpoint.
+
 ### Fixed
 - Event store internal tests now use `EventDocumentBase` document writers and transactions, matching the event document pipeline.
 
