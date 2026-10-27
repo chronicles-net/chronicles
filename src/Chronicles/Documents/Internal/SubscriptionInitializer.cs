@@ -17,18 +17,23 @@ internal class SubscriptionInitializer : IContainerInitializer
     {
         properties.PartitionKeyPath = "/id";
 
-        if (throughput == null)
-        {
-            await database.CreateContainerIfNotExistsAsync(
-               properties,
-               cancellationToken: cancellationToken);
-        }
-        else
-        {
-            await database.CreateContainerIfNotExistsAsync(
-                properties,
-                throughput,
-                cancellationToken: cancellationToken);
-        }
+        await CosmosRetryHelper.ExecuteWithRetryAsync(
+            async () =>
+            {
+                if (throughput == null)
+                {
+                    await database.CreateContainerIfNotExistsAsync(
+                       properties,
+                       cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    await database.CreateContainerIfNotExistsAsync(
+                        properties,
+                        throughput,
+                        cancellationToken: cancellationToken);
+                }
+            },
+            cancellationToken);
     }
 }
