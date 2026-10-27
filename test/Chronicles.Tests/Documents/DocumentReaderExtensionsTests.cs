@@ -202,13 +202,8 @@ public class DocumentReaderExtensionsTests
 
         _ = reader
             .Received(1)
-            .CreateQuery(Arg.Any<QueryExpression<TestDocument, TestDocument>>());
-
-        reader
-            .ReceivedCallWithArgument<QueryExpression<TestDocument, TestDocument>>()
-            .Invoke(queryable)
-            .Should()
-            .BeSameAs(queryable);
+            .CreateQuery(FluentArg.Match<QueryExpression<TestDocument, TestDocument>>(
+                expression => expression.Invoke(queryable).Should().BeSameAs(queryable))!);
     }
 
     [Theory, AutoNSubstituteData]

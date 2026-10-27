@@ -1,8 +1,6 @@
 using System.Text.Json;
 using Chronicles.EventStore;
 using Chronicles.EventStore.Internal;
-using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 
 namespace Chronicles.Tests.EventStore.Internal;
 
@@ -24,7 +22,7 @@ public class StreamEventConverterTests
             }
             """;
         var context = new EventConverterContext(
-            JsonDocument.Parse(json).RootElement,
+            JsonElement.Parse(json),
             eventMetadata,
             new JsonSerializerOptions());
 
@@ -61,7 +59,7 @@ public class StreamEventConverterTests
             }
             """;
         var context = new EventConverterContext(
-            JsonDocument.Parse(json).RootElement,
+            JsonElement.Parse(json),
             eventMetadata,
             new JsonSerializerOptions());
 
@@ -97,7 +95,7 @@ public class StreamEventConverterTests
             }
             """;
         var context = new EventConverterContext(
-            JsonDocument.Parse(json).RootElement,
+            JsonElement.Parse(json),
             eventMetadata,
             new JsonSerializerOptions());
 
@@ -138,7 +136,7 @@ public class StreamEventConverterTests
             }
             """;
         var context = new EventConverterContext(
-            JsonDocument.Parse(json).RootElement,
+            JsonElement.Parse(json),
             eventMetadata,
             new JsonSerializerOptions());
 
@@ -177,7 +175,7 @@ public class StreamEventConverterTests
             }
             """;
         var context = new EventConverterContext(
-            JsonDocument.Parse(json).RootElement,
+            JsonElement.Parse(json),
             eventMetadata,
             new JsonSerializerOptions());
 

@@ -27,7 +27,7 @@ public class EventDocumentProcessorTests
 
         foreach (var processor in processors)
         {
-            await processor.WaitForCall(
+            await processor.WaitForReceived(
                 p => p.ProcessAsync(changes, cancellationToken));
         }
 

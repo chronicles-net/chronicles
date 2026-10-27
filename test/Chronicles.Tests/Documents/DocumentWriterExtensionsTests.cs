@@ -201,7 +201,7 @@ public class DocumentWriterExtensionsTests
                 cancellationToken);
 
         _ = writer
-            .ReceivedCallWithArgument<Func<TestDocument, Task>>()
+            .ReceivedArg<Func<TestDocument, Task>>()
             .Invoke(document);
         updateDocument
             .Received(1)
@@ -235,7 +235,7 @@ public class DocumentWriterExtensionsTests
                 cancellationToken);
 
         _ = writer
-            .ReceivedCallWithArgument<Func<TestDocument, Task>>()
+            .ReceivedArg<Func<TestDocument, Task>>()
             .Invoke(document);
         updateDocument
             .Received(1)
